@@ -1,0 +1,31 @@
+
+delete `gzdw2024.gz_bi.dws_app_country_daily_reports`
+where stats_date>=date_add(run_date,interval -history_day day)
+and  stats_date<=date_add(run_date,interval -hitory_end_day day)
+and package_name  in ('fb.ai.avatar.puzzle','fb.ai.avatar');
+
+
+insert `gzdw2024.gz_bi.dws_app_country_daily_reports`
+	SELECT
+	stats_date
+	,package_name
+	,'fb_ai_avatar' as app_name
+	,country_code
+	,sum(active_uv) as active_uv
+	,sum(new_uv) as new_uv
+	,safe_divide(sum(retain_uv2),sum(new_uv)) as ratio
+	,sum(revenue) as total_revenue
+	,sum(cost) as total_cost
+	,0 as vip_revenue
+	,sum(revenue) as ad_revenue
+	,0 as asa_cost
+	,0 as ga_cost
+	,sum(retain_uv2) as new_retain_uv
+	,sum(cost) as fb_cost
+FROM
+	`gzdw2024.fbgame_03_bi.dws_fb_daily_reports`
+	 WHERE stats_date >= date_add(run_date,interval -history_day day)
+    and stats_date <= date_add(run_date,interval -hitory_end_day day)
+    and platform='TOTAL'
+    group by stats_date,app_name,package_name,country_code;
+end;
