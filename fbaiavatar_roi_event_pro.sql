@@ -123,9 +123,9 @@ delete `fb-ai-avatar-puzzle.fb_dw.dws_user_active_report`
 where event_date>=date_add(run_date,interval -hitory_retain_day day);
 
 insert `fb-ai-avatar-puzzle.fb_dw.dws_user_active_report`
+
 SELECT
-	a.event_date
-	
+	a.event_date	
 	,count(distinct case when is_launch=1 then a.fbUserID else null end) as active_uv 
 	,count(distinct case when is_launch=1 and is_new=1 then a.fbUserID else null end) as new_uv
 	,count(distinct case when is_launch=1 and is_new=1 and is_ad=1 then a.fbUserID else null end) as new_ad_uv
@@ -165,6 +165,10 @@ SELECT
 		when country_code='CONGO - KINSHASA' then 'CD'
 		else country_code end as country_code
 		,platform
+	,count(distinct case when is_launch=1 and is_new=1 and is_ad=1    then c.fbUserID else null end) as source_liebian_uv_ad 
+	,count(distinct case when is_launch=1 and is_new=1 and is_ad=1 and date_diff(c.event_date_min,a.event_date,day)<=0  then c.fbUserID else null end) as source_liebian_uv_ad_0_day 
+	,count(distinct case when is_launch=1 and is_new=1 and is_ad=1 and date_diff(c.event_date_min,a.event_date,day)<=1  then c.fbUserID else null end) as source_liebian_uv_ad_1_day
+	,count(distinct case when is_launch=1 and is_new=1 and is_ad=1 and  date_diff(c.event_date_min,a.event_date,day)<=2  then c.fbUserID else null end) as source_liebian_uv_ad_2_day 
 FROM
 	(
 
@@ -212,28 +216,34 @@ FROM
 			group by event_date,fbUserID
 			)b 
 			on a.fbUserID=b.fbUserID
+			left join
+			(
+			SELECT
+				fbUserID
+				
+				,MIN_BY(fromUser, event_date) AS fromUser
+				,min(event_date) as event_date_min
+			FROM
+				(
+				SELECT
+					event_date
+					,fbUserID
+					,max(fromUser) as fromUser
+	 			FROM `fb-ai-avatar-puzzle.fb_dw.dwd_user_active_di` 
+				WHERE event_date>=date_add(run_date,interval -hitory_retain_day day)
+				group by event_date,fbUserID
+				)a 
+				group by fbUserID
+			
+			)c
+			on a.fbUserID=c.fromUser
 			,UNNEST(country_code) as country_code
 			,UNNEST(platform) as platform
 			group by a.event_date,country_code,platform;
 
--------10.日活新增与留存fb
-/*delete gzdw2024.gz_bi.dws_app_daily_reports
-where stats_date>=date_add(run_date,interval -history_day day)
-and package_name in ('fb.ai.avatar')					
-;
 
-insert gzdw2024.gz_bi.dws_app_daily_reports
-SELECT 
-	 event_date as stats_date	 
-	 ,'fb_ai_avatar' as app_name
-	 ,'fb.ai.avatar' as package_name
-	 ,active_uv
-	 ,new_uv
-	 ,safe_divide(retain_uv2,new_uv) as ratio
-	  ,country_code
-		,retain_uv2 AS new_retain_uv
- FROM `fb-ai-avatar-puzzle.fb_dw.dws_user_active_report` 
-  WHERE event_date >= date_add(run_date,interval -history_day day)
-and platform='TOTAL';*/
+
+
+
 
 	end;
