@@ -16,10 +16,10 @@ with  active_info as(
 select distinct
 event_date
 ,user_pseudo_id
-FROM  `vidmaeditor-ios.analytics_296293128.events_*`,unnest(event_params) event_params
+FROM  `vidmaeditor-ios.analytics_296293128.events_intraday_*`,unnest(event_params) event_params
 WHERE  _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','') 
 and  _TABLE_SUFFIX <replace(cast(date_add(run_date,interval -0 day) as string),'-','') 
-and _TABLE_SUFFIX  not like '%intraday%'
+--and _TABLE_SUFFIX  not like '%intraday%'
 and ((event_name in ('user_engagement','screen_view','app_exception') and event_params.key='engagement_time_msec')  or event_name in('first_open'))
 and user_pseudo_id is not null
 ),
@@ -32,10 +32,10 @@ event_date
 ,user_pseudo_id
 ,cast((SELECT value.string_value 
    FROM UNNEST(user_properties) WHERE key='is_vip') as bigint) as is_vip
-FROM  `vidmaeditor-ios.analytics_296293128.events_*`
+FROM  `vidmaeditor-ios.analytics_296293128.events_intraday_*`
 WHERE  _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','') 
 and  _TABLE_SUFFIX <replace(cast(date_add(run_date,interval -0 day) as string),'-','') 
-and _TABLE_SUFFIX  not like '%intraday%'
+--and _TABLE_SUFFIX  not like '%intraday%'
 and user_pseudo_id is not null
 ) group by event_date,user_pseudo_id
 )
@@ -67,11 +67,11 @@ PARSE_DATE('%Y%m%d',a.event_date) event_date
 ,case when app_info.id='' or app_info.id is null then 'undefined' else app_info.id end AS package_name
 ,case when app_info.version='' or app_info.version is null then 'undefined' else app_info.version end as app_version
 
-FROM `vidmaeditor-ios.analytics_296293128.events_*` a 
+FROM `vidmaeditor-ios.analytics_296293128.events_intraday_*` a 
 left join vip_info b on a.event_date=b.event_date and a.user_pseudo_id=b.user_pseudo_id
 WHERE _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','') 
 and  _TABLE_SUFFIX <replace(cast(date_add(run_date,interval -0 day) as string),'-','') 
-and _TABLE_SUFFIX  not like '%intraday%'
+--and _TABLE_SUFFIX  not like '%intraday%'
 and a.user_pseudo_id is not null
 GROUP BY 
 a.event_date
@@ -404,12 +404,12 @@ PARSE_DATE('%Y%m%d',a.event_date) event_date
 ,event_name
 ,event_params.key as event_params_key
 ,coalesce(cast(event_params.value.int_value as string),cast(event_params.value.string_value as string),cast(event_params.value.float_value as string),cast(event_params.value.double_value as string))  as event_params_value
-FROM `vidmaeditor-ios.analytics_296293128.events_*` a 
+FROM `vidmaeditor-ios.analytics_296293128.events_intraday_*` a 
 cross join unnest(event_params) event_params
 inner join  gzdw2024.vidma_editor_ios_01_basic.dwd_user_active_di b on a.user_pseudo_id=b.user_pseudo_id and PARSE_DATE('%Y%m%d',a.event_date) =b.event_date
 WHERE _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','') 
 and  _TABLE_SUFFIX <replace(cast(date_add(run_date,interval -0 day) as string),'-','') 
-and _TABLE_SUFFIX  not like '%intraday%'
+--and _TABLE_SUFFIX  not like '%intraday%'
 and a.user_pseudo_id is not null
 and b.event_date>=date_add(run_date,interval -history_day day)
 AND event_name NOT IN ('screen_view','user_engagement','session_start','firebase_campaign')
@@ -473,13 +473,13 @@ FROM (
     event_params.key AS event_params_key,
     COALESCE(CAST(event_params.value.string_value AS string),CAST(event_params.value.int_value AS string),CAST(event_params.value.float_value AS string),CAST(event_params.value.double_value AS string)) AS event_params_value
   FROM
-    `vidmaeditor-ios.analytics_296293128.events_*`
+    `vidmaeditor-ios.analytics_296293128.events_intraday_*`
   CROSS JOIN
     UNNEST(event_params) event_params
   WHERE
     _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
     and  _TABLE_SUFFIX <replace(cast(date_add(run_date,interval -0 day) as string),'-','') 
-    and _TABLE_SUFFIX  not like '%intraday%'
+   -- and _TABLE_SUFFIX  not like '%intraday%'
     and user_pseudo_id is not null
     AND event_name NOT IN ('screen_view',
       'user_engagement',
@@ -524,10 +524,10 @@ SELECT
    ,user_pseudo_id
    ,user_id
   FROM
-    `vidmaeditor-ios.analytics_296293128.events_*`
+    `vidmaeditor-ios.analytics_296293128.events_intraday_*`
   WHERE
     _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
-    and _TABLE_SUFFIX  not like '%intraday%'
+   -- and _TABLE_SUFFIX  not like '%intraday%'
     and  _TABLE_SUFFIX <replace(cast(date_add(run_date,interval -0 day) as string),'-','') 
 group by user_pseudo_id,event_date,user_id,package_name;
 
