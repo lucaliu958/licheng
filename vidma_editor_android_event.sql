@@ -445,7 +445,8 @@ SELECT
   country,
   traffic_source_type,
   traffic_source_name,
-  app_version
+  app_version,
+  traffic_source_medium
 FROM (
   SELECT
     PARSE_DATE('%Y%m%d',event_date) event_date,
@@ -463,7 +464,9 @@ FROM (
     event_name,
     app_info.version app_version,
     event_params.key AS event_params_key,
-    COALESCE(CAST(event_params.value.string_value AS string),CAST(event_params.value.int_value AS string),CAST(event_params.value.float_value AS string),CAST(event_params.value.double_value AS string)) AS event_params_value
+    COALESCE(CAST(event_params.value.string_value AS string),CAST(event_params.value.int_value AS string),CAST(event_params.value.float_value AS string),CAST(event_params.value.double_value AS string)) AS event_params_value,
+    case when traffic_source.medium='' or traffic_source.medium is null then 'undefined' else traffic_source.medium end as traffic_source_medium
+
   FROM
     `mv-editor-4bf54.analytics_289941232.events_*`
   CROSS JOIN
@@ -497,6 +500,7 @@ GROUP BY
   event_name,
   event_params_key,
   event_params_value,
+  traffic_source_medium,
   app_version;
 
 
