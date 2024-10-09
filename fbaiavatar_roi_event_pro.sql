@@ -16,7 +16,7 @@ insert `fb-ai-avatar-puzzle.fb_dw.dwd_user_event_di`
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='isFirst') isFirst 
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='type') type 
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='from') fromon 
-		,'fb.ai.avatar' as package_name
+		,'fb.ai.avatar.puzzle' as package_name
 		,geo.country
 		,device.category as device_category
 		,device.mobile_brand_name
