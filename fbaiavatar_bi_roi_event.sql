@@ -1,10 +1,16 @@
+投放看板例程20241010.sql
+
+
 
 CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.fbaiavatar_bi_roi_event`(run_date DATE, history_day INT64, hitory_end_day INT64)
 begin
 
 delete `gzdw2024.fbgame_03_bi.dws_fb_cost_daily_reports`
 where stats_date>=date_add(run_date,interval -history_day day)
-and  stats_date<=date_add(run_date,interval -hitory_end_day day);
+and  stats_date<=date_add(run_date,interval -hitory_end_day day)
+and stats_date>='2024-09-08';
+
+
 
 insert `gzdw2024.fbgame_03_bi.dws_fb_cost_daily_reports`
 	SELECT
@@ -62,6 +68,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_cost_daily_reports`
 		)c 
 		,UNNEST(country_code) as country_code
 		,UNNEST(platform) as platform
+		where stats_date>='2024-09-08'
 		group by stats_date
 		,platform
 		,country_code
@@ -72,7 +79,8 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_cost_daily_reports`
 
 delete `gzdw2024.fbgame_03_bi.dws_fb_ad_revenue_daily_reports`
 where stats_date>=date_add(run_date,interval -history_day day)
-and  stats_date<=date_add(run_date,interval -hitory_end_day day);
+and  stats_date<=date_add(run_date,interval -hitory_end_day day)
+and stats_date>='2024-09-08';
 
 insert `gzdw2024.fbgame_03_bi.dws_fb_ad_revenue_daily_reports`
 
@@ -616,3 +624,5 @@ FROM
 
 
 end;
+
+
