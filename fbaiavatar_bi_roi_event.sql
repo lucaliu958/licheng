@@ -91,6 +91,22 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_ad_revenue_daily_reports`
 				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -hitory_end_day day) as string),'-','')
 				--and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
 				group by stats_date
+				UNION ALL 
+				SELECT 
+					parse_date('%Y%m%d',_table_suffix) as stats_date
+					,'fb.ai.avatar.puzzle' as package_name
+					,'TOTAL' as platform
+					,'TOTAL' as country_code
+					,sum(requests)  as requests
+					,sum(filled_requests)  as filled_requests
+					,sum(impressions)  as impressions
+					,sum(revenue)  as revenue
+					,sum(clicks)  as clicks
+				FROM `fb-ai-avatar-puzzle.analytics_439907691.ad_analytics_day_*` 
+				where _TABLE_SUFFIX >='20240908'
+				and _TABLE_SUFFIX <='20240923'
+				--and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
+				group by stats_date
 				union all 
 					SELECT 
 					date(start_timestamp) as stats_date
