@@ -1,5 +1,3 @@
-投放看板例程20241010.sql
-
 
 
 CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.fbaiavatar_bi_roi_event`(run_date DATE, history_day INT64, hitory_end_day INT64)
@@ -609,12 +607,12 @@ FROM
 	)
 	SELECT 
 		* 
-	,case when active_uv is not null  then  new_ad_liebian_uv*new_arpu  
+	,case when new_ad_uv is not null  then  new_ad_liebian_uv*new_arpu  
 		else install*last_new_ratio*last_new_arpu end as first_day_revenue
-	,case when active_uv is not null then  new_ad_liebian_uv*new_arpu*(1+total_bili_3)
+	,case when new_ad_uv is not null then  new_ad_liebian_uv*new_arpu*(1+total_bili_3)
 	else install*last_new_ratio*last_new_arpu*(1+ last_total_bili_3) end as first_3day_revenue
 
-	,case when active_uv is not null then  new_ad_liebian_uv*new_arpu*(1+total_bili_3) + new_ad_liebian_uv*arpu*(total_bili_7- total_bili_3)
+	,case when new_ad_uv is not null then  new_ad_liebian_uv*new_arpu*(1+total_bili_3) + new_ad_liebian_uv*arpu*(total_bili_7- total_bili_3)
 	else install*last_new_ratio*last_new_arpu*(1+last_total_bili_3) + install*last_new_ratio*last_arpu*(last_total_bili_7- last_total_bili_3) end as first_7day_revenue
 
     FROM a 
