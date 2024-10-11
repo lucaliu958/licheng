@@ -336,7 +336,10 @@ SELECT
 	,package_name
 	,app_name
 	,country_code
-	,sum(case when app_name='Recorder Pro' and ad_platform!='tradplusad' then 0 else ad_revenue end) as ad_revenue
+	,sum(case when app_name='Recorder Pro' and ad_platform='tradplusad' then ad_revenue 
+  when app_name='Recorder Pro' and ad_platform='admob' then ad_revenue-admob_tradplus_revenue
+   when app_name='Recorder Pro'  then 0 
+  else ad_revenue end) as ad_revenue
 FROM gzdw2024.ad_platform_data.dws_ad_platform_country_daily_reports
 where stats_date>=date_add(run_date,interval -history_day day)
 and stats_date<=date_add(run_date,interval -end_day day)
