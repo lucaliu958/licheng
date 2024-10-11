@@ -75,7 +75,7 @@ FROM
 		,0 as asa_cost
 		,0 as ga_cost
 		,0 as new_retain_uv
-	FROM gzdw2024.ad_platform_data.dws_ad_platform_country_daily_reports
+	FROM gzdw2024.ad_platform_data.dws_ad_country_daily_reports
 	WHERE stats_date >= DATE_SUB(run_date, INTERVAL history_day DAY)
   union all
 	---asa投放成本
