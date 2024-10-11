@@ -285,7 +285,7 @@ SELECT parse_date('%Y%m%d',_table_suffix)  stats_date
 	,app_name
 	,upper(area) country ----ID
 	,'tradplusad' as ad_platform
-	,sum(Revenue) as ad_revenue 
+	,sum(eventRevenue) as ad_revenue 
 	 ,0 as admob_tradplus_revenue
 	,0 as admob_topon_revenue
 	,0 as appodeal_admob_revenue
@@ -306,7 +306,7 @@ SELECT parse_date('%Y%m%d',_table_suffix)  stats_date
   ,app_name
 	,'TOTAL' country ----ID
 	,'tradplusad' as ad_platform
-	,sum(Revenue) as ad_revenue 
+	,sum(eventRevenue) as ad_revenue 
 	, 0 as admob_tradplus_revenue
 	,0 as admob_topon_revenue
 	,0 as appodeal_admob_revenue
