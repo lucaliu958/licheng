@@ -8,70 +8,81 @@ insert `gzdw2024.cost_data.dws_ga_cost_daily`
 WITH
   campaign_info AS(
   SELECT
-    DISTINCT campaign_id,
-    campaign_name
+     campaign_id,
+    max(campaign_name) as campaign_name
   FROM
     hzdw2024.all.p_ads_Campaign_4891374411
+	group by campaign_id
   UNION ALL
   SELECT
-    DISTINCT campaign_id,
-    campaign_name
+ campaign_id,
+    max(campaign_name) as campaign_name
   FROM
     hzdw2024.all.p_ads_Campaign_1449238239
+	group by campaign_id
   UNION ALL
   SELECT
-    DISTINCT campaign_id,
-    campaign_name
+   campaign_id,
+    max(campaign_name) as campaign_name
   FROM
     hzdw2024.all.p_ads_Campaign_5964298848
+	group by campaign_id
   UNION ALL
   SELECT
-    DISTINCT campaign_id,
-    campaign_name
+   campaign_id,
+    max(campaign_name) as campaign_name
   FROM
     hzdw2024.all.p_ads_Campaign_8500620333
+	group by campaign_id
   UNION ALL
   SELECT
-    DISTINCT campaign_id,
-    campaign_name
+  campaign_id,
+    max(campaign_name) as campaign_name
   FROM
     hzdw2024.all.p_ads_Campaign_6006331386
+	group by campaign_id
   UNION ALL
   SELECT
-    DISTINCT campaign_id,
-    campaign_name
+     campaign_id,
+    max(campaign_name) as campaign_name
   FROM
     hzdw2024.all.p_ads_Campaign_8515949135
+	group by campaign_id
   UNION ALL
   SELECT
-    DISTINCT campaign_id,
-    campaign_name
+   campaign_id,
+    max(campaign_name) as campaign_name
   FROM
     hzdw2024.all.p_ads_Campaign_7647547266
+	group by campaign_id
   UNION ALL
   SELECT
-    DISTINCT campaign_id,
-    campaign_name
+   campaign_id,
+    max(campaign_name) as campaign_name
   FROM
     hzdw2024.all.p_ads_Campaign_9023445943
+	group by campaign_id
   UNION ALL
   SELECT
-    DISTINCT campaign_id,
-    campaign_name
+    campaign_id,
+    max(campaign_name) as campaign_name
   FROM
     hzdw2024.all.p_ads_Campaign_7114161798
+	group by campaign_id
   UNION ALL
   SELECT
-    DISTINCT campaign_id,
-    campaign_name
+  campaign_id,
+    max(campaign_name) as campaign_name
   FROM
     hzdw2024.all.p_ads_Campaign_5497157644
+	group by campaign_id
     UNION ALL
   SELECT
-    DISTINCT campaign_id,
-    campaign_name
+    campaign_id,
+    max(campaign_name) as campaign_name
   FROM
-    hzdw2024.all.p_ads_Campaign_7890088142  ),
+    hzdw2024.all.p_ads_Campaign_7890088142
+	group by campaign_id ),
 
  cost_data AS(
   SELECT
