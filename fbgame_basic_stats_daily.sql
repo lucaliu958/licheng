@@ -34,6 +34,7 @@ FROM
 	WHERE country_code='TOTAL'
 	AND event_date>=date_add(run_date,interval -history_day day) 
 	AND event_date<date_add(run_date,interval -hitory_end_day day) 
+	and platform='TOTAL' 
 	UNION ALL 
 	SELECT   
 		stats_date
