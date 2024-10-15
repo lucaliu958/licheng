@@ -6,7 +6,7 @@ begin
 
 delete gzdw2024.fbgame_01_basic.fbgame_basic_stats_daily
 where stats_date>=date_add(run_date,interval -history_day day)
-;
+and stats_date<date_add(run_date,interval -hitory_end_day day);
 
 
 insert `gzdw2024.fbgame_01_basic.fbgame_basic_stats_daily`
@@ -16,10 +16,10 @@ insert `gzdw2024.fbgame_01_basic.fbgame_basic_stats_daily`
 	,'fb_ai_avatar' as app_name
 	,sum(active_uv) as active_uv
 	,sum(new_uv) as new_uv
-	,max(GREATEST(ifnull(a.total_revenue,0),ifnull(b.fb_revenue,0))) as total_revenue
+	,sum(total_revenue) as total_revenue
 	,sum(vip_revenue) as vip_revenue
- 	, max(GREATEST(ifnull(a.ad_revenue,0),ifnull(b.fb_revenue,0))) as ad_revenue
- 	, max(GREATEST(ifnull(a.cost,0),ifnull(b.cost,0))) as cost
+ 	, sum(ad_revenue) as ad_revenue
+ 	, sum(cost) as cost
 FROM
 	(
 	select 
@@ -67,20 +67,7 @@ FROM
 	 and PARSE_DATE('%Y-%m-%d', string_field_0) < date_add(run_date,interval -hitory_end_day day)
 	 and PARSE_DATE('%Y-%m-%d', string_field_0)<'2024-09-08'
 	)a 
-	left join
-	(
-	SELECT 
-	PARSE_DATE('%Y-%m-%d', string_field_0) AS stats_date
-		
-		,safe_CAST(REPLACE(REPLACE(string_field_7, '$', ''), ',', '') AS FLOAT64) AS fb_revenue
-		,safe_CAST(REPLACE(REPLACE(string_field_2, '$', ''), ',', '') AS FLOAT64) AS cost
-	 FROM `gzdw2024.revenue.fb_daily_data_google_sheet` 
-	 WHERE length(string_field_0)>6
-	 and PARSE_DATE('%Y-%m-%d', string_field_0) >= date_add(run_date,interval -history_day day)
-	 and   PARSE_DATE('%Y-%m-%d', string_field_0) < date_add(run_date,interval -hitory_end_day day)
-	 and PARSE_DATE('%Y-%m-%d', string_field_0)>='2024-09-08'	
-	 )b
-	on a.stats_date=b.stats_date
+	
 
 	group by stats_date
 	order by stats_date;
