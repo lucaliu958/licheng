@@ -163,6 +163,9 @@ SELECT
 		when country_code='PALESTINE' then 'PS'
 		when country_code='AUSTRALIA' then 'AU'
 		when country_code='CONGO - KINSHASA' then 'CD'
+		when country_code='BOSNIA & HERZEGOVINA' then 'BA'
+					when country_code='NORTH MACEDONIA' then 'MK'
+					when country_code='KOSOVO' then 'XK'
 		else country_code end as country_code
 		,platform
 	,count(distinct case when is_launch=1 and is_new=1 and is_ad=1    then c.fbUserID else null end) as source_liebian_uv_ad 
