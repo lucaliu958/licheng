@@ -826,8 +826,8 @@ insert    scanner-master-android.scanner_ios_dw.scanner_ios_adjust_ads_keywords_
 		,sum(try_convert_uv) as try_convert_uv
 		,sum(real_revenue)*0.7 as real_revenue
 		,sum(trial_nocanceled_6h_uv) as trial_nocanceled_6h_uv
-		,sum(real_revenue_4day) as real_revenue_4day
-		,sum(real_revenue_7day) as real_revenue_7day
+		,sum(real_revenue_4day)*0.7 as real_revenue_4day
+		,sum(real_revenue_7day)*0.7 as real_revenue_7day
 	FROM
 		(
 		SELECT
