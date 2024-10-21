@@ -586,6 +586,8 @@ where stats_date>='2024-08-19';
 			,a.try_convert_uv
 			,a.real_revenue
 			,trial_nocanceled_6h_uv
+			,a.real_revenue_4day
+			,a.real_revenue_7day
 		FROM
 			(
 		SELECT
@@ -606,6 +608,8 @@ where stats_date>='2024-08-19';
 			,count(distinct case when event_name='trial_started' and next_event_name='payoff' then adid else null end) as try_convert_uv 
 			--,count(distinct case when event_name='trial_converted'  then adid else null end) as try_convert_uv 
 			,sum(revenue_usd) as real_revenue
+			,sum(case when date_diff(event_date,install_date,day)<=3 then revenue_usd else 0 end ) as real_revenue_4day
+			,sum(case when date_diff(event_date,install_date,day)<=6 then revenue_usd else 0 end ) as real_revenue_7day
 		FROM
 			(
 			SELECT
@@ -822,6 +826,8 @@ insert    scanner-master-android.scanner_ios_dw.scanner_ios_adjust_ads_keywords_
 		,sum(try_convert_uv) as try_convert_uv
 		,sum(real_revenue)*0.7 as real_revenue
 		,sum(trial_nocanceled_6h_uv) as trial_nocanceled_6h_uv
+		,sum(real_revenue_4day) as real_revenue_4day
+		,sum(real_revenue_7day) as real_revenue_7day
 	FROM
 		(
 		SELECT
@@ -849,6 +855,8 @@ insert    scanner-master-android.scanner_ios_dw.scanner_ios_adjust_ads_keywords_
 			,0 as try_convert_uv
 			,0 as real_revenue
 			,0 as trial_nocanceled_6h_uv
+			,0 as real_revenue_4day
+			,0 as real_revenue_7day
 		FROM scanner-master-android.scanner_ios_dw.scanner_ios_keywords_delivery_data 
 		WHERE stats_date>='2024-08-19'
 		union all 
@@ -877,6 +885,8 @@ insert    scanner-master-android.scanner_ios_dw.scanner_ios_adjust_ads_keywords_
 			,try_convert_uv
 			,real_revenue
 			,trial_nocanceled_6h_uv
+			,real_revenue_4day
+			,real_revenue_7day
 		FROM scanner-master-android.scanner_ios_dw.scanner_ios_adjust_keywords_delivery_data
 	)b
 		group by stats_date
@@ -1974,6 +1984,8 @@ where install_date>='2024-08-19';
 		,SUM(month_13_revenue) AS month_13_revenue
 		,SUM(month_15_revenue) AS month_15_revenue
 		,SUM(trial_nocanceled_6h_uv) AS trial_nocanceled_6h_uv
+		,sum(real_revenue_4day) as real_revenue_4day
+		,sum(real_revenue_7day) as real_revenue_7day
 	FROM
 		(
 		SELECT
@@ -2008,6 +2020,8 @@ where install_date>='2024-08-19';
 			,0 as month_13_revenue
 			,0 as month_15_revenue
 			,trial_nocanceled_6h_uv
+			,real_revenue_4day
+			,real_revenue_7day
 		FROM scanner-master-android.scanner_ios_dw.scanner_ios_adjust_ads_keywords_delivery_data 
 		WHERE stats_date>='2024-08-19'
 		union all 
@@ -2043,6 +2057,8 @@ where install_date>='2024-08-19';
 			,month_13_revenue
 			,month_15_revenue
 			,0 as trial_nocanceled_6h_uv
+			,0 as real_revenue_4day
+			,0 as real_revenue_7day
 		FROM scanner-master-android.scanner_ios_dw.scanner_ios_adjust_ads_keywords_all_forcast_data 
 		WHERE install_date>='2024-08-19'
 		)a 
