@@ -608,8 +608,8 @@ where stats_date>='2024-08-19';
 			,count(distinct case when event_name='trial_started' and next_event_name='payoff' then adid else null end) as try_convert_uv 
 			--,count(distinct case when event_name='trial_converted'  then adid else null end) as try_convert_uv 
 			,sum(revenue_usd) as real_revenue
-			,sum(case when date_diff(event_date,install_date,day)<=3 then revenue_usd else 0 end ) as real_revenue_4day
-			,sum(case when date_diff(event_date,install_date,day)<=6 then revenue_usd else 0 end ) as real_revenue_7day
+			,sum(case when date_diff(event_date,install_date,day)<=3 and date_diff(event_date,install_date,day)>=-1 then revenue_usd else 0 end ) as real_revenue_4day
+			,sum(case when date_diff(event_date,install_date,day)<=6 and date_diff(event_date,install_date,day)>=-1 then revenue_usd else 0 end ) as real_revenue_7day
 		FROM
 			(
 			SELECT
