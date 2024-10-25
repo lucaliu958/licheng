@@ -644,6 +644,84 @@ insert gzdw2024.gz_bi.dws_app_daily_reports
     and traffic_source_type='TOTAL';
     
 
+-------11.投放安装与事件dws_delivery_report
+delete gzdw2024.vidma_editor_android_02_event.dws_delivery_report
+where
+  stats_date>=date_add(run_date,interval - history_day day) ;
+
+
+INSERT
+  gzdw2024.vidma_editor_android_02_event.dws_delivery_report
+	SELECT
+		stats_date
+		,package_name
+		,country
+		,traffic_source_name
+		,sum(install_ga) as install_ga
+		,sum(trial_counts) as trial_counts
+	FROM	
+		(
+		SELECT
+			stats_date
+			,package_name
+			,array['TOTAL',country] as country
+			,array['TOTAL',traffic_source_name] as traffic_source_name
+			,install_ga
+			,trial_counts
+		FROM
+			(
+			SELECT
+				stats_date
+				,package_name
+				,country
+				,traffic_source_name
+				,sum(install_ga) as install_ga
+				,sum(trial_counts) as trial_counts
+			FROM
+				(
+				SELECT  
+					event_date as stats_date
+					,country
+					,package_name
+					,traffic_source_name
+					,count(distinct user_pseudo_id) as install_ga
+					,0 as trial_counts
+				FROM `gzdw2024.vidma_editor_android_01_basic.dwd_user_active_di` 
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and traffic_source_medium = "cpc"
+				and is_new=1
+				and traffic_source_name like 'GA%'
+				--and country='Vietnam'
+				--AND package_name = "vidma.video.editor.videomaker"
+				group by country,traffic_source_name,event_date,package_name
+				union all 
+		        SELECT
+		        	event_date stats_date
+		           ,country
+		           ,package_name
+		           ,traffic_source_name
+		           ,0 as install_ga
+		          ,sum(event_num) AS trial_counts
+		        FROM
+		          `gzdw2024.vidma_editor_android_02_event.dws_event_param_profile_di`
+		        WHERE
+		          event_name = "in_app_purchase"
+		          AND event_params_key = "price"
+		          AND event_params_value = '0'
+		          AND traffic_source_medium = "cpc"
+		          and  event_date >=date_add(run_date,interval -history_day day)
+		          and traffic_source_name like 'GA%'
+				 -- AND package_name = "vidma.video.editor.videomaker"
+			     group by country,traffic_source_name,stats_date,package_name
+			     )a 
+					 group by 	stats_date
+				,country
+				,traffic_source_name,package_name
+			)b 
+		)c 
+		,UNNEST(country) as country
+		,UNNEST(traffic_source_name) as traffic_source_name
+		group by stats_date,country,traffic_source_name,package_name;
 
 
 end;
