@@ -383,6 +383,7 @@ event_date
 ,event_params_value
 ,count(*) event_num
 ,count(distinct user_pseudo_id) user_num
+   ,traffic_source_medium
 from 
 (SELECT 
 PARSE_DATE('%Y%m%d',a.event_date) event_date
@@ -395,6 +396,7 @@ PARSE_DATE('%Y%m%d',a.event_date) event_date
 ,b.is_vip
 ,event_name
 ,event_params.key as event_params_key
+     ,case when traffic_source.medium='' or traffic_source.medium is null then 'undefined' else traffic_source.medium end as traffic_source_medium
 ,coalesce(cast(event_params.value.int_value as string),cast(event_params.value.string_value as string),cast(event_params.value.float_value as string),cast(event_params.value.double_value as string))  as event_params_value
 FROM `scanner-master-android.analytics_196427335.events_*` a 
 cross join unnest(event_params) event_params
@@ -418,6 +420,7 @@ event_date
 ,event_name
 ,event_params_key
 ,event_params_value
+   ,traffic_source_medium
 ;
 
 
