@@ -1,5 +1,3 @@
-
-
 CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.fbaiavatar_bi_roi_event`(run_date DATE, history_day INT64, hitory_end_day INT64)
 begin
 
@@ -545,10 +543,10 @@ FROM
 		,total_bili_7
     	,arpu
 		,case when new_bili>=0.8 then arpu*1.03 
-		when new_bili>=0.7 and new_bili<0.8 then arpu*1.1
-		when new_bili>=0.5 and new_bili<0.7 then arpu*1.2 
-		when new_bili>=0.3 and new_bili<0.5 then arpu*1.3 
-		when  new_bili<0.3 then arpu*1.45 else arpu end as new_arpu
+		when new_bili>=0.7 and new_bili<0.8 then arpu*1.13
+		when new_bili>=0.5 and new_bili<0.7 then arpu*1.23 
+		when new_bili>=0.3 and new_bili<0.5 then arpu*1.4 
+		when  new_bili<0.3 then arpu*1.5 else arpu end as new_arpu
 		,safe_divide(new_ad_liebian_uv,install) as new_ratio
 	FROM
 		(
@@ -622,5 +620,3 @@ FROM
 
 
 end;
-
-
