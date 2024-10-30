@@ -20,6 +20,7 @@ INSERT
 		,SUM(total_revenue) as total_revenue
 		,SUM(ad_revenue) as ad_revenue
 		,SUM(vip_revenue) as vip_revenue
+		,SUM(conversions) as conversions
 	FROM
 		(
 		SELECT
@@ -41,6 +42,7 @@ INSERT
 			,0 as total_revenue						
 			,0 as ad_revenue
 			,0 as vip_revenue
+			,0 as conversions
 		FROM
 			(
 			SELECT
@@ -73,7 +75,8 @@ INSERT
 				,0 as trial_counts
 				,total_revenue
 				,ad_revenue
-				,vip_revenue							
+				,vip_revenue	
+				,conversions
 			FROM `gzdw2024.gz_bi.dws_app_country_daily_reports` 
 			WHERE stats_date>=date_add(run_date,interval -history_day day)
 			and stats_date<=date_add(run_date,interval -history_end_day day)
