@@ -24,6 +24,7 @@ SELECT
 	,sum(ga_cost) as ga_cost
 	,sum(new_retain_uv) as ga_cost
 	,0 as fb_cost
+	,sum(conversions) as conversions
 FROM
 	(
 	SELECT
@@ -39,6 +40,7 @@ FROM
 		,0 as asa_cost
 		,0 as ga_cost
 		,new_retain_uv
+		,0 as conversions
 	FROM `gzdw2024.gz_bi.dws_app_daily_reports` 
 	WHERE stats_date >= DATE_SUB(run_date, INTERVAL history_day DAY)
    and package_name not in ('fb.ai.avatar.puzzle', 'fb.ai.avatar')
@@ -58,6 +60,7 @@ FROM
 		,0 as asa_cost
 		,0 as ga_cost
 		,0 as new_retain_uv
+		,0 as conversions
 	FROM gzdw2024.revenue.dws_app_country_vip_income 
 	WHERE stats_date >= DATE_SUB(run_date, INTERVAL history_day DAY)
 	union all 
@@ -75,6 +78,7 @@ FROM
 		,0 as asa_cost
 		,0 as ga_cost
 		,0 as new_retain_uv
+		,0 as conversions
 	FROM gzdw2024.ad_platform_data.dws_ad_country_daily_reports
 	WHERE stats_date >= DATE_SUB(run_date, INTERVAL history_day DAY)
   union all
@@ -92,6 +96,7 @@ FROM
 		,asa_cost
 		,0 as ga_cost
 		,0 as new_retain_uv
+		,0 as conversions
 	FROM gzdw2024.cost_data.dws_asa_cost_daily
 	WHERE stats_date >= DATE_SUB(run_date, INTERVAL history_day DAY)	
     union all
@@ -109,6 +114,7 @@ FROM
 		,0 as asa_cost
 		,ga_cost
 		,0 as new_retain_uv
+		,conversions
 	FROM gzdw2024.cost_data.dws_ga_cost_daily
 	WHERE stats_date >= DATE_SUB(run_date, INTERVAL history_day DAY)
 	)a
