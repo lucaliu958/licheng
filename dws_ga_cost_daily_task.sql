@@ -172,6 +172,7 @@ WITH
    cast(geographic_view_country_criterion_id as string) as country_criterion_id
 	,cast(a.campaign_id as string) as campaign_id
 	,metrics_cost_micros
+	,metrics_conversions
 	,date(_DATA_DATE) as stats_date
   FROM
     cost_data a
@@ -185,6 +186,7 @@ SELECT
 	,app_name
 	,case when c.country_code is not null then upper(c.country_code) else a.country_criterion_id end as country_code
 	,sum(metrics_cost_micros)/1000000*max(case when exchange_rate is not null then exchange_rate else 0.128 end ) as cost_usd
+	,sum(metrics_conversions) as conversions
 FROM
 	(
 	SELECT
@@ -194,6 +196,7 @@ FROM
     ,app_name
 		,country_criterion_id
 		,metrics_cost_micros
+	,metrics_conversions
 	FROM 
 		(
 		SELECT
@@ -203,7 +206,8 @@ FROM
 		  a.package_name,
 		  app_name,
 		  array['TOTAL',country_criterion_id] AS country_criterion_id,
-		  metrics_cost_micros
+		  metrics_cost_micros,
+	metrics_conversions
 		FROM
 		  guangzhou_cost_info a
 		join  `gzdw2024.gz_dim.app_info`  b  
