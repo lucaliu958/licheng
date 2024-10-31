@@ -310,6 +310,7 @@ insert `gzdw2024.gz_bi.dws_app_country_daily_reports`
 	,0 as ga_cost
 	,sum(retain_uv2) as new_retain_uv
 	,sum(cost) as fb_cost
+	,cast(sum(install) as integer) as conversions
 FROM
 	`gzdw2024.fbgame_03_bi.dws_fb_daily_reports`
 	 WHERE stats_date >= date_add(run_date,interval -history_day day)
@@ -548,6 +549,7 @@ FROM
 		when new_bili>=0.3 and new_bili<0.5 then arpu*1.4 
 		when  new_bili<0.3 then arpu*1.5 else arpu end as new_arpu
 		,safe_divide(new_ad_liebian_uv,install) as new_ratio
+
 	FROM
 		(
 		SELECT
