@@ -25,12 +25,12 @@ and user_pseudo_id is not null
 ),
 
 vip_info as(
-select event_date,user_pseudo_id,max(is_vip) is_vip 
+select event_date,user_pseudo_id,max(case when is_vip in (1,2) then is_vip else 0 end) is_vip 
 from (
 select 
 event_date
 ,user_pseudo_id
-,cast((SELECT value.string_value 
+,safe_cast((SELECT value.string_value 
    FROM UNNEST(user_properties) WHERE key='is_vip') as bigint) as is_vip
 FROM  `vidmaeditor-ios.analytics_296293128.events_intraday_*`
 WHERE  _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','') 
@@ -518,7 +518,7 @@ GROUP BY
 
 
 
------8.dwd_user_event_param_di 
+-----8.dwd_user_userid_di 
 delete gzdw2024.vidma_editor_ios_01_basic.dwd_user_userid_di
 where event_date>=date_add(run_date,interval -history_day day)
 ;
@@ -530,13 +530,20 @@ SELECT
    ,case when app_info.id='' or app_info.id is null then 'undefined' else app_info.id end AS package_name
    ,user_pseudo_id
    ,user_id
+	   ,(SELECT value.string_value 
+   FROM UNNEST(user_properties) WHERE key='is_vip') as is_vip
+   ,(SELECT value.string_value 
+   FROM UNNEST(user_properties) WHERE key='vip_type') as vip_type
+    ,(SELECT value.string_value 
+   FROM UNNEST(user_properties) WHERE key='custom_uid') as custom_uid
   FROM
     `vidmaeditor-ios.analytics_296293128.events_intraday_*`
   WHERE
     _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
    -- and _TABLE_SUFFIX  not like '%intraday%'
     and  _TABLE_SUFFIX <replace(cast(date_add(run_date,interval -0 day) as string),'-','') 
-group by user_pseudo_id,event_date,user_id,package_name;
+group by user_pseudo_id,event_date,user_id,package_name
+,is_vip,vip_type,custom_uid;
 
 
 -------9.日活与留存统计
