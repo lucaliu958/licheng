@@ -124,6 +124,11 @@ WHERE
 ,"fb_otome_ending"
 ,"fb_otome_poster_change"
 ,"fb_otome_poster_replay"
+  ,"fb_templ_muti_click"
+  ,"fb_templ_muti_click_start"
+  ,"fb_templ_muti_click_export"
+  ,"fb_search_show"
+  ,"fb_search_click"
 )
   AND event_params.key IN ("error",
     "code",
