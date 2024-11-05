@@ -76,6 +76,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_cost_daily_reports`
 delete `gzdw2024.fbgame_03_bi.dws_fb_ad_revenue_daily_reports`
 where stats_date>=date_add(run_date,interval -history_day day)
 and  stats_date<=date_add(run_date,interval -hitory_end_day day)
+and stats_date!='2024-11-03'
 and stats_date>='2024-09-08';
 
 insert `gzdw2024.fbgame_03_bi.dws_fb_ad_revenue_daily_reports`
@@ -93,6 +94,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_ad_revenue_daily_reports`
 				FROM `fb-ai-avatar-puzzle.analytics_439907691.ad_analytics_hour_*` 
 				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -hitory_end_day day) as string),'-','')
+				and _TABLE_SUFFIX!='20241103'
 				--and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
 				group by stats_date
 				UNION ALL 
@@ -109,6 +111,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_ad_revenue_daily_reports`
 				FROM `fb-ai-avatar-puzzle.analytics_439907691.ad_analytics_day_*` 
 				where _TABLE_SUFFIX >='20240908'
 				and _TABLE_SUFFIX <='20240923'
+					and _TABLE_SUFFIX!='20241103'
 				--and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
 				group by stats_date
 				union all 
@@ -125,6 +128,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_ad_revenue_daily_reports`
 				FROM `fb-ai-avatar-puzzle.analytics_439907691.ad_analytics_detail_day_*` 
 				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -hitory_end_day day) as string),'-','')
+					and _TABLE_SUFFIX!='20241103'
 				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
 				group by stats_date,platform,country_code
 				union all 
@@ -141,6 +145,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_ad_revenue_daily_reports`
 				FROM `fb-ai-avatar-puzzle.analytics_439907691.ad_analytics_detail_day_*` 
 				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -hitory_end_day day) as string),'-','')
+					and _TABLE_SUFFIX!='20241103'
 				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
 				group by stats_date,platform,country_code
 					union all 
@@ -158,6 +163,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_ad_revenue_daily_reports`
 				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -hitory_end_day day) as string),'-','')
 				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
+					and _TABLE_SUFFIX!='20241103'
 				group by stats_date,platform,country_code;
 
 
