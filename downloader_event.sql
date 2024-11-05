@@ -717,5 +717,31 @@ INSERT
       ,UNNEST(traffic_source_name) as traffic_source_name
       group by stats_date,country,traffic_source_name,package_name;
 
+
+----12.dws_player_reports
+delete gzdw2024.downloader_03_bi.dws_player_reports
+where 1=1
+and stats_date>=date_add(run_date,interval -history_day day)
+--and stats_date>='2024-09-01'
+;
+
+insert gzdw2024.downloader_03_bi.dws_player_reports
+SELECT  
+	event_date as stats_date
+	,app_name
+	,event_name
+	,last_app_version
+	,sum(event_num) as event_num
+	,sum(user_num) as user_num
+FROM `gzdw2024.downloader_02_event.dws_event_profile_di`  a 
+left join `gzdw2024.gz_dim.app_info` c 
+on a.package_name=c.package_name
+WHERE stats_date>=date_add(run_date,interval -history_day day)
+and event_name in ('a1_1_app_launch','a1_11_player_page_show','a1_11_player_start','a1_11_player_succ','a1_11_player_fail')
+group by event_date,event_name,last_app_version,app_name;
+
+
+
+
     
 end;
