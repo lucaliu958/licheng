@@ -67,7 +67,7 @@ SELECT
 	a.fbUserID
 	,a.event_date	
 	,max(is_launch) as is_launch
-	,max(case when a.event_date=event_date_min and  is_new=1 then 1 else 0 end ) as is_new
+	,max(case when a.event_date=event_date_min  then 1 else 0 end ) as is_new
 	,max(is_ad) as is_ad
 	,max(is_liebian) as is_liebian
 	,a.package_name
