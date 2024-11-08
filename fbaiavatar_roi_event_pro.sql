@@ -27,6 +27,8 @@ insert `fb-ai-avatar-puzzle.fb_dw.dwd_user_event_di`
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='fromUser') fromUser 
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='abtestVersion') abtestVersion
 		,device.operating_system as operating_system
+	,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='placement') placement
+		,(SELECT value.int_value FROM UNNEST(event_params) WHERE key='timeuse') as timeuse
 	FROM `recorder-pro-50451.analytics_250268757.events_*`
 	WHERE 1=1
 	 and  stream_id='9692329810'
