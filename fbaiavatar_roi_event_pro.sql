@@ -450,6 +450,205 @@ FROM
 	,event_day_hour
 	,event_hour;
 
+delete `fb-ai-avatar-puzzle.fb_dw.dws_user_export_time_report`
+where event_date>=date_add(run_date,interval -history_day  day);
 
+insert `fb-ai-avatar-puzzle.fb_dw.dws_user_export_time_report`
+
+with a as (
+SELECT
+		a.event_date	
+		,case when country_code='SYRIA' then 'SY'
+			when country_code='TÜRKIYE' then 'TR'
+			when country_code='MYANMAR (BURMA)' then 'MM'
+			when country_code='PALESTINE' then 'PS'
+			when country_code='AUSTRALIA' then 'AU'
+			when country_code='CONGO - KINSHASA' then 'CD'
+			when country_code='BOSNIA & HERZEGOVINA' then 'BA'
+						when country_code='NORTH MACEDONIA' then 'MK'
+						when country_code='KOSOVO' then 'XK'
+			else country_code end as country_code
+			,platform
+			,timeuse
+			,package_name
+			,event_name
+	,event_day_hour
+	,event_hour
+	,user_pseudo_id
+	FROM
+		(
+
+			SELECT
+				event_date
+				,user_pseudo_id
+				,array[ifnull(country_code,country),'TOTAL'] as country_code
+				,array[platform,'TOTAL'] as platform
+				,event_day_hour
+				,event_hour
+				,timeuse
+				,event_name
+				,package_name
+			FROM
+				(
+				SELECT
+					date(format_timestamp("%Y-%m-%d %H:%M:%S", timestamp_seconds( cast ((event_timestamp/1000000) as int64)),'Asia/Shanghai')) AS event_date
+					,user_pseudo_id
+					,upper(country) as country
+					,case when operating_system ='iOS' then 'iOS'
+					when operating_system ='Android' then 'Android' 
+					else 'web' end as platform						
+					,safe_divide(timeuse,1000) as timeuse
+					,package_name
+					,event_name
+					,format_timestamp("%Y-%m-%d %H:00:00", timestamp_seconds( cast ((event_timestamp/1000000) as int64)),'Asia/Shanghai') as event_day_hour
+					,substr(cast(format_timestamp("%Y-%m-%d %H:%M:%S", timestamp_seconds( cast ((event_timestamp/1000000) as int64)),'Asia/Shanghai')as string),12,2) as event_hour
+				FROM `fb-ai-avatar-puzzle.fb_dw.dwd_user_event_di` 
+				WHERE event_date>=date_add(run_date,interval -history_day  day)
+				and event_name in ('fb_templ_res_export','fb_templ_res_click','fb_temp_export_fail')
+				)a 
+				left join
+			    (
+			    SELECT 
+			      upper(country_name_2) as country_name_2
+			      ,country_name_3 as country_code
+			    FROM `hzdw2024.hz_dim.dim_country`
+			    )c 
+			    on a.country=c.country_name_2
+			    --where timeuse<10000
+			  )a 
+			,UNNEST(country_code) as country_code
+			,UNNEST(platform) as platform
+		),
+ b as (
+SELECT
+	event_date
+	,package_name
+	,platform
+	,country_code
+	,event_day_hour
+	,event_hour
+	,max(percentile_50) as percentile_50
+	,max(percentile_75) as percentile_75
+	,max(percentile_90) as percentile_90
+	,max(percentile_95) as percentile_95
+	,max(percentile_975) as percentile_975
+	,avg(timeuse) as avg_timeuse
+	,count(1) as export_pv 
+
+FROM
+	(
+SELECT
+	event_date
+	,package_name
+	,platform
+	,country_code
+	,timeuse
+	,event_day_hour
+	,event_hour
+	,PERCENTILE_CONT(timeuse,0.25) over (partition by event_date,country_code,platform,event_day_hour) AS percentile_25
+	,PERCENTILE_CONT(timeuse,0.50) over (partition by event_date,country_code,platform,event_day_hour) AS percentile_50
+	,PERCENTILE_CONT(timeuse,0.75) over (partition by event_date,country_code,platform,event_day_hour) AS percentile_75
+	,PERCENTILE_CONT(timeuse,0.90) over (partition by event_date,country_code,platform,event_day_hour) AS percentile_90
+	,PERCENTILE_CONT(timeuse,0.95) over (partition by event_date,country_code,platform,event_day_hour) AS percentile_95
+	,PERCENTILE_CONT(timeuse,0.975) over (partition by event_date,country_code,platform,event_day_hour) AS percentile_975
+FROM
+	(
+		select * 
+		from a  
+		where 1=1
+		and event_name='fb_templ_res_export'
+		and timeuse<3600
+		)d 
+	)e 
+			group by event_date,country_code,platform,package_name,event_date
+	,event_day_hour
+	,event_hour
+	),
+ c as 
+(
+	SELECT
+	event_date
+	,package_name
+	,platform
+	,country_code
+	,event_day_hour
+	,event_hour
+	,count(case when event_name='fb_templ_res_click' then user_pseudo_id else null end) as click_pv
+,count(case when event_name='fb_temp_export_fail' then user_pseudo_id else null end) as fail_pv
+
+FROM
+	(
+
+		select * 
+		from a  
+		where 1=1
+		and event_name in ('fb_templ_res_click','fb_temp_export_fail')
+		
+	)e 
+			group by event_date,country_code,platform,package_name,event_date
+	,event_day_hour
+	,event_hour
+)
+SELECT
+	event_date
+	,package_name
+	,platform
+	,country_code
+	,event_day_hour
+	,event_hour
+	,max(click_pv) as click_pv
+	,max(fail_pv) as fail_pv
+	,max(export_pv ) as export_pv
+	,max(percentile_50) as percentile_50
+	,max(percentile_75) as percentile_75
+	,max(percentile_90) as percentile_90
+	,max(percentile_95) as percentile_95
+	,max(percentile_975) as percentile_975
+	,max(avg_timeuse) as avg_timeuse
+	
+FROM
+	(
+	SELECT
+		event_date
+		,package_name
+		,platform
+		,country_code
+		,event_day_hour
+		,event_hour
+		,click_pv
+		,fail_pv
+		,0  as percentile_50
+		,0  as percentile_75
+		,0  as percentile_90
+		,0  as percentile_95
+		,0  as percentile_975
+		,0 as avg_timeuse
+		,0 as export_pv 
+	FROM c 
+	union all 
+	SELECT
+		event_date
+		,package_name
+		,platform
+		,country_code
+		,event_day_hour
+		,event_hour
+		,0 as click_pv
+		,0 as export_pv
+		,percentile_50
+		,percentile_75
+		,percentile_90
+		,percentile_95
+		,percentile_975
+		,avg_timeuse
+		,export_pv 
+	FROM b 
+	)d 
+	group by event_date
+	,package_name
+	,platform
+	,country_code
+	,event_day_hour
+	,event_hour;
 
 	end;
