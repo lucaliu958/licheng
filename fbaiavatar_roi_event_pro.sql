@@ -651,4 +651,148 @@ FROM
 	,event_day_hour
 	,event_hour;
 
+
+----------广告统计表
+delete `fb-ai-avatar-puzzle.fb_dw.dws_user_ad_report`
+where event_date>=date_add(run_date,interval -history_day  day);
+
+insert `fb-ai-avatar-puzzle.fb_dw.dws_user_ad_report`
+with a as (
+SELECT
+		a.event_date	
+		,case when country_code='SYRIA' then 'SY'
+			when country_code='TÜRKIYE' then 'TR'
+			when country_code='MYANMAR (BURMA)' then 'MM'
+			when country_code='PALESTINE' then 'PS'
+			when country_code='AUSTRALIA' then 'AU'
+			when country_code='CONGO - KINSHASA' then 'CD'
+			when country_code='BOSNIA & HERZEGOVINA' then 'BA'
+						when country_code='NORTH MACEDONIA' then 'MK'
+						when country_code='KOSOVO' then 'XK'
+			else country_code end as country_code
+			,platform
+			,placement
+			,package_name
+			,event_name	
+	,user_pseudo_id
+	FROM
+		(
+
+			SELECT
+				a.event_date
+				,ifnull(fbUserID,a.user_pseudo_id) as user_pseudo_id
+				,array[ifnull(country_code,country),'TOTAL'] as country_code
+				,array[platform,'TOTAL'] as platform
+
+				,array[placement,'TOTAL'] as placement
+				,event_name
+				,package_name
+			FROM
+				(
+				SELECT
+					date(format_timestamp("%Y-%m-%d %H:%M:%S", timestamp_seconds( cast ((event_timestamp/1000000) as int64)),'Asia/Shanghai')) AS event_date
+					,user_pseudo_id
+					,upper(country) as country
+					,case when operating_system ='iOS' then 'iOS'
+					when operating_system ='Android' then 'Android' 
+					else 'web' end as platform						
+					,safe_divide(timeuse,1000) as timeuse
+					,package_name
+					,event_name
+					,placement
+				FROM `fb-ai-avatar-puzzle.fb_dw.dwd_user_event_di` 
+				WHERE event_date>=date_add('2024-11-10',interval -5  day)
+				and event_name in ('ad_load_c','ad_load_fail_c','ad_load_success_c','ad_impression_c')
+				)a 
+				left join
+			    (
+			    SELECT 
+			      upper(country_name_2) as country_name_2
+			      ,country_name_3 as country_code
+			    FROM `hzdw2024.hz_dim.dim_country`
+			    )c 
+			    on a.country=c.country_name_2
+			    left	join 
+				(
+				SELECT
+					event_date
+					,user_pseudo_id
+					,fbUserID
+				FROM `fb-ai-avatar-puzzle.fb_dw.dwd_user_active_di` 
+				WHERE event_date>=date_add('2024-11-10',interval -5  day)
+				
+				group by event_date,user_pseudo_id,fbUserID
+			   )b 
+				on a.user_pseudo_id=b.user_pseudo_id
+				and a.event_date=b.event_date
+			  )a 
+			,UNNEST(country_code) as country_code
+			,UNNEST(platform) as platform
+			,UNNEST(placement) as placement
+		),
+ c as 
+(
+	SELECT
+	event_date
+	,package_name
+	,platform
+	,country_code
+	,placement
+	,count(case when event_name='ad_load_c' then user_pseudo_id else null end) as load_pv
+	,count(case when event_name='ad_load_success_c' then user_pseudo_id else null end) as load_succ_pv
+	,count(case when event_name='ad_load_fail_c' then user_pseudo_id else null end) as load_fail_pv
+	,count(case when event_name='ad_impression_c' then user_pseudo_id else null end) as impression_pv
+	,count(distinct case when event_name='ad_load_c' then user_pseudo_id else null end) as load_uv
+	,count(distinct case when event_name='ad_load_success_c' then user_pseudo_id else null end) as load_succ_uv
+	,count(distinct case when event_name='ad_load_fail_c' then user_pseudo_id else null end) as load_fail_uv
+	,count(distinct case when event_name='ad_impression_c' then user_pseudo_id else null end) as impression_uv
+
+FROM
+	(
+
+		select * 
+		from a  
+		where 1=1
+		--and event_name in ('fb_templ_res_click','fb_temp_export_fail')
+		
+	)e 
+			group by event_date,country_code,platform,package_name,placement
+)
+SELECT
+	c0.event_date
+	,c0.package_name
+	,c0.platform
+	,c0.country_code
+	,placement
+	,load_pv
+	,load_succ_pv
+	,load_fail_pv
+	,impression_pv
+	,load_uv
+	,load_succ_uv 
+	,load_fail_uv
+	,impression_uv
+	,active_uv	
+FROM
+	(
+	SELECT
+		*
+	FROM c 
+	)c0 
+	left join
+	(
+	SELECT
+		event_date
+		,platform
+		,country_code
+		,active_uv
+	FROM	`fb-ai-avatar-puzzle.fb_dw.dws_user_active_report`
+	WHERE event_date>=date_add('2024-11-10',interval -5  day)
+
+		)c1 
+	on c0.event_date=c1.event_date
+	and c0.platform=c1.platform
+	and c0.country_code=c1.country_code;
+
+
 	end;
