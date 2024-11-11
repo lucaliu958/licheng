@@ -251,7 +251,7 @@ FROM
 --------------生成时间小时级数据
 
 delete `fb-ai-avatar-puzzle.fb_dw.dws_user_export_time_report`
-where (event_date=date_add(run_date,interval -history_day  day) and event_hour>='16') 
+where ((event_date=date_add(run_date,interval -history_day  day) and event_hour>='16') 
 	or event_date>date_add(run_date,interval -history_day  day)) ;
 
 insert `fb-ai-avatar-puzzle.fb_dw.dws_user_export_time_report`
