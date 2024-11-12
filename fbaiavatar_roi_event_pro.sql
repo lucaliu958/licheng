@@ -452,6 +452,8 @@ FROM
 	,country_code
 	,event_day_hour
 	,event_hour;
+
+
 ----------广告统计表
 delete `fb-ai-avatar-puzzle.fb_dw.dws_user_ad_report`
 where event_date>=date_add(run_date,interval -history_day  day);
@@ -606,7 +608,7 @@ FROM
 --------6.fb后台广告统计表
 
 delete `fb-ai-avatar-puzzle.fb_dw.dws_user_fb_ad_report`
-where stats_date>=date_add(run_date,interval -history_day  day);
+where event_date>=date_add(run_date,interval -history_day  day);
 
 insert `fb-ai-avatar-puzzle.fb_dw.dws_user_fb_ad_report`
 	--create table  `fb-ai-avatar-puzzle.fb_dw.dws_user_fb_ad_report`
@@ -650,7 +652,7 @@ insert `fb-ai-avatar-puzzle.fb_dw.dws_user_fb_ad_report`
 					,impressions
 					,revenue
 					,clicks
-				FROM `fb-ai-avatar-puzzle.analytics_439history_day7691.ad_analytics_detail_day_*` 
+				FROM `fb-ai-avatar-puzzle.analytics_43927691.ad_analytics_detail_day_*` 
 				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -2 day) as string),'-','')
 				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
@@ -675,6 +677,9 @@ insert `fb-ai-avatar-puzzle.fb_dw.dws_user_fb_ad_report`
 			on c0.stats_date=c1.event_date
 			and c0.platform=c1.platform
 			and c0.country_code=c1.country_code;
+
+
+
 
 
 	end;
