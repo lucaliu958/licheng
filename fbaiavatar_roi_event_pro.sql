@@ -475,6 +475,7 @@ SELECT
 			,package_name
 			,event_name	
 	,user_pseudo_id
+  ,ad_type
 	FROM
 		(
 
@@ -485,12 +486,13 @@ SELECT
 				,array[platform,'TOTAL'] as platform
 
 				,array[placement,'TOTAL'] as placement
+				,array[ad_type,'TOTAL'] as ad_type
 				,event_name
 				,package_name
 			FROM
 				(
 				SELECT
-					date(format_timestamp("%Y-%m-%d %H:%M:%S", timestamp_seconds( cast ((event_timestamp/1000000) as int64)),'Asia/Shanghai')) AS event_date
+					 event_date
 					,user_pseudo_id
 					,upper(country) as country
 					,case when operating_system ='iOS' then 'iOS'
@@ -500,8 +502,11 @@ SELECT
 					,package_name
 					,event_name
 					,placement
+					,case when lower(placement) like '%banner%' then 'banner'
+					when lower(placement) like '%interstitial%' then 'Interstitial'
+					else 'other' end as ad_type
 				FROM `fb-ai-avatar-puzzle.fb_dw.dwd_user_event_di` 
-				WHERE event_date>=date_add('2024-11-10',interval -5  day)
+				WHERE event_date>=date_add(run_date,interval -history_day  day)
 				and event_name in ('ad_load_c','ad_load_fail_c','ad_load_success_c','ad_impression_c')
 				)a 
 				left join
@@ -517,11 +522,11 @@ SELECT
 				SELECT
 					event_date
 					,user_pseudo_id
-					,fbUserID
+					,max(fbUserID) as fbUserID
 				FROM `fb-ai-avatar-puzzle.fb_dw.dwd_user_active_di` 
-				WHERE event_date>=date_add('2024-11-10',interval -5  day)
+				WHERE event_date>=date_add(run_date,interval -history_day  day)
 				
-				group by event_date,user_pseudo_id,fbUserID
+				group by event_date,user_pseudo_id
 			   )b 
 				on a.user_pseudo_id=b.user_pseudo_id
 				and a.event_date=b.event_date
@@ -529,6 +534,7 @@ SELECT
 			,UNNEST(country_code) as country_code
 			,UNNEST(platform) as platform
 			,UNNEST(placement) as placement
+      ,UNNEST(ad_type) as ad_type
 		),
  c as 
 (
@@ -538,6 +544,7 @@ SELECT
 	,platform
 	,country_code
 	,placement
+	,ad_type
 	,count(case when event_name='ad_load_c' then user_pseudo_id else null end) as load_pv
 	,count(case when event_name='ad_load_success_c' then user_pseudo_id else null end) as load_succ_pv
 	,count(case when event_name='ad_load_fail_c' then user_pseudo_id else null end) as load_fail_pv
@@ -556,7 +563,7 @@ FROM
 		--and event_name in ('fb_templ_res_click','fb_temp_export_fail')
 		
 	)e 
-			group by event_date,country_code,platform,package_name,placement
+			group by event_date,country_code,platform,package_name,placement,ad_type
 )
 SELECT
 	c0.event_date
@@ -572,7 +579,8 @@ SELECT
 	,load_succ_uv 
 	,load_fail_uv
 	,impression_uv
-	,active_uv	
+	,active_uv
+	,ad_type
 FROM
 	(
 	SELECT
@@ -587,12 +595,86 @@ FROM
 		,country_code
 		,active_uv
 	FROM	`fb-ai-avatar-puzzle.fb_dw.dws_user_active_report`
-	WHERE event_date>=date_add('2024-11-10',interval -5  day)
+	WHERE event_date>=date_add(run_date,interval -history_day  day)
 
 		)c1 
 	on c0.event_date=c1.event_date
 	and c0.platform=c1.platform
 	and c0.country_code=c1.country_code;
+
+
+--------6.fb后台广告统计表
+
+delete `fb-ai-avatar-puzzle.fb_dw.dws_user_fb_ad_report`
+where event_date>=date_add(run_date,interval -history_day  day);
+
+insert `fb-ai-avatar-puzzle.fb_dw.dws_user_fb_ad_report`
+	--create table  `fb-ai-avatar-puzzle.fb_dw.dws_user_fb_ad_report`
+		--PARTITION BY stats_date as 
+		SELECT
+			stats_date
+			,package_name
+			,c0.platform
+			,c0.country_code
+			,ad_type
+			,requests
+			,filled_requests
+			,impressions
+			,revenue
+			,clicks
+			,active_uv
+		FROM
+			(
+			SELECT
+				stats_date
+				,package_name
+				,platform
+				,country_code
+				,ad_type
+				,sum(requests)  as requests
+				,sum(filled_requests)  as filled_requests
+				,sum(impressions)  as impressions
+				,sum(revenue)  as revenue
+				,sum(clicks)  as clicks
+			FROM
+				(
+				SELECT 
+					date(start_timestamp) as stats_date
+						,'fb.ai.avatar.puzzle' as package_name
+					,array['TOTAL',case when platform='ios' then 'iOS' when platform='android' then 'Android' else platform end]  as platform
+					,array['TOTAL',upper(country)] as country_code
+					,array['TOTAL',case when lower(placement_name) like '%banner%' then 'banner'
+					else 'Interstitial' end ] as ad_type
+					,requests
+					,filled_requests
+					,impressions
+					,revenue
+					,clicks
+				FROM `fb-ai-avatar-puzzle.analytics_439history_day7691.ad_analytics_detail_day_*` 
+				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
+				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -2 day) as string),'-','')
+				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
+					--and _TABLE_SUFFIX!='20241103'
+				)c 
+				,UNNEST(platform) as platform
+				,UNNEST(country_code) as country_code
+				,UNNEST(ad_type) as ad_type
+				group by stats_date,platform,country_code,ad_type,package_name
+			)c0
+			left join
+			(
+			SELECT
+				event_date
+				,platform
+				,country_code
+				,active_uv
+			FROM	`fb-ai-avatar-puzzle.fb_dw.dws_user_active_report`
+			WHERE event_date>=date_add(run_date,interval -history_day  day)
+
+			)c1 
+			on c0.stats_date=c1.event_date
+			and c0.platform=c1.platform
+			and c0.country_code=c1.country_code;
 
 
 	end;
