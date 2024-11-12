@@ -1,3 +1,4 @@
+
 CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.fbaiavatar_roi_event_pro`(run_date DATE, history_day INT64, hitory_retain_day INT64)
 begin
 
@@ -608,7 +609,7 @@ FROM
 --------6.fb后台广告统计表
 
 delete `fb-ai-avatar-puzzle.fb_dw.dws_user_fb_ad_report`
-where event_date>=date_add(run_date,interval -history_day  day);
+where stats_date>=date_add(run_date,interval -history_day  day);
 
 insert `fb-ai-avatar-puzzle.fb_dw.dws_user_fb_ad_report`
 	--create table  `fb-ai-avatar-puzzle.fb_dw.dws_user_fb_ad_report`
