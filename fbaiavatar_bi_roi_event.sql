@@ -485,6 +485,11 @@ with a as (
 		and c.country_code=d.country_code
 		order by stats_date desc ;
 
+delete  `gzdw2024.fbgame_03_bi.dws_fb_daily_roi_total_reports`
+where  stats_date >= date_add(run_date,interval -history_day day)
+  and stats_date <= date_add(run_date,interval -hitory_end_day day);
+
+
 insert `gzdw2024.fbgame_03_bi.dws_fb_daily_roi_total_reports`
 with a as (
 SELECT
@@ -664,6 +669,8 @@ FROM
     FROM a 
 	WHERE 1=1
 	)a ;
+
+
 
 
 
