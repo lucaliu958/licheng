@@ -485,12 +485,6 @@ with a as (
 		and c.country_code=d.country_code
 		order by stats_date desc ;
 
-delete  `gzdw2024.fbgame_03_bi.dws_fb_daily_roi_total_reports`
-where  stats_date >= date_add(run_date,interval -history_day day)
-  and stats_date <= date_add(run_date,interval -hitory_end_day day);
-
-
-
 insert `gzdw2024.fbgame_03_bi.dws_fb_daily_roi_total_reports`
 with a as (
 SELECT
@@ -520,8 +514,10 @@ SELECT
 	,lag(new_ratio) over(partition by platform,country_code order by stats_date) as last_new_ratio
 	,lag(new_arpu) over(partition by platform,country_code order by stats_date) as last_new_arpu
 	,lag(arpu) over(partition by platform,country_code order by stats_date) as last_arpu
+	,lag(new_ad_ratio) over(partition by platform,country_code order by stats_date) as last_new_ad_ratio
 	,lag(total_bili_3) over(partition by platform,country_code order by stats_date) as last_total_bili_3
 	,lag(total_bili_7) over(partition by platform,country_code order by stats_date) as last_total_bili_7
+	,new_ad_ratio
 	--,new_ad_liebian_uv*new_arpu as first_day_revenue
 	--,new_ad_liebian_uv*new_arpu*(1+total_bili_3) as first_3day_revenue
 	--,new_ad_liebian_uv*new_arpu*(1+total_bili_3) + new_ad_liebian_uv*arpu*(total_bili_7- total_bili_3) as first_7day_revenue
@@ -555,6 +551,13 @@ FROM
 		when new_bili>=0.3 and new_bili<0.5 then arpu*1.4 
 		when  new_bili<0.3 then arpu*1.5 else arpu end as new_arpu
 		,safe_divide(new_ad_liebian_uv,install) as new_ratio
+		,case when new_ad_ratio<1.1 then 1.05
+		when new_ad_ratio<1.2 then 1.1
+		when new_ad_ratio<1.3 then 1.2
+		when new_ad_ratio<1.4 then 1.3
+		when new_ad_ratio<1.5 then 1.4
+		when new_ad_ratio<1.6 then 1.5
+		else new_ad_ratio-0.1 end as new_ad_ratio
 
 	FROM
 		(
@@ -594,9 +597,10 @@ FROM
 			,new_ad_uv
 			,new_liebian_uv
 			,new_ad_liebian_uv 
+			,safe_divide(new_uv,new_ad_liebian_uv) as new_ad_ratio
 			,total_bili_3
 			,total_bili_7
-			 ,ratio_2
+			,ratio_2
 			,ratio_3
 			,ratio_4
 			,ratio_5
@@ -611,18 +615,56 @@ FROM
 	)c 
 	order by stats_date desc
 	)
+select 
+stats_date
+	,package_name
+	,platform
+	,country_code
+	,active_uv
+	,new_uv
+	,retain_uv2
+	,cost
+	,install
+	,requests
+	,filled_requests
+	,impressions
+	,revenue
+	,clicks
+	,max_stats_date
+	,new_ad_uv
+	,new_liebian_uv
+	,new_ad_liebian_uv 
+	,total_bili_3
+	,total_bili_7
+	,arpu 
+	,new_arpu
+	,new_ratio
+	,last_new_ratio
+	,last_new_arpu
+	,last_arpu
+	,last_total_bili_3
+	,last_total_bili_7
+	,case when first_day_revenue>revenue then revenue*0.88 else first_day_revenue end as first_day_revenue
+	,first_3day_revenue
+	,first_7day_revenue
+	,new_ad_ratio
+	,last_new_ad_ratio
+FROM
+	(
 	SELECT 
 		* 
-	,case when new_ad_uv is not null  then  new_ad_liebian_uv*new_arpu  
-		else install*last_new_ratio*last_new_arpu end as first_day_revenue
-	,case when new_ad_uv is not null then  new_ad_liebian_uv*new_arpu*(1+total_bili_3)
-	else install*last_new_ratio*last_new_arpu*(1+ last_total_bili_3) end as first_3day_revenue
+	,case when new_ad_uv is not null  then  new_ad_liebian_uv*new_arpu*new_ad_ratio  
+		else install*last_new_ratio*last_new_arpu*last_new_ad_ratio  end as first_day_revenue
+	,case when new_ad_uv is not null then  new_ad_liebian_uv*new_arpu*(1+total_bili_3)*new_ad_ratio 
+	else install*last_new_ratio*last_new_arpu*(1+ last_total_bili_3)*last_new_ad_ratio end as first_3day_revenue
 
-	,case when new_ad_uv is not null then  new_ad_liebian_uv*new_arpu*(1+total_bili_3) + new_ad_liebian_uv*arpu*(total_bili_7- total_bili_3)
-	else install*last_new_ratio*last_new_arpu*(1+last_total_bili_3) + install*last_new_ratio*last_arpu*(last_total_bili_7- last_total_bili_3) end as first_7day_revenue
+	,case when new_ad_uv is not null then  new_ad_liebian_uv*new_arpu*(1+total_bili_3)*new_ad_ratio  + new_ad_liebian_uv*arpu*(total_bili_7- total_bili_3)*new_ad_ratio 
+	else install*last_new_ratio*last_new_arpu*(1+last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_arpu*(last_total_bili_7- last_total_bili_3)*last_new_ad_ratio end as first_7day_revenue
 
     FROM a 
-	WHERE 1=1;
+	WHERE 1=1
+	)a ;
+
 
 
 
