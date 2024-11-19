@@ -1,6 +1,44 @@
 
+
+
 CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.fbaiavatar_roi_event_pro`(run_date DATE, history_day INT64, hitory_retain_day INT64)
 begin
+
+
+-------1.dwd_user_event_di
+delete `gzdw2024.fbgame_01_basic.dwd_all_game_user_event_di`
+where event_date>=date_add(run_date,interval -history_day day)
+;
+insert `gzdw2024.fbgame_01_basic.dwd_all_game_user_event_di`
+	SELECT 
+				event_name
+		,PARSE_DATE('%Y%m%d',event_date) event_date
+    ,stream_id
+		,user_pseudo_id
+		,event_timestamp
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='fbUserID') fbUserID 
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='isFirst') isFirst 
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='type') type 
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='from') fromon 
+		,case when stream_id ='9692329810' then 'fb.ai.avatar.puzzle' 
+       when stream_id ='9817620337' then 'fb.zp' end  as package_name
+		,geo.country
+		,device.category as device_category
+		,device.mobile_brand_name
+		,device.mobile_model_name
+		,device.mobile_marketing_name
+		,device.operating_system_version
+		,device.language
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='fromUser') fromUser 
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='abtestVersion') abtestVersion
+		,device.operating_system as operating_system
+	,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='placement') placement
+		,(SELECT value.int_value FROM UNNEST(event_params) WHERE key='timeuse') as timeuse
+	FROM `recorder-pro-50451.analytics_250268757.events_*`
+	WHERE 1=1
+	 and  stream_id in('9692329810','9817620337')
+	and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','');
+	
 
 
 -------1.dwd_user_event_di
@@ -33,7 +71,35 @@ insert `fb-ai-avatar-puzzle.fb_dw.dwd_user_event_di`
 	FROM `recorder-pro-50451.analytics_250268757.events_*`
 	WHERE 1=1
 	 and  stream_id='9692329810'
-	and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','');
+	 and _TABLE_SUFFIX<'20241114'
+	and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
+	union all 
+	SELECT
+		event_name
+		,event_date
+		,user_pseudo_id
+		,event_timestamp
+		,fbUserID
+		,isFirst
+		,type
+		,fromon
+		,package_name
+		,country
+		,device_category
+		,mobile_brand_name
+		,mobile_model_name
+		,mobile_marketing_name
+		,operating_system_version
+		,language
+		,fromUser
+		,abtestVersion
+		,operating_system
+		,placement
+		,timeuse
+	FROM `gzdw2024.fbgame_01_basic.dwd_all_game_user_event_di`
+	WHERE event_date>=date_add(run_date,interval -history_day day)
+	and event_date>='2024-11-14'
+	and stream_id='9692329810';
 	
 
 
@@ -684,3 +750,6 @@ insert `fb-ai-avatar-puzzle.fb_dw.dws_user_fb_ad_report`
 
 
 	end;
+
+
+
