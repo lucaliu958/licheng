@@ -95,6 +95,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_ad_revenue_daily_reports`
 				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -hitory_end_day day) as string),'-','')
 				and _TABLE_SUFFIX!='20241103'
+				and app_name='OHO'
 				--and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
 				group by stats_date
 				UNION ALL 
@@ -111,6 +112,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_ad_revenue_daily_reports`
 				FROM `fb-ai-avatar-puzzle.analytics_439907691.ad_analytics_day_*` 
 				where _TABLE_SUFFIX >='20240908'
 				and _TABLE_SUFFIX <='20240923'
+				and app_name='OHO'
 					and _TABLE_SUFFIX!='20241103'
 				--and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
 				group by stats_date
@@ -129,6 +131,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_ad_revenue_daily_reports`
 				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -hitory_end_day day) as string),'-','')
 					and _TABLE_SUFFIX!='20241103'
+					and app_name='OHO'
 				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
 				group by stats_date,platform,country_code
 				union all 
@@ -146,6 +149,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_ad_revenue_daily_reports`
 				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -hitory_end_day day) as string),'-','')
 					and _TABLE_SUFFIX!='20241103'
+					and app_name='OHO'
 				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
 				group by stats_date,platform,country_code
 					union all 
@@ -163,6 +167,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_ad_revenue_daily_reports`
 				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -hitory_end_day day) as string),'-','')
 				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
+					and app_name='OHO'
 					and _TABLE_SUFFIX!='20241103'
 				group by stats_date,platform,country_code;
 
