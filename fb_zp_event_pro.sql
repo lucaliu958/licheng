@@ -97,10 +97,10 @@ FROM
 	 	fbUserID
 	 	,package_name
 	 	,event_date
-	 	,max(case when event_name  in ('fb_app_launch')  then 1 else 0 end) as is_launch
-	 	,max(case when event_name  in ('fb_app_launch') and isFirst='true' then 1 else 0 end) as is_new
-	 	,max(case when event_name  in ('fb_app_launch') and fromon='ad' then 1 else 0 end) as is_ad
-	 	,max(case  when event_name  in ('fb_app_launch') and fromon in ('shareable_link','feed') then 1 else 0 end) as is_liebian
+	 	,max(case when event_name  in ('fb_zp_app_launch')  then 1 else 0 end) as is_launch
+	 	,max(case when event_name  in ('fb_zp_app_launch') and isFirst='true' then 1 else 0 end) as is_new
+	 	,max(case when event_name  in ('fb_zp_app_launch') and fromon='ad' then 1 else 0 end) as is_ad
+	 	,max(case  when event_name  in ('fb_zp_app_launch') and fromon in ('shareable_link','feed') then 1 else 0 end) as is_liebian
 	 FROM `gzdw2024.fb_zp_game.dwd_user_event_di` 
 	 where 1=1
 	 and event_date>=date_add(run_date,interval -hitory_retain_day day)
