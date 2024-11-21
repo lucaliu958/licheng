@@ -303,10 +303,11 @@ SELECT
 					,placement
 					,case when lower(placement) like '%banner%' then 'banner'
 					when lower(placement) like '%interstitial%' then 'Interstitial'
+						when lower(placement) like '%hint%' then 'Interstitial'
 					else 'other' end as ad_type
 				FROM `gzdw2024.fb_zp_game.dwd_user_event_di` 
 				WHERE event_date>=date_add(run_date,interval -history_day day)
-				and event_name in ('ad_load_c','ad_load_fail_c','ad_load_success_c','ad_impression_c')
+				and event_name in ('fb_zp_ad_load_c','fb_zp_ad_load_fail_c','fb_zp_ad_load_success_c','fb_zp_ad_impression_c')
 				)a 
 				left join
 			    (
