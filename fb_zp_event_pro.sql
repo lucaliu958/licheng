@@ -345,14 +345,14 @@ SELECT
 	,country_code
 	,placement
 	,ad_type
-	,count(case when event_name='ad_load_c' then user_pseudo_id else null end) as load_pv
-	,count(case when event_name='ad_load_success_c' then user_pseudo_id else null end) as load_succ_pv
-	,count(case when event_name='ad_load_fail_c' then user_pseudo_id else null end) as load_fail_pv
-	,count(case when event_name='ad_impression_c' then user_pseudo_id else null end) as impression_pv
-	,count(distinct case when event_name='ad_load_c' then user_pseudo_id else null end) as load_uv
-	,count(distinct case when event_name='ad_load_success_c' then user_pseudo_id else null end) as load_succ_uv
-	,count(distinct case when event_name='ad_load_fail_c' then user_pseudo_id else null end) as load_fail_uv
-	,count(distinct case when event_name='ad_impression_c' then user_pseudo_id else null end) as impression_uv
+	,count(case when event_name='fb_zp_ad_load_c' then user_pseudo_id else null end) as load_pv
+	,count(case when event_name='fb_zp_ad_load_success_c' then user_pseudo_id else null end) as load_succ_pv
+	,count(case when event_name='fb_zp_ad_load_fail_c' then user_pseudo_id else null end) as load_fail_pv
+	,count(case when event_name='fb_zp_ad_impression_c' then user_pseudo_id else null end) as impression_pv
+	,count(distinct case when event_name='fb_zp_ad_load_c' then user_pseudo_id else null end) as load_uv
+	,count(distinct case when event_name='fb_zp_ad_load_success_c' then user_pseudo_id else null end) as load_succ_uv
+	,count(distinct case when event_name='fb_zp_ad_load_fail_c' then user_pseudo_id else null end) as load_fail_uv
+	,count(distinct case when event_name='fb_zp_ad_impression_c' then user_pseudo_id else null end) as impression_uv
 
 FROM
 	(
