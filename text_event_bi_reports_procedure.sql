@@ -231,4 +231,89 @@ FROM
 	group by event_date,country_code,app_version,package_name
 	order by event_date desc,dial_pv desc;
 
+
+--------分订阅项收入情况
+insert  `gzdw2024.text_03_bi.dws_subcribe_detail_report`
+	SELECT
+		stats_date
+		,a.package_name
+		,c.app_name
+		,upper(country_code) as country_code
+		,case when period is null or length(period)<2 then 'other' else period end as period
+		--,case when subscription is null or length(subscription)<2 then 'other' else subscription end as subscription
+		,title
+		,sum(units) as order_num
+		,sum(case when revenue_usd>0 then revenue_usd else 0 end ) as charged_money
+		,sum(case when revenue_usd<0 then abs(revenue_usd) else 0 end ) as refund_money
+		,sum(revenue_usd) as vip_revenue
+	FROM
+		(
+		SELECT 
+		package_name 
+		,revenue_usd
+    	,stats_date
+		,ARRAY[country_code,'TOTAL'] as country_code
+		,period
+		,subscription
+		,units
+		,title
+		FROM `gzdw2024.appstoreconnect.p_sales_atlasv` 
+		WHERE stats_date >= date_add(run_date,interval -history_day day)
+			    and stats_date <= date_add(run_date,interval -history_end_day day)
+			and (revenue_usd>0 or revenue_usd <0 )
+		)a 
+		join 
+		(
+			SELECT package_name ,app_name
+			FROM `gzdw2024.gz_dim.app_info` 
+			where platform='iOS'
+			group by package_name,app_name
+		)c 
+		on a.package_name=c.package_name
+		,UNNEST(country_code) as country_code
+		GROUP BY package_name,stats_date,country_code,case when period is null or length(period)<2 then 'other' else period end,app_name
+		,title;
+
+
+
+-----试用套餐转正率
+
+insert  `gzdw2024.text_03_bi.dws_subcribe_convert_report`
+SELECT
+	a.original_start_date as stats_date
+	--,a.subscription_name
+	,a.pv as try_pv 
+	,b.pv as pay_pv
+FROM
+	(
+	SELECT 
+		original_start_date as original_start_date
+		--,subscription_name
+		--,event
+		,sum(quantity) as pv 
+	 FROM `gzdata.appstoreconnect.p_subscription_event_atlasv` 
+	WHERE event_date >= date_add(run_date,interval -history_day day)
+	and event_date <= date_add(run_date,interval -history_end_day day)
+	and package_name='second.phone.number.text.free.call.app'
+	and event in ('Start Introductory Offer')
+	and subscription_offer_type='Free Trial'
+	group by original_start_date
+	)a 
+	left join
+	(
+	SELECT 
+		original_start_date as original_start_date
+		--,subscription_name
+		--,event
+		,sum(quantity) as pv 
+	 FROM `gzdata.appstoreconnect.p_subscription_event_atlasv` 
+	WHERE event_date >= date_add(run_date,interval -history_day day)
+	and event_date <= date_add(run_date,interval -history_end_day day)
+	and package_name='second.phone.number.text.free.call.app'
+	and event in ('Paid Subscription from Introductory Offer','Upgrade from Introductory Offer')
+	group by original_start_date
+	)b 
+	on a.original_start_date=b.original_start_date;
+
+
 	end 
