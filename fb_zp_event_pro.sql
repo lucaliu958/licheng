@@ -1,7 +1,7 @@
 
 
 
-CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.fb_zp_event_pro`(run_date DATE, history_day INT64, hitory_retain_day INT64)
+CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.fb_zp_event_pro`(run_date DATE, history_day INT64, hitory_retain_day INT64,history_end_day  INT64)
 begin
 
 
@@ -10,6 +10,7 @@ begin
 -------1.dwd_user_event_di
 delete `gzdw2024.fb_zp_game.dwd_user_event_di`
 where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day)
 ;
 insert `gzdw2024.fb_zp_game.dwd_user_event_di`
 	SELECT
@@ -36,13 +37,15 @@ insert `gzdw2024.fb_zp_game.dwd_user_event_di`
 		,timeuse
 	FROM `gzdw2024.fbgame_01_basic.dwd_all_game_user_event_di`
 	WHERE event_date>=date_add(run_date,interval -history_day day)
+	and event_date<=date_add(run_date,interval -history_end_day day)
 	and stream_id='9817620337';
 	
 
 
 -------2.dwd_user_active_di
 delete `gzdw2024.fb_zp_game.dwd_user_active_di`
-where event_date>=date_add(run_date,interval -history_day day);
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
 
 
 insert `gzdw2024.fb_zp_game.dwd_user_active_di`
@@ -58,6 +61,7 @@ SELECT
 FROM `gzdw2024.fb_zp_game.dwd_user_event_di`
 WHERE 1=1
 and event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day)
 group by event_date
 	,user_pseudo_id
 	,fbUserID
@@ -89,6 +93,7 @@ FROM
 		,max(operating_system) as operating_system
 	FROM `gzdw2024.fb_zp_game.dwd_user_active_di`
 	WHERE event_date>=date_add(run_date,interval -hitory_retain_day day)
+	and event_date<=date_add(run_date,interval -history_end_day day)
 	group by fbUserID,package_name,event_date
 	)a 
 	join
@@ -104,6 +109,7 @@ FROM
 	 FROM `gzdw2024.fb_zp_game.dwd_user_event_di` 
 	 where 1=1
 	 and event_date>=date_add(run_date,interval -hitory_retain_day day)
+	 and event_date<=date_add(run_date,interval -history_end_day day)
 	 group by fbUserID,event_date,package_name
 	)b 
 	on a.fbUserID=b.fbUserID
@@ -116,6 +122,7 @@ FROM
 		,package_name
 	FROM `gzdw2024.fb_zp_game.dwd_user_active_di`
 	WHERE event_date>=date_add(run_date,interval -hitory_retain_day day)
+	and event_date<=date_add(run_date,interval -history_end_day day)
 	group by fbUserID,package_name
 	)c 
 	on a.fbUserID=c.fbUserID
@@ -126,7 +133,8 @@ FROM
 
 
 delete `gzdw2024.fb_zp_game.dws_user_active_report`
-where event_date>=date_add(run_date,interval -hitory_retain_day day);
+where event_date>=date_add(run_date,interval -hitory_retain_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
 
 insert `gzdw2024.fb_zp_game.dws_user_active_report`
 SELECT
@@ -204,6 +212,7 @@ FROM
 					else 'web' end as platform
 				FROM `gzdw2024.fb_zp_game.dwd_user_active_profile_di`
 				WHERE event_date>=date_add(run_date,interval -hitory_retain_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
 				)a 
 				left join
 			    (
@@ -221,6 +230,7 @@ FROM
 				,fbUserID
 			FROM `gzdw2024.fb_zp_game.dwd_user_active_profile_di`
 			WHERE event_date>=date_add(run_date,interval -hitory_retain_day day)
+			and event_date<=date_add(run_date,interval -history_end_day day)
 			group by event_date,fbUserID
 			)b 
 			on a.fbUserID=b.fbUserID
@@ -239,6 +249,7 @@ FROM
 					,max(fromUser) as fromUser
 	 			FROM `gzdw2024.fb_zp_game.dwd_user_active_di` 
 				WHERE event_date>=date_add(run_date,interval -hitory_retain_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
 				group by event_date,fbUserID
 				)a 
 				group by fbUserID
@@ -273,8 +284,8 @@ SELECT
 			,placement
 			,package_name
 			,event_name	
-	,user_pseudo_id
-  ,ad_type
+			,user_pseudo_id
+  			,ad_type
 	FROM
 		(
 
@@ -302,11 +313,13 @@ SELECT
 					,event_name
 					,placement
 					,case when lower(placement) like '%banner%' then 'banner'
-					when lower(placement) like '%interstitial%' then 'Interstitial'
-						when lower(placement) like '%hint%' then 'Interstitial'
+					when lower(placement) like '%reward%interstitial%' then 'rewarded_interstitial'
+					when lower(placement) like '%interstitial%' then 'interstitial'
+						when lower(placement) like '%hint%' then 'interstitial'
 					else 'other' end as ad_type
 				FROM `gzdw2024.fb_zp_game.dwd_user_event_di` 
 				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
 				and event_name in ('fb_zp_ad_load_c','fb_zp_ad_load_fail_c','fb_zp_ad_load_success_c','fb_zp_ad_impression_c')
 				)a 
 				left join
@@ -325,7 +338,7 @@ SELECT
 					,max(fbUserID) as fbUserID
 				FROM `gzdw2024.fb_zp_game.dwd_user_active_di` 
 				WHERE event_date>=date_add(run_date,interval -history_day day)
-				
+				and event_date<=date_add(run_date,interval -history_end_day day)				
 				group by event_date,user_pseudo_id
 			   )b 
 				on a.user_pseudo_id=b.user_pseudo_id
@@ -396,6 +409,7 @@ FROM
 		,active_uv
 	FROM	`gzdw2024.fb_zp_game.dws_user_active_report`
 	WHERE event_date>=date_add(run_date,interval -history_day day)
+	and event_date<=date_add(run_date,interval -history_end_day day)
 
 		)c1 
 	on c0.event_date=c1.event_date
@@ -403,9 +417,217 @@ FROM
 	and c0.country_code=c1.country_code;
 
 
+--------6.fb后台广告统计表
 
+delete `gzdw2024.fb_zp_game.dws_user_fb_ad_report`
+where stats_date>=date_add(run_date,interval -history_day  day)
+and stats_date<=date_add(run_date,interval -history_end_day day);
+
+insert `gzdw2024.fb_zp_game.dws_user_fb_ad_report`
+	--create table  `gzdw2024.fb_zp_game.dws_user_fb_ad_report`
+		--PARTITION BY stats_date as 
+		SELECT
+			stats_date
+			,package_name
+			,c0.platform
+			,c0.country_code
+			,ad_type
+			,requests
+			,filled_requests
+			,impressions
+			,revenue
+			,clicks
+			,active_uv
+		FROM
+			(
+			SELECT
+				stats_date
+				,package_name
+				,platform
+				,country_code
+				,ad_type
+				,sum(requests)  as requests
+				,sum(filled_requests)  as filled_requests
+				,sum(impressions)  as impressions
+				,sum(revenue)  as revenue
+				,sum(clicks)  as clicks
+			FROM
+				(
+				SELECT 
+					date(start_timestamp) as stats_date
+						,'fb.ai.avatar.puzzle' as package_name
+					,array['TOTAL',case when platform='ios' then 'iOS' when platform='android' then 'Android' else platform end]  as platform
+					,array['TOTAL',upper(country)] as country_code
+					,array['TOTAL',case when lower(placement_name) like '%banner%' then 'banner'
+					when lower(placement_name) like '%rewarded%interstitial%' then 'rewarded_interstitial'
+					when lower(placement_name) like '%interstitial%' then 'interstitial'
+					else 'other' end ] as ad_type
+					,requests
+					,filled_requests
+					,impressions
+					,revenue
+					,clicks
+				FROM `fb-ai-avatar-puzzle.analytics_439907691.ad_analytics_detail_day_*` 
+				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
+				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
+				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
+				and app_name='Solitaire'
+					--and _TABLE_SUFFIX!='20241103'
+				)c 
+				,UNNEST(platform) as platform
+				,UNNEST(country_code) as country_code
+				,UNNEST(ad_type) as ad_type
+				group by stats_date,platform,country_code,ad_type,package_name
+			)c0
+			left join
+			(
+			SELECT
+				event_date
+				,platform
+				,country_code
+				,active_uv
+			FROM	`gzdw2024.fb_zp_game.dws_user_active_report`
+			WHERE event_date>=date_add(run_date,interval -history_day  day)
+			and event_date<=date_add(run_date,interval -history_end_day day)
+
+			)c1 
+			on c0.stats_date=c1.event_date
+			and c0.platform=c1.platform
+			and c0.country_code=c1.country_code;
+
+------8.各事件活跃次数与人数
+
+delete `gzdw2024.fb_zp_game.dws_event_active_report`
+where stats_date>=date_add(run_date,interval -history_day day)
+and stats_date<=date_add(run_date,interval -history_end_day day);
+
+
+insert `gzdw2024.fb_zp_game.dws_event_active_report`
+--create table  `gzdw2024.fb_zp_game.dws_event_active_report`
+	--PARTITION BY stats_date as 
+	SELECT
+		c0.event_date  AS stats_date
+		,c0.package_name
+		,c0.platform
+		,c0.country_code
+		,event_name
+		,pv 
+		,uv 
+		,active_uv
+	FROM
+		(
+		SELECT
+			event_date
+			,package_name
+			,platform
+			,country_code
+			,event_name
+			,count(1) as pv 
+			,count(distinct fbUserID) as uv 
+		FROM
+			(
+			SELECT
+				a.event_date
+				,package_name
+				,ifnull(fbUserID,a.user_pseudo_id) as fbUserID
+				,event_name
+				,platform
+				,country_code
+			FROM
+				(
+				SELECT
+					 event_date
+					,user_pseudo_id
+					,ARRAY['TOTAL',ifnull(country_name_3,a.country)] as country_code
+					,ARRAY['TOTAL',case when operating_system ='iOS' then 'iOS'
+					when operating_system ='Android' then 'Android' 
+					else 'web' end] as platform						
+					,package_name
+					,event_name
+				FROM `gzdw2024.fb_zp_game.dwd_user_event_di`   a 
+				left join `hzdw2024.hz_dim.dim_country` b
+				on upper(a.country)=upper(b.country_name_2)
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				and event_name in (
+					'fb_zp_app_launch'
+						,'fb_zp_first_open'
+						,'fb_zp_home_show'
+						,'fb_zp_home_func_sound'
+						,'fb_zp_home_func_language'
+						,'fb_zp_game_play_show'
+						,'fb_zp_game_play_finish'
+						,'fb_zp_game_play_exit'
+						,'fb_zp_new_game_play'
+						,'fb_zp_share_show'
+						,'fb_zp_share_click'
+						,'fb_zp_share_share'
+						,'fb_zp_ad_load_c'
+						,'fb_zp_ad_load_success_c'
+						,'fb_zp_ad_load_fail_c'
+						,'fb_zp_ad_impression_c'
+						,'fb_zp_ad_impression_c_100'
+						,'fb_zp_ad_click_c'
+						,'fb_zp_ad_back_c'
+						,'fb_zp_ad_close_c'
+						,'fb_zp_ad_about_to_show'
+						,'fb_zp_banner_show'
+						,'fb_zp_banner_click'
+						,'fb_zp_templ_invite'
+						,'fb_zp_templ_invite_c'
+						,'fb_zp_templ_invite_e'
+						,'fb_zp_mess_authorize'
+						,'fb_zp_mess_authorize_c'
+						,'fb_zp_mess_authorize_l'
+						,'fb_zp_favorite'
+						,'fb_zp_favorite_c'
+						,'fb_zp_favorite_l'
+						,'fb_zp_openAdWatchTask'
+						,'fb_zp_openAdWatchTask_c'
+						,'fb_zp_openAdWatchTask_watch_ad_c'
+						,'fb_zp_reward_ad_fail'
+						,'fb_zp_reward_ad_not_complete'
+						,'fb_zp_openAdWatchTask_watch_ad_s'
+						)
+				)a 
+				 left	join 
+				(
+				SELECT
+					event_date
+					,user_pseudo_id
+					,max(fbUserID) as fbUserID
+				FROM `gzdw2024.fb_zp_game.dwd_user_active_di` 
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				group by event_date,user_pseudo_id
+			   )b 
+				on a.user_pseudo_id=b.user_pseudo_id
+				and a.event_date=b.event_date
+				,UNNEST(platform) AS platform
+				,UNNEST(country_code) AS country_code
+				)c 
+			group by event_date
+			,package_name
+			,platform
+			,country_code
+			,event_name
+			)c0 
+			left join
+			(
+			SELECT
+				event_date
+				,platform
+				,country_code
+				,active_uv
+			FROM	`gzdw2024.fb_zp_game.dws_user_active_report`
+			WHERE event_date>=date_add(run_date,interval -history_day  day)
+			and event_date<=date_add(run_date,interval -history_end_day day)
+
+			)c1 
+			on c0.event_date=c1.event_date
+			and c0.platform=c1.platform
+			and c0.country_code=c1.country_code;
 
 	end;
-
 
 
