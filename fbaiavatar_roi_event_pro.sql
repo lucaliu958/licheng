@@ -721,7 +721,7 @@ insert `fb-ai-avatar-puzzle.fb_dw.dws_user_fb_ad_report`
 					,clicks
 				FROM `fb-ai-avatar-puzzle.analytics_439907691.ad_analytics_detail_day_*` 
 				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
-				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -2 day) as string),'-','')
+				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -1 day) as string),'-','')
 				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
 					--and _TABLE_SUFFIX!='20241103'
 				)c 
