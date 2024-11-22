@@ -159,7 +159,8 @@ SELECT
 	,max(percentile_75) as percentile_75
 	,max(percentile_90) as percentile_90
 	,avg(duration_time) as avg_duration_time
-	,count(1) as dial_pv 
+	,count(1) as dial_pv
+		,count(case when duration_time<=10 then 1 else null end)  as dial_10_pv
 FROM
 	(
 SELECT
