@@ -134,8 +134,8 @@ and  event_date<=date_add(run_date,interval -history_end_day day);
 	FROM   `scanner-master-android.analytics_196427335.events_*`
   	WHERE 1=1
   	and event_name in ('sn_5_call_dial_end')
-	and _TABLE_SUFFIX >=replace(cast(date_add('2024-11-21',interval -history_day day) as string),'-','')
-	and _TABLE_SUFFIX <=replace(cast(date_add('2024-11-21',interval -history_end_day day) as string),'-','');
+	and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
+	and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','');
 
 
 
@@ -201,7 +201,8 @@ FROM
 				,package_name
 			from `gzdw2024.text_02_event.dwd_user_event_time_detail`  
 			where 1=1
-			and event_date>='2024-10-01'
+			and  event_date >= date_add(run_date,interval -history_day day)
+			    and event_date <= date_add(run_date,interval -history_end_day day)
 			and event_name='sn_5_call_dial_end'
 			)a 
 			left join
@@ -215,8 +216,8 @@ FROM
 				FROM `gzdw2024.scanner_01_basic.dwd_user_active_di`  a 
 				left join `hzdw2024.hz_dim.dim_country` b
 				on upper(a.country)=upper(b.country_name_2)
-				WHERE event_date >= "2024-10-01"
-				and event_date<='2024-11-21'
+				WHERE  event_date >= date_add(run_date,interval -history_day day)
+			    and event_date <= date_add(run_date,interval -history_end_day day)
 				group by event_date,user_pseudo_id
 				)b  
 			on a.user_pseudo_id=b.user_pseudo_id
