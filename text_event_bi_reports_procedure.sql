@@ -234,6 +234,10 @@ FROM
 
 
 --------分订阅项收入情况
+
+	delete `gzdw2024.text_03_bi.dws_subcribe_detail_report`
+where stats_date>=date_add(run_date,interval -history_day day)
+and  stats_date<=date_add(run_date,interval -history_end_day day);
 insert  `gzdw2024.text_03_bi.dws_subcribe_detail_report`
 	SELECT
 		stats_date
@@ -278,7 +282,9 @@ insert  `gzdw2024.text_03_bi.dws_subcribe_detail_report`
 
 
 -----试用套餐转正率
-
+delete `gzdw2024.text_03_bi.dws_subcribe_convert_report`
+where stats_date>=date_add(run_date,interval -history_day day)
+and  stats_date<=date_add(run_date,interval -history_end_day day);
 insert  `gzdw2024.text_03_bi.dws_subcribe_convert_report`
 SELECT
 	a.original_start_date as stats_date
@@ -317,4 +323,4 @@ FROM
 	on a.original_start_date=b.original_start_date;
 
 
-	end 
+	end;
