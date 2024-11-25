@@ -628,6 +628,160 @@ insert `gzdw2024.fb_zp_game.dws_event_active_report`
 			and c0.platform=c1.platform
 			and c0.country_code=c1.country_code;
 
+
+
+
+delete `gzdw2024.fb_zp_game.dws_fb_events_detail`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day)
+;
+--drop table `gzdw2024.fb_zp_game.dws_fb_events_detail`;
+	--	create table  `gzdw2024.fb_zp_game.dws_fb_events_detail`
+	--	PARTITION BY event_date as 
+	insert `gzdw2024.fb_zp_game.dws_fb_events_detail`
+		SELECT
+			event_date
+			,package_name
+			,case when country_code='SYRIA' then 'SY'
+				when country_code='TÜRKIYE' then 'TR'
+				when country_code='MYANMAR (BURMA)' then 'MM'
+				when country_code='PALESTINE' then 'PS'
+				when country_code='AUSTRALIA' then 'AU'
+				when country_code='CONGO - KINSHASA' then 'CD'
+				when country_code='BOSNIA & HERZEGOVINA' then 'BA'
+							when country_code='NORTH MACEDONIA' then 'MK'
+							when country_code='KOSOVO' then 'XK'
+				else country_code end as country_code
+			,platform
+			,event_name
+			,event_params_key
+			,event_params_value
+			,count(1) as event_num 
+			,count(distinct user_pseudo_id) as user_num
+		FROM
+			(
+			SELECT
+				a.event_date
+				,package_name
+				,array[ifnull(country_name_3,a.country),'TOTAL'] as country_code
+				,array[platform,'TOTAL'] as platform
+				,event_name
+				,event_params_key
+				,event_params_value
+				,ifnull(fbUserID,a.user_pseudo_id) as user_pseudo_id
+			FROM
+				(
+				SELECT
+				  PARSE_DATE('%Y%m%d', event_date) AS event_date,
+				  geo.country AS country,
+				  case when stream_id ='9692329810' then 'fb.ai.avatar.puzzle' 
+		       when stream_id ='9817620337' then 'fb.zp' end  as package_name,
+				  event_name
+				  ,case when device.operating_system ='iOS' then 'iOS'
+							when device.operating_system ='Android' then 'Android' 
+							else 'web' end as platform,
+				  case when event_params.key='from' then 'fromon' else event_params.key end AS event_params_key,
+			  	  COALESCE(CAST(event_params.value.string_value AS string),CAST(event_params.value.int_value AS string),CAST(event_params.value.float_value AS string),CAST(event_params.value.double_value AS string)) AS event_params_value,
+				  user_pseudo_id
+				FROM
+				  `recorder-pro-50451.analytics_250268757.events_*`, 
+				  UNNEST (event_params)event_params
+				WHERE
+				  _TABLE_SUFFIX >= REPLACE(CAST(DATE_ADD(run_date,INTERVAL - history_day day)AS string),'-','')
+				  and _TABLE_SUFFIX <= REPLACE(CAST(DATE_ADD(run_date,INTERVAL - history_end_day day)AS string),'-','')
+				  and  stream_id='9817620337'
+				  and event_name in (
+									'fb_zp_app_launch'
+										,'fb_zp_first_open'
+										,'fb_zp_home_show'
+										,'fb_zp_home_func_sound'
+										,'fb_zp_home_func_language'
+										,'fb_zp_game_play_show'
+										,'fb_zp_game_play_finish'
+										,'fb_zp_game_play_exit'
+										,'fb_zp_new_game_play'
+										,'fb_zp_share_show'
+										,'fb_zp_share_click'
+										,'fb_zp_share_share'
+										,'fb_zp_ad_load_c'
+										,'fb_zp_ad_load_success_c'
+										,'fb_zp_ad_load_fail_c'
+										,'fb_zp_ad_impression_c'
+										,'fb_zp_ad_impression_c_100'
+										,'fb_zp_ad_click_c'
+										,'fb_zp_ad_back_c'
+										,'fb_zp_ad_close_c'
+										,'fb_zp_ad_about_to_show'
+										,'fb_zp_banner_show'
+										,'fb_zp_banner_click'
+										,'fb_zp_templ_invite'
+										,'fb_zp_templ_invite_c'
+										,'fb_zp_templ_invite_e'
+										,'fb_zp_mess_authorize'
+										,'fb_zp_mess_authorize_c'
+										,'fb_zp_mess_authorize_l'
+										,'fb_zp_favorite'
+										,'fb_zp_favorite_c'
+										,'fb_zp_favorite_l'
+										,'fb_zp_openAdWatchTask'
+										,'fb_zp_openAdWatchTask_c'
+										,'fb_zp_openAdWatchTask_watch_ad_c'
+										,'fb_zp_reward_ad_fail'
+										,'fb_zp_reward_ad_not_complete'
+										,'fb_zp_openAdWatchTask_watch_ad_s'
+										)
+									 AND event_params.key IN ("error",
+											    "code",
+											    "ga_session_id",
+											    "type",
+											    "entrance",
+											    "id",
+											    "placement",
+											    "from",
+											    "platform",
+											    "msg",
+											    "timeuse",
+											    "timeout",
+											    "steps")
+						)a 
+						left join `hzdw2024.hz_dim.dim_country` b
+						on upper(a.country)=upper(b.country_name_2)
+					    left join 
+						(
+						SELECT
+							event_date
+							,user_pseudo_id
+							,max(fbUserID) as fbUserID
+						FROM `gzdw2024.fb_zp_game.dwd_user_active_di` 
+						WHERE event_date>=date_add(run_date,interval -history_day day)
+						and event_date<=date_add(run_date,interval -history_end_day day)
+						group by event_date,user_pseudo_id
+					   )c 
+						on a.user_pseudo_id=c.user_pseudo_id
+						and a.event_date=c.event_date
+					)C 
+					,UNNEST(country_code) AS country_code
+					,UNNEST(platform) as platform
+					group by event_date
+			,package_name
+			,case when country_code='SYRIA' then 'SY'
+				when country_code='TÜRKIYE' then 'TR'
+				when country_code='MYANMAR (BURMA)' then 'MM'
+				when country_code='PALESTINE' then 'PS'
+				when country_code='AUSTRALIA' then 'AU'
+				when country_code='CONGO - KINSHASA' then 'CD'
+				when country_code='BOSNIA & HERZEGOVINA' then 'BA'
+							when country_code='NORTH MACEDONIA' then 'MK'
+							when country_code='KOSOVO' then 'XK'
+				else country_code end 
+				,platform
+			,event_name
+			,event_params_key
+			,event_params_value;
+
+							
+
+
 	end;
 
 
