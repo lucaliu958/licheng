@@ -570,7 +570,9 @@ SELECT
 					,event_name
 					,placement
 					,case when lower(placement) like '%banner%' then 'banner'
-					when lower(placement) like '%interstitial%' then 'Interstitial'
+					when lower(placement) like '%reward%interstitial%' then 'rewarded_interstitial'
+					when lower(placement) like '%interstitial%' then 'interstitial'
+						when lower(placement) like '%hint%' then 'interstitial'
 					else 'other' end as ad_type
 				FROM `fb-ai-avatar-puzzle.fb_dw.dwd_user_event_di` 
 				WHERE event_date>=date_add(run_date,interval -history_day  day)
@@ -711,7 +713,9 @@ insert `fb-ai-avatar-puzzle.fb_dw.dws_user_fb_ad_report`
 					,array['TOTAL',case when platform='ios' then 'iOS' when platform='android' then 'Android' else platform end]  as platform
 					,array['TOTAL',upper(country)] as country_code
 					,array['TOTAL',case when lower(placement_name) like '%banner%' then 'banner'
-					when lower(placement_name) like '%interstitial%' else 'other' end ] as ad_type
+					when lower(placement_name) like '%rewarded%interstitial%' then 'rewarded_interstitial'
+					when lower(placement_name) like '%interstitial%' then 'interstitial'
+					else 'other' end ] as ad_type
 					,requests
 					,filled_requests
 					,impressions
@@ -721,7 +725,6 @@ insert `fb-ai-avatar-puzzle.fb_dw.dws_user_fb_ad_report`
 				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -1 day) as string),'-','')
 				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
-				and app_name='OHO'
 					--and _TABLE_SUFFIX!='20241103'
 				)c 
 				,UNNEST(platform) as platform
