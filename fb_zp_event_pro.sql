@@ -266,7 +266,8 @@ FROM
 
 ----------广告统计表
 delete `gzdw2024.fb_zp_game.dws_user_ad_report`
-where event_date>=date_add(run_date,interval -history_day day);
+where event_date>=date_add(run_date,interval -history_day day)
+	and event_date<=date_add(run_date,interval -history_end_day  day);
 
 insert `gzdw2024.fb_zp_game.dws_user_ad_report`
 with a as (
@@ -417,6 +418,150 @@ FROM
 	on c0.event_date=c1.event_date
 	and c0.platform=c1.platform
 	and c0.country_code=c1.country_code;
+
+
+
+	----------广告请求失败统计表
+delete `gzdw2024.fb_zp_game.dws_user_ad_fail_report`
+where event_date>=date_add(run_date,interval -history_day  day)
+and event_date<=date_add(run_date,interval -history_end_day  day);
+
+insert `gzdw2024.fb_zp_game.dws_user_ad_fail_report`
+	--create table  `gzdw2024.fb_zp_game.dws_user_ad_fail_report`
+	--	PARTITION BY event_date as 
+with a as (
+SELECT
+		a.event_date	
+		,case when country_code='SYRIA' then 'SY'
+			when country_code='TÜRKIYE' then 'TR'
+			when country_code='MYANMAR (BURMA)' then 'MM'
+			when country_code='PALESTINE' then 'PS'
+			when country_code='AUSTRALIA' then 'AU'
+			when country_code='CONGO - KINSHASA' then 'CD'
+			when country_code='BOSNIA & HERZEGOVINA' then 'BA'
+						when country_code='NORTH MACEDONIA' then 'MK'
+						when country_code='KOSOVO' then 'XK'
+			else country_code end as country_code
+			,platform
+			,error_code
+			,ad_type
+			,package_name
+			,event_name	
+			,user_pseudo_id
+	FROM
+		(
+
+			SELECT
+				a.event_date
+				,ifnull(fbUserID,a.user_pseudo_id) as user_pseudo_id
+				,array[ifnull(country_code,country),'TOTAL'] as country_code
+				,array[platform,'TOTAL'] as platform
+				,array[ad_type,'TOTAL'] as ad_type
+				,event_name
+				,package_name
+				,error_code
+			FROM
+				(
+				SELECT
+					 event_date
+					,user_pseudo_id
+					,upper(country) as country
+					,case when operating_system ='iOS' then 'iOS'
+					when operating_system ='Android' then 'Android' 
+					else 'web' end as platform						
+					,safe_divide(timeuse,1000) as timeuse
+					,package_name
+					,event_name
+					,error_code
+					,case when lower(placement) like '%banner%' then 'banner'
+					when lower(placement) like '%reward%interstitial%' then 'rewarded_interstitial'
+					when lower(placement) like '%interstitial%' then 'interstitial'
+						when lower(placement) like '%hint%' then 'interstitial'
+					else 'other' end as ad_type
+				FROM `gzdw2024.fb_zp_game.dwd_user_event_di` 
+				WHERE event_date>=date_add(run_date,interval -history_day  day)
+				and event_date<=date_add(run_date,interval -history_end_day  day)
+				and event_name in ('fb_zp_ad_load_fail_c')
+				)a 
+				left join
+			    (
+			    SELECT 
+			      upper(country_name_2) as country_name_2
+			      ,country_name_3 as country_code
+			    FROM `hzdw2024.hz_dim.dim_country`
+			    )c 
+			    on a.country=c.country_name_2
+			    left	join 
+				(
+				SELECT
+					event_date
+					,user_pseudo_id
+					,max(fbUserID) as fbUserID
+				FROM `gzdw2024.fb_zp_game.dwd_user_active_di` 
+				WHERE event_date>=date_add(run_date,interval -history_day  day)
+				and event_date<=date_add(run_date,interval -history_end_day  day)				
+				group by event_date,user_pseudo_id
+			   )b 
+				on a.user_pseudo_id=b.user_pseudo_id
+				and a.event_date=b.event_date
+			  )a 
+			,UNNEST(country_code) as country_code
+			,UNNEST(platform) as platform
+     ,UNNEST(ad_type) as ad_type
+	),
+ c as 
+(
+SELECT
+	event_date
+	,package_name
+	,platform
+	,country_code
+	,error_code
+	,ad_type
+	,count(case when event_name='fb_zp_ad_load_fail_c' then user_pseudo_id else null end) as load_fail_pv
+FROM
+	(
+
+		select * 
+		from a  
+		where 1=1
+		--and event_name in ('fb_templ_res_click','fb_temp_export_fail')
+		
+	)e 
+			group by event_date,country_code,platform,package_name,error_code,ad_type
+)
+SELECT
+	c0.event_date
+	,c0.package_name
+	,c0.platform
+	,c0.country_code
+	,error_code
+	,ad_type
+	,load_fail_pv
+	,active_uv
+FROM
+	(
+	SELECT
+		*
+	FROM c 
+	)c0 
+	left join
+	(
+	SELECT
+		event_date
+		,platform
+		,country_code
+		,active_uv
+	FROM	`gzdw2024.fb_zp_game.dws_user_active_report`
+	WHERE event_date>=date_add(run_date,interval -history_day  day)
+	and event_date<=date_add(run_date,interval -history_end_day  day)
+
+		)c1 
+	on c0.event_date=c1.event_date
+	and c0.platform=c1.platform
+	and c0.country_code=c1.country_code;
+
+
 
 
 --------6.fb后台广告统计表
