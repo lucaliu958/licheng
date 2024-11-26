@@ -283,7 +283,7 @@ insert  `gzdw2024.text_03_bi.dws_subcribe_detail_report`
 
 -----试用套餐转正率
 delete `gzdw2024.text_03_bi.dws_subcribe_convert_report`
-where stats_date>=date_add(run_date,interval -history_day day)
+where stats_date>=date_add(run_date,interval -(history_day +10) day)
 and  stats_date<=date_add(run_date,interval -history_end_day day);
 insert  `gzdw2024.text_03_bi.dws_subcribe_convert_report`
 SELECT
@@ -299,7 +299,7 @@ FROM
 		--,event
 		,sum(quantity) as pv 
 	 FROM `gzdata.appstoreconnect.p_subscription_event_atlasv` 
-	WHERE event_date >= date_add(run_date,interval -history_day day)
+	WHERE event_date >= date_add(run_date,interval -(history_day +10) day)
 	and event_date <= date_add(run_date,interval -history_end_day day)
 	and package_name='second.phone.number.text.free.call.app'
 	and event in ('Start Introductory Offer')
@@ -314,7 +314,7 @@ FROM
 		--,event
 		,sum(quantity) as pv 
 	 FROM `gzdata.appstoreconnect.p_subscription_event_atlasv` 
-	WHERE event_date >= date_add(run_date,interval -history_day day)
+	WHERE event_date >= date_add(run_date,interval -(history_day +10) day)
 	and event_date <= date_add(run_date,interval -history_end_day day)
 	and package_name='second.phone.number.text.free.call.app'
 	and event in ('Paid Subscription from Introductory Offer','Upgrade from Introductory Offer')
