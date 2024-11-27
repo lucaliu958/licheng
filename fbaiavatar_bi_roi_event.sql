@@ -781,6 +781,18 @@ and stats_date>='2024-09-08';
 insert `gzdw2024.fb_zp_game.dws_fb_ad_revenue_daily_reports`
 --create table  `gzdw2024.fb_zp_game.dws_fb_ad_revenue_daily_reports`
 	--	PARTITION BY stats_date as 
+		SELECT
+				stats_date
+				,package_name
+				,platform
+				,country_code
+				,max(requests)  as requests
+				,max(filled_requests)  as filled_requests
+				,max(impressions)  as impressions
+				,max(revenue)  as revenue
+				,max(clicks)  as clicks
+			FROM
+				(
 				SELECT 
 					parse_date('%Y%m%d',_table_suffix) as stats_date
 					,'fb.zp' as package_name
@@ -810,8 +822,8 @@ insert `gzdw2024.fb_zp_game.dws_fb_ad_revenue_daily_reports`
 					,sum(revenue)  as revenue
 					,sum(clicks)  as clicks
 				FROM `fb-ai-avatar-puzzle.analytics_439907691.ad_analytics_day_*` 
-				where _TABLE_SUFFIX >='20240908'
-				and _TABLE_SUFFIX <='20240923'
+				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
+				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
 				and app_name='Solitaire'
 					and _TABLE_SUFFIX!='20241103'
 				--and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
@@ -870,9 +882,8 @@ insert `gzdw2024.fb_zp_game.dws_fb_ad_revenue_daily_reports`
 					and app_name='Solitaire'
 					and _TABLE_SUFFIX!='20241103'
 				group by stats_date,platform,country_code;
-
-
-
+				)a 
+		group by stats_date,platform,country_code,package_name;
 
 
 
