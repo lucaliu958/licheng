@@ -177,7 +177,7 @@ FROM
 		,min(event_date) as event_date_min
 		,package_name
 	FROM `fb-ai-avatar-puzzle.fb_dw.dwd_user_active_di`
-	WHERE event_date>=date_add(run_date,interval -hitory_retain_day day)
+	WHERE event_date>=date_add(run_date,interval -(hitory_retain_day +150) day)
 	group by fbUserID,package_name
 	)c 
 	on a.fbUserID=c.fbUserID
