@@ -123,7 +123,7 @@ FROM
 		,min(event_date) as event_date_min
 		,package_name
 	FROM `gzdw2024.fb_zp_game.dwd_user_active_di`
-	WHERE event_date>=date_add(run_date,interval -hitory_retain_day day)
+	WHERE event_date>=date_add(run_date,interval -(hitory_retain_day+150) day)
 	and event_date<=date_add(run_date,interval -history_end_day day)
 	group by fbUserID,package_name
 	)c 
