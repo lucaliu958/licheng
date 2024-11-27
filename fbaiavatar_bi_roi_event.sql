@@ -881,7 +881,7 @@ insert `gzdw2024.fb_zp_game.dws_fb_ad_revenue_daily_reports`
 				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
 					and app_name='Solitaire'
 					and _TABLE_SUFFIX!='20241103'
-				group by stats_date,platform,country_code;
+				group by stats_date,platform,country_code
 				)a 
 		group by stats_date,platform,country_code,package_name;
 
