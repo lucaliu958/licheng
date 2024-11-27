@@ -264,7 +264,7 @@ insert  `gzdw2024.text_03_bi.dws_subcribe_detail_report`
 		,title
 		FROM `gzdw2024.appstoreconnect.p_sales_atlasv` 
 		WHERE stats_date >= date_add(run_date,interval -history_day day)
-			    and stats_date <= date_add(run_date,interval -history_end_day day)
+			    and stats_date <= date_add(run_date,interval -(history_end_day+1) day)
 			and (revenue_usd>0 or revenue_usd <0 )
 		)a 
 		join 
