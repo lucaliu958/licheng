@@ -738,10 +738,10 @@ insert `gzdw2024.fb_zp_game.dws_fb_cost_daily_reports`
 					,country
 					,MAX(safe_cast(spend as float64)) as cost 
 					,0 as install
-				FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_*` 
+				FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_SLT_*` 
 				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
-				and package_name='fb.zp'
+				--and package_name='fb.zp'
 				group by campaign_name,country ,stats_date
 				union all 
 				SELECT 
@@ -750,11 +750,11 @@ insert `gzdw2024.fb_zp_game.dws_fb_cost_daily_reports`
 					,country
 					,0 as cost
 					,MAX(safe_cast(action_count as float64)) as install 
-				FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_*` 
+				FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_SLT_*` 
 				WHERE action_type='mobile_app_install'
 				and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
-				and package_name='fb.zp'
+				--and package_name='fb.zp'
 				group by campaign_name,country ,stats_date
 			  )a 
 			   group by stats_date,campaign_name,country,platform
