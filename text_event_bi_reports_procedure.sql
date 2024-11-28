@@ -100,8 +100,9 @@ insert `gzdw2024.text_03_bi.dws_event_params_report`
 							,'sn_5_call_dial_outbound_fail'
 							,'sn_5_call_dial_connect_fail','sn_5_call_dial_inbound_fail'
 							,'sn_7_text_send_fail'
-							,'sn_7_text_send_click_fail')
-		and event_params_key in('error_code','reason')
+							,'sn_7_text_send_click_fail'
+							,'sn_5_call_quality_action')
+		and event_params_key in('error_code','reason','star')
 		)a 
 		group by 	event_date,event_name,event_params_value,country_code,event_params_key;
 
