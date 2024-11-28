@@ -38,6 +38,7 @@ insert `gzdw2024.fb_zp_game.dwd_user_event_di`
 	,steps
 	,error_code
 	,win
+	,hidesum
 	FROM `gzdw2024.fbgame_01_basic.dwd_all_game_user_event_di`
 	WHERE event_date>=date_add(run_date,interval -history_day day)
 	and event_date<=date_add(run_date,interval -history_end_day day)
@@ -893,7 +894,8 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 											    "timeuse",
 											    "timeout",
 											    "steps",
-												"win")
+												"win",
+												"hidesum)
 						)a 
 						left join `hzdw2024.hz_dim.dim_country` b
 						on upper(a.country)=upper(b.country_name_2)
