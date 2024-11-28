@@ -895,7 +895,7 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 											    "timeout",
 											    "steps",
 												"win",
-												"hidesum)
+												"hidesum")
 						)a 
 						left join `hzdw2024.hz_dim.dim_country` b
 						on upper(a.country)=upper(b.country_name_2)
@@ -984,5 +984,3 @@ FROM
 
 
 	end;
-
-
