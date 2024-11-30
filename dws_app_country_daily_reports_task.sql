@@ -3,7 +3,7 @@ begin
 
 delete `gzdw2024.gz_bi.dws_app_country_daily_reports`
 where stats_date>=date_add(run_date,interval -history_day day)
-  and package_name not in ('fb.ai.avatar.puzzle', 'fb.ai.avatar');
+  and package_name not in ('fb.ai.avatar.puzzle', 'fb.ai.avatar','fb_zp');
 
 
 insert `gzdw2024.gz_bi.dws_app_country_daily_reports`
