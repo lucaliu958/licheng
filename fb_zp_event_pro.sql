@@ -35,10 +35,13 @@ insert `gzdw2024.fb_zp_game.dwd_user_event_di`
 		,operating_system
 		,placement
 		,timeuse
-	,steps
-	,error_code
-	,win
-	,hidesum
+		,steps
+		,error_code
+		,win
+		,hidesum
+		,level_id
+		,gameID
+		,gameShowTime
 	FROM `gzdw2024.fbgame_01_basic.dwd_all_game_user_event_di`
 	WHERE event_date>=date_add(run_date,interval -history_day day)
 	and event_date<=date_add(run_date,interval -history_end_day day)
@@ -189,6 +192,7 @@ SELECT
 	,count(distinct case when is_launch=1 and is_new=1 and is_ad=1 and date_diff(c.event_date_min,a.event_date,day)<=0  then c.fbUserID else null end) as source_liebian_uv_ad_0_day 
 	,count(distinct case when is_launch=1 and is_new=1 and is_ad=1 and date_diff(c.event_date_min,a.event_date,day)<=1  then c.fbUserID else null end) as source_liebian_uv_ad_1_day
 	,count(distinct case when is_launch=1 and is_new=1 and is_ad=1 and  date_diff(c.event_date_min,a.event_date,day)<=2  then c.fbUserID else null end) as source_liebian_uv_ad_2_day 
+	,a.package_name
 FROM
 	(
 
@@ -201,6 +205,7 @@ FROM
 				,is_liebian
 				,array[ifnull(country_code,country),'TOTAL'] as country_code
 				,array[platform,'TOTAL'] as platform
+				,a.package_name
 			FROM
 				(
 				SELECT
@@ -214,6 +219,7 @@ FROM
 					,case when operating_system ='iOS' then 'iOS'
 					when operating_system ='Android' then 'Android' 
 					else 'web' end as platform
+					,package_name
 				FROM `gzdw2024.fb_zp_game.dwd_user_active_profile_di`
 				WHERE event_date>=date_add(run_date,interval -hitory_retain_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
@@ -232,17 +238,19 @@ FROM
 			SELECT
 				event_date
 				,fbUserID
+				,package_name
 			FROM `gzdw2024.fb_zp_game.dwd_user_active_profile_di`
 			WHERE event_date>=date_add(run_date,interval -hitory_retain_day day)
 			and event_date<=date_add(run_date,interval -history_end_day day)
-			group by event_date,fbUserID
+			group by event_date,fbUserID,package_name
 			)b 
 			on a.fbUserID=b.fbUserID
+			and a.package_name=b.package_name
 			left join
 			(
 			SELECT
 				fbUserID
-				
+				,package_name
 				,MIN_BY(fromUser, event_date) AS fromUser
 				,min(event_date) as event_date_min
 			FROM
@@ -251,18 +259,20 @@ FROM
 					event_date
 					,fbUserID
 					,max(fromUser) as fromUser
+					,package_name
 	 			FROM `gzdw2024.fb_zp_game.dwd_user_active_di` 
 				WHERE event_date>=date_add(run_date,interval -hitory_retain_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
-				group by event_date,fbUserID
+				group by event_date,fbUserID,package_name
 				)a 
-				group by fbUserID
+				group by fbUserID,package_name
 			
 			)c
 			on a.fbUserID=c.fromUser
+			and a.package_name=c.package_name
 			,UNNEST(country_code) as country_code
 			,UNNEST(platform) as platform
-			group by a.event_date,country_code,platform;
+			group by a.event_date,country_code,platform,package_name;
 
 
 
@@ -415,8 +425,7 @@ FROM
 	FROM	`gzdw2024.fb_zp_game.dws_user_active_report`
 	WHERE event_date>=date_add(run_date,interval -history_day day)
 	and event_date<=date_add(run_date,interval -history_end_day day)
-
-		)c1 
+	)c1 
 	on c0.event_date=c1.event_date
 	and c0.platform=c1.platform
 	and c0.country_code=c1.country_code;
@@ -789,6 +798,19 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 	--	create table  `gzdw2024.fb_zp_game.dws_fb_events_detail`
 	--	PARTITION BY event_date as 
 	insert `gzdw2024.fb_zp_game.dws_fb_events_detail`
+	SELECT
+		C0.event_date
+		,C0.package_name
+		,C0.country_code
+		,C0.platform
+		,event_name
+		,event_params_key
+		,event_params_value
+		,event_num
+		,user_num
+		,active_uv
+	FROM
+		(
 		SELECT
 			event_date
 			,package_name
@@ -895,7 +917,8 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 											    "timeout",
 											    "steps",
 												"win",
-												"hidesum")
+												"hidesum",
+												"level_id")
 						)a 
 						left join `hzdw2024.hz_dim.dim_country` b
 						on upper(a.country)=upper(b.country_name_2)
@@ -930,7 +953,27 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 				,platform
 			,event_name
 			,event_params_key
-			,event_params_value;
+			,event_params_value
+			)c0 
+			left join
+			(
+			SELECT
+				event_date
+				,package_name
+				,platform
+				,country_code
+				,active_uv
+			FROM	`gzdw2024.fb_zp_game.dws_user_active_report`
+			WHERE event_date>=date_add(run_date,interval -history_day  day)
+			and event_date<=date_add(run_date,interval -history_end_day day)
+
+			)c1 
+			on c0.event_date=c1.event_date
+			and c0.platform=c1.platform
+			and c0.country_code=c1.country_code
+			AND c0.package_name=c1.package_name
+			;
+
 
 							
 ----插屏与激励期望展示率
