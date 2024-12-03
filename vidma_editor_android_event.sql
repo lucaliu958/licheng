@@ -408,7 +408,7 @@ WHERE _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) 
 and a.user_pseudo_id is not null
 and b.event_date>=date_add(run_date,interval -history_day day)
 AND event_name NOT IN ('screen_view','user_engagement','session_start','firebase_campaign')
-and event_params.key not in ('engagement_time_msec','ga_session_id','ga_session_number','engaged_session_event',
+and event_params.key not in ('engagement_time_msec','ga_session_number','engaged_session_event',
 'firebase_screen','firebase_screen_class','firebase_screen_id','firebase_conversion',
 'firebase_previous_class','firebase_previous_id','firebase_error')
 ) a
