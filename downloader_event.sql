@@ -736,7 +736,7 @@ SELECT
 FROM `gzdw2024.downloader_02_event.dws_event_profile_di`  a 
 left join `gzdw2024.gz_dim.app_info` c 
 on a.package_name=c.package_name
-WHERE stats_date>=date_add(run_date,interval -history_day day)
+WHERE event_date>=date_add(run_date,interval -history_day day)
 and event_name in ('a1_1_app_launch','a1_11_player_page_show','a1_11_player_start','a1_11_player_succ','a1_11_player_fail')
 group by event_date,event_name,last_app_version,app_name;
 
