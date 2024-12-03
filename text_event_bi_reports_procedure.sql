@@ -101,13 +101,13 @@ insert `gzdw2024.text_03_bi.dws_event_params_report`
 		WHERE event_date >= date_add(run_date,interval -history_day day)
 			    and event_date <= date_add(run_date,interval -history_end_day day)
 		and package_name='second.phone.number.text.free.call.app'
-		and event_name in ('sn_1_signin_fail'
-							,'sn_vip_all_fail'
-							,'sn_5_call_dial_no_request'
-							,'sn_5_call_dial_outbound_fail'
-							,'sn_5_call_dial_connect_fail','sn_5_call_dial_inbound_fail'
-							,'sn_7_text_send_fail'
-							,'sn_7_text_send_click_fail'
+		and event_name in ('first_open','sn_0_app_launch','sn_1_signin_show','sn_1_signin_succ','sn_1_signin_fail'
+							,'sn_vip_all_show','sn_vip_all_click','sn_vip_all_succ','sn_vip_all_fail'
+							,'sn_vip_guide_show','sn_vip_guide_click','sn_vip_guide_succ','sn_5_call_dial_tap'
+							,'sn_5_call_dial_no_request','sn_5_call_dial_request','sn_5_call_dial_outbound_succ'
+							,'sn_5_call_dial_outbound_fail','sn_5_call_dial_outbound_ring','sn_5_call_dial_outbound_ringtone'
+							,'sn_5_call_dial_connect_fail','sn_5_call_dial_inbound_succ','sn_5_call_dial_inbound_fail'
+							,'sn_5_call_dial_end','sn_7_text_send_tap','sn_7_text_send_succ','sn_7_text_send_fail'
 							,'sn_7_text_send_click_begin','sn_7_text_send_click_succ','sn_7_text_send_click_fail'
 							,'sn_dev_call_dial_outbound_callkit','sn_dev_call_dial_outbound_connect_sdk','sn_5_serve_voice_answer_begin'
 							,'sn_5_serve_voice_answer_fail','sn_5_serve_voice_answer_succ','sn_dev_call_dial_outbound_sdk_call'
@@ -115,7 +115,7 @@ insert `gzdw2024.text_03_bi.dws_event_params_report`
 							,'sn_5_serve_voice_answer_begin','sn_5_serve_voice_answer_succ','sn_5_serve_voice_answer_fail'
 							,'sn_dev_call_dial_inbound_insert_item','sn_dev_call_dial_inbound_callkit','sn_dev_call_dial_inbound_connect_sdk'
 							,'sn_dev_call_dial_inbound_click_answer','sn_dev_call_dial_inbound_will_answer','sn_dev_call_dial_inbound_did_answer'
-							,'sn_dev_call_dial_click_hangup','sn_5_serve_voice_status','provider')
+							,'sn_dev_call_dial_click_hangup','sn_5_serve_voice_status')
 		and event_params_key in('error_code','reason','star','mode','provider','ga_session_id','net_description')
 		)a 
 		group by 	event_date,event_name,event_params_value,country_code,event_params_key;
