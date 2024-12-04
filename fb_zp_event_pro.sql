@@ -1190,7 +1190,7 @@ FROM
 				,safe_cast(gameShowTime as int) as gameShowTime
 				,event_date
 				,gameID
-				,array['TOTAL',CASE when level_id is null then 'other' else level_id end ] as level_id
+				,'TOTAL' as level_id
 			FROM `gzdw2024.fb_zp_game.dwd_user_event_di`	a
 			left join `gzdw2024.gz_dim.country_info` b
 			on upper(a.country)=upper(b.country_name)
@@ -1214,7 +1214,7 @@ FROM
 			and a.event_date=c.event_date
 			,UNNEST(country_code) as country_code
 			,UNNEST(platform) as platform
-			,UNNEST(level_id) as level_id
+			
 			group by package_name
 			,country_code
 			,ifnull(fbUserID,a.user_pseudo_id)
