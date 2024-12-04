@@ -1221,6 +1221,7 @@ FROM
 			,event_date
 			,platform
 		)c 
+	where game_show_min<=150 
 		group by event_date
 		,package_name
 		,platform
