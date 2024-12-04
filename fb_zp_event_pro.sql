@@ -1065,7 +1065,8 @@ insert `gzdw2024.fb_zp_game.dws_level_use_report`
 		left join `gzdw2024.gz_dim.country_info` b
 		on upper(a.country)=upper(b.country_name)
 		WHERE event_name in ('fb_zp_game_play_finish')
-		and event_date>='2024-11-30'
+		and event_date>=date_add(run_date,interval -history_day day)
+						and event_date<=date_add(run_date,interval -history_end_day day)
 		AND win='true'
 	)a 
 	,UNNEST(platform) as platform
@@ -1136,7 +1137,8 @@ FROM
 			left join `gzdw2024.gz_dim.country_info` b
 			on upper(a.country)=upper(b.country_name)
 			WHERE event_name in ('fb_zp_game_play_exit')
-			and event_date>='2024-11-30'
+			and event_date>=date_add(run_date,interval -history_day day)
+						and event_date<=date_add(run_date,interval -history_end_day day)
 			and safe_cast(hidesum as int)>0
 			)a
 			,UNNEST(country_code) as country_code
@@ -1193,7 +1195,8 @@ FROM
 			left join `gzdw2024.gz_dim.country_info` b
 			on upper(a.country)=upper(b.country_name)
 			WHERE event_name in ('fb_zp_game_play_exit')
-			and event_date>='2024-11-30'
+			and event_date>=date_add(run_date,interval -history_day day)
+						and event_date<=date_add(run_date,interval -history_end_day day)
 			)a
 			  left join 
 			(
@@ -1202,7 +1205,8 @@ FROM
 				,user_pseudo_id
 				,max(fbUserID) as fbUserID
 			FROM `gzdw2024.fb_zp_game.dwd_user_active_di` 
-			WHERE event_date>='2024-11-30'
+			WHERE event_date>=date_add(run_date,interval -history_day day)
+						and event_date<=date_add(run_date,interval -history_end_day day)
 			--and event_date<=date_add(run_date,interval -history_end_day day)
 			group by event_date,user_pseudo_id
 		   )c 
