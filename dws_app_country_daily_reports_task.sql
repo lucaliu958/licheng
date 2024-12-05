@@ -117,6 +117,7 @@ FROM
 		,conversions
 	FROM gzdw2024.cost_data.dws_ga_cost_daily
 	WHERE stats_date >= DATE_SUB(run_date, INTERVAL history_day DAY)
+	AND campaign_name='TOTAL'
 	)a
 	  left join
     (
