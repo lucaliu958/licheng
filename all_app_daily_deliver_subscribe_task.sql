@@ -1,4 +1,3 @@
-
 CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.all_app_daily_deliver_subscribe_task`(run_date DATE, history_day INT64, history_end_day INT64)
 begin
 
@@ -171,6 +170,7 @@ and  stats_date<=date_add(run_date,interval -history_end_day day);
 					,user_pseudo_id
 				FROM `gzdw2024.vidma_editor_android_01_basic.dwd_user_active_di` 
 				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date>='2024-12-02'
 				and event_date<=date_add(run_date,interval -history_end_day day)
 				and traffic_source_medium = "cpc"
 				and is_new=1
@@ -250,6 +250,7 @@ and  stats_date<=date_add(run_date,interval -history_end_day day);
 				WHERE event_date>=date_add(run_date,interval -history_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
 				and traffic_source_medium = "cpc"
+				and event_date>='2024-12-02'
 				and is_new=1
 				and traffic_source_name like 'GA%'
 				AND package_name = "vidma.video.editor.videomaker"
