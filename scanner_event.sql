@@ -384,6 +384,7 @@ event_date
 ,count(*) event_num
 ,count(distinct user_pseudo_id) user_num
    ,traffic_source_medium
+	,app_version
 from 
 (SELECT 
 PARSE_DATE('%Y%m%d',a.event_date) event_date
@@ -394,6 +395,7 @@ PARSE_DATE('%Y%m%d',a.event_date) event_date
 ,case when lower(traffic_source.name) like '%inhouse%' then 'inhouse' when (traffic_source.name in('(direct)')  or traffic_source.name is null) then 'nature' else 'delivery' end traffic_source_type
 ,b.is_new
 ,b.is_vip
+	,case when app_info.version='' or app_info.version is null then 'undefined' else app_info.version end as app_version
 ,event_name
 ,event_params.key as event_params_key
      ,case when traffic_source.medium='' or traffic_source.medium is null then 'undefined' else traffic_source.medium end as traffic_source_medium
@@ -405,8 +407,8 @@ WHERE _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) 
 and a.user_pseudo_id is not null
 and b.event_date>=date_add(run_date,interval -history_day day)
 AND event_name NOT IN ('screen_view','user_engagement','session_start','firebase_campaign')
-and event_params.key not in ('engagement_time_msec','ga_session_number','engaged_session_event',
-'firebase_screen','firebase_screen_class','firebase_screen_id','firebase_conversion',
+and event_params.key not in ('engagement_time_msec','ga_session_number','engaged_session_event','ga_session_id'
+'firebase_screen','firebase_screen_class','firebase_screen_id','firebase_conversion','ga_session_id',
 'firebase_previous_class','firebase_previous_id','firebase_error')
 ) a
 group by 
@@ -419,6 +421,7 @@ event_date
 ,is_vip
 ,event_name
 ,event_params_key
+	,app_version
 ,event_params_value
    ,traffic_source_medium
 ;
