@@ -186,7 +186,8 @@ SELECT
 	,app_name
 	,case when c.country_code is not null then upper(c.country_code) else a.country_criterion_id end as country_code
 	,sum(metrics_cost_micros)/1000000*max(case when exchange_rate is not null then exchange_rate else 0.128 end ) as cost_usd
-	,sum(metrics_conversions) as conversions
+	,cast(sum(metrics_conversions) as integer) as conversions
+	,campaign_name
 FROM
 	(
 	SELECT
@@ -202,8 +203,8 @@ FROM
 		SELECT
 		  a.stats_date,
 		
-		  a.campaign_name,
 		  a.package_name,
+		 array['TOTAL',a.campaign_name] AS campaign_name,
 		  app_name,
 		  array['TOTAL',country_criterion_id] AS country_criterion_id,
 		  metrics_cost_micros,
@@ -216,6 +217,7 @@ FROM
 		 and stats_date>=date_add(run_date,interval -history_day day)
 		 )a 
 	,UNNEST(country_criterion_id) as country_criterion_id
+	,UNNEST(campaign_name) as campaign_name
 	 )a 
 	left join
 	(
@@ -232,7 +234,7 @@ FROM
 	)c
 	on a.country_criterion_id=c.country_criterion_id
 	
-	GROUP BY a.stats_date,package_name,app_name,country_code;
+	GROUP BY a.stats_date,package_name,app_name,country_code,campaign_name;
 
 
 
