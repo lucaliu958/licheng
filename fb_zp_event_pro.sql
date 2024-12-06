@@ -747,6 +747,7 @@ insert `gzdw2024.fb_zp_game.dws_event_active_report`
 						,'fb_zp_reward_ad_not_complete'
 						,'fb_zp_openAdWatchTask_watch_ad_s'
 						,'fb_zp_start_move_click_card'
+	,'fb_zp_game_play_start'
 						)
 				)a 
 				 left	join 
@@ -902,6 +903,7 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 										,'fb_zp_reward_ad_not_complete'
 										,'fb_zp_openAdWatchTask_watch_ad_s'
 										,'fb_zp_start_move_click_card'
+										,'fb_zp_game_play_start'
 										)
 									 AND event_params.key IN ("error",
 											    "code",
@@ -1234,5 +1236,275 @@ FROM
 		,country_code
 		,level_id;
 
+
+
+-----通关与留存
+--drop table if exists `gzdw2024.fb_zp_game.dws_finsh_pv_report`;
+--	create table  `gzdw2024.fb_zp_game.dws_finsh_pv_report`
+--	PARTITION BY stats_date as 
+
+delete `gzdw2024.fb_zp_game.dws_finsh_pv_report`
+where stats_date>=date_add(run_date,interval -history_day day)
+and stats_date<=date_add(run_date,interval -history_end_day day);
+
+
+insert `gzdw2024.fb_zp_game.dws_finsh_pv_report`
+	SELECT
+		event_date as stats_date
+		,package_name
+		,platform
+		,country_code	
+		,is_new		
+		,CASE WHEN finsh_true_pv <=8 then finsh_true_pv
+		else 9 end as finsh_pv
+		,count(distinct fbUserID ) as uv 
+		,count(distinct case when is_retain=1 then fbUserID else null end) as retain_uv
+	FROM
+		(
+		SELECT
+			c.fbUserID
+			,package_name
+			,c.event_date
+			,country_code
+			,platform
+			,is_new		
+			,ifnull(finsh_true_pv,0) as finsh_true_pv
+			,ifnull(is_retain,0) as is_retain
+		FROM
+			(
+			SELECT
+				a.fbUserID
+				,a.event_date
+				,country_code
+				,platform
+				,is_new		
+				,package_name
+				,max(case when date_diff(b.event_date,a.event_date,day)=1 then 1 else 0 end ) as is_retain
+			FROM 
+				(
+				SELECT
+					fbUserID
+					,event_date	
+					,is_new		
+					,package_name
+					,array['TOTAL',country_code] as country_code
+					,array['TOTAL',platform] as platform
+				FROM
+					(	
+					SELECT
+						fbUserID
+						,event_date	
+						,package_name
+						,MAX(ifnull(country_code,a.country)) as country_code
+						,max(case when lower(operating_system)  like '%ios%' then 'iOS'
+					when lower(operating_system) like '%android%' then 'Android' 
+					else 'web' end) as platform	
+						,max(is_new) as is_new
+					FROM `gzdw2024.fb_zp_game.dwd_user_active_profile_di` a
+					left join `gzdw2024.gz_dim.country_info` b
+					on upper(a.country)=upper(b.country_name)
+					WHERE 1=1
+					--and is_new=1
+					and is_launch=1
+					and event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+					group by fbUserID,event_date,package_name
+					)a 
+				)a 
+				left join
+				(
+				SELECT
+					fbUserID
+					,event_date	
+				FROM `gzdw2024.fb_zp_game.dwd_user_active_profile_di`
+				WHERE 1=1
+				and event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				group by fbUserID,event_date
+				)b 
+				on a.fbUserID=b.fbUserID
+				,unnest(country_code) as country_code
+				,unnest(platform) as platform
+				group BY a.fbUserID,a.event_date,package_name,country_code,platform,is_new		
+			)c 
+			left join
+			(
+			SELECT
+				fbUserID
+				,event_date
+				,sum(case when win='true' then pv else 0 end) as finsh_true_pv
+				,sum(case when win='false' then pv else 0 end) as finsh_false_pv
+			from
+				(
+				SELECT 
+					win
+					,fbUserID
+					,a.event_date
+					,count(1) as pv 
+				FROM
+					(
+					SELECT 
+						win
+						,user_pseudo_id
+						,event_date
+					FROM `gzdw2024.fb_zp_game.dwd_user_event_di`
+					WHERE event_name in ('fb_zp_game_play_finish')
+					and event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+					)a 
+					 join 
+					(
+					SELECT
+						event_date
+						,user_pseudo_id
+						,max(fbUserID) as fbUserID
+					FROM `gzdw2024.fb_zp_game.dwd_user_active_di` 
+					WHERE  1=1
+					and event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+					group by event_date,user_pseudo_id
+				   )b 
+					on a.user_pseudo_id=b.user_pseudo_id
+					and a.event_date=b.event_date
+					GROUP by win,fbUserID,event_date
+				)a 
+				group by fbUserID,event_date
+			)e 
+			on c.fbUserID=e.fbUserID
+			and c.event_date=e.event_date
+			)f 
+		group by 
+			event_date
+		,CASE WHEN finsh_true_pv <=8 then finsh_true_pv
+		else 9 end,package_name,country_code,platform,is_new;
+
+
+
+--drop table if exists `gzdw2024.fb_zp_game.dws_start_pv_report`;
+--			create table  `gzdw2024.fb_zp_game.dws_start_pv_report`
+--	PARTITION BY stats_date as 
+delete `gzdw2024.fb_zp_game.dws_start_pv_report`
+where stats_date>=date_add(run_date,interval -history_day day)
+and stats_date<=date_add(run_date,interval -history_end_day day);
+
+
+insert `gzdw2024.fb_zp_game.dws_start_pv_report`
+	SELECT
+		event_date as stats_date
+		,package_name
+		,platform
+		,is_new
+		,country_code			
+		,CASE WHEN start_pv <=8 then start_pv
+		else 9 end as start_pv
+		,count(distinct fbUserID ) as uv 
+		,count(distinct case when is_retain=1 then fbUserID else null end) as retain_uv
+	FROM
+		(
+		SELECT
+			c.fbUserID
+			,package_name
+			,is_new
+			,c.event_date
+			,country_code
+			,platform
+			,ifnull(start_pv,0) as start_pv
+			,ifnull(is_retain,0) as is_retain
+		FROM
+			(
+			SELECT
+				a.fbUserID
+				,a.event_date
+				,is_new
+				,country_code
+				,platform
+				,package_name
+				,max(case when date_diff(b.event_date,a.event_date,day)=1 then 1 else 0 end ) as is_retain
+			FROM 
+				(
+				SELECT
+					fbUserID
+					,event_date	
+					,package_name
+					,array['TOTAL',country_code] as country_code
+					,array['TOTAL',platform] as platform
+					,is_new
+				FROM
+					(	
+					SELECT
+						fbUserID
+						,event_date	
+						,package_name
+						,MAX(ifnull(country_code,a.country)) as country_code
+						,max(case when lower(operating_system)  like '%ios%' then 'iOS'
+					when lower(operating_system) like '%android%' then 'Android' 
+					else 'web' end) as platform	
+						,max(is_new) as is_new
+					FROM `gzdw2024.fb_zp_game.dwd_user_active_profile_di` a
+					left join `gzdw2024.gz_dim.country_info` b
+					on upper(a.country)=upper(b.country_name)
+					WHERE  1=1
+					--and is_new=1
+					and is_launch=1
+					and event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+					group by fbUserID,event_date,package_name
+					)a 
+				)a 
+				left join
+				(
+				SELECT
+					fbUserID
+					,event_date	
+				FROM `gzdw2024.fb_zp_game.dwd_user_active_profile_di`
+				WHERE 1=1
+				and event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				group by fbUserID,event_date
+				)b 
+				on a.fbUserID=b.fbUserID
+				,unnest(country_code) as country_code
+				,unnest(platform) as platform
+				group BY a.fbUserID,a.event_date,package_name,country_code,platform,is_new
+			)c 
+			left join
+			(
+				SELECT 
+					fbUserID
+					,a.event_date
+					,count(1) as start_pv 
+				FROM
+					(
+					SELECT 
+						user_pseudo_id
+						,event_date
+					FROM `gzdw2024.fb_zp_game.dwd_user_event_di`
+					WHERE event_name in ('fb_zp_game_play_start')
+					and event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+					)a 
+					 join 
+					(
+					SELECT
+						event_date
+						,user_pseudo_id
+						,max(fbUserID) as fbUserID
+					FROM `gzdw2024.fb_zp_game.dwd_user_active_di` 
+					WHERE  1=1
+					event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+					group by event_date,user_pseudo_id
+				   )b 
+					on a.user_pseudo_id=b.user_pseudo_id
+					and a.event_date=b.event_date
+					GROUP by fbUserID,event_date
+			)e 
+			on c.fbUserID=e.fbUserID
+			and c.event_date=e.event_date
+			)f 
+		group by 
+			event_date
+		,CASE WHEN start_pv <=8 then start_pv
+		else 9 end,package_name,country_code,platform,is_new;
 
 	end;
