@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.scanner_event`(run_date DATE, history_day INT64, hitory_retain_day INT64)
+CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.scanner_event`(run_date DATE, history_day INT64, hitory_retain_day INT64,history_end_day INT64)
 begin
 
 
@@ -728,6 +728,49 @@ INSERT
 		,UNNEST(country) as country
 		,UNNEST(traffic_source_name) as traffic_source_name
 		group by stats_date,country,traffic_source_name,package_name;
+
+delete `gzdw2024.scanner_02_event.dwd_user_event_time_di`
+where event_date>=date_add(run_date,interval -history_day day)
+and  event_date<=date_add(run_date,interval -history_end_day day);
+
+	insert `gzdw2024.scanner_02_event.dwd_user_event_time_di` 
+	SELECT 
+		event_name
+		,PARSE_DATE('%Y%m%d',event_date) event_date
+		,user_pseudo_id
+		,event_timestamp
+		,FORMAT_TIMESTAMP('%Y-%m-%d %H:%M:%S',TIMESTAMP_MICROS(event_timestamp)) as date_time
+	   ,case when geo.country='' or geo.country is null then 'undefined' else geo.country end as country
+		,case when geo.city='' or geo.city is null then 'undefined' else geo.city end as city
+		,case when traffic_source.name='' or traffic_source.name is null then 'undefined' else traffic_source.name end as traffic_source_name
+		,case when lower(traffic_source.name) like '%inhouse%' then 'inhouse' 
+		      when traffic_source.source like '%link%' then 'inhouse'
+		      when (traffic_source.name in('(direct)')  or traffic_source.name is null) then 'nature' 
+		      else 'delivery' end traffic_source_type
+		,case when traffic_source.medium='' or traffic_source.medium is null then 'undefined' else traffic_source.medium end as traffic_source_medium
+		,case when traffic_source.source='' or traffic_source.source is null then 'undefined' else traffic_source.source end as traffic_source_source
+		,case when device.category='' or device.category is null then 'undefined' else device.category end as device_category
+		,case when device.mobile_brand_name='' or device.mobile_brand_name is null then 'undefined' else device.mobile_brand_name  end as mobile_brand_name
+		,case when device.mobile_model_name='' or device.mobile_model_name is null then 'undefined' else device.mobile_model_name end as mobile_model_name
+		,case when device.mobile_marketing_name='' or device.mobile_marketing_name is null then 'undefined' else device.mobile_marketing_name end as mobile_marketing_name
+		,case when device.operating_system_version='' or device.operating_system_version is null then 'undefined' else device.operating_system_version end as operating_system_version
+		,case when device.language='' or device.language is null then 'undefined' else device.language end as language
+		,case when app_info.id='' or app_info.id is null then 'undefined' else app_info.id end AS package_name
+		,case when app_info.version='' or app_info.version is null then 'undefined' else app_info.version end as app_version
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='error_code') error_code 
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='reason') reason
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='star') star
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='mode') mode
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='provider') provider
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='net_description') net_description
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='uuid') uuid
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(user_properties) WHERE key='is_vip') is_vip
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(user_properties) WHERE key='vip_type') vip_type
+	FROM `scanner-master-android.analytics_196427335.events_*`
+	WHERE 1=1
+	and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
+	and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
+	AND event_name NOT IN ('screen_view','user_engagement','session_start','firebase_campaign');
 
 
     
