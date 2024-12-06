@@ -338,4 +338,71 @@ FROM
 	on a.original_start_date=b.original_start_date;
 
 
+-----dws_user_event_bound_reports
+--drop table if  exists `gzdw2024.scanner_02_event.dws_user_event_bound_reports` ;
+--CREATE TABLE `gzdw2024.scanner_02_event.dws_user_event_bound_reports` 
+--	PARTITION by event_date  as 
+	delete `gzdw2024.scanner_02_event.dws_user_event_bound_reports`
+where event_date>=date_add(run_date,interval -history_day day)
+and  event_date<=date_add(run_date,interval -history_end_day day);
+
+	insert `gzdw2024.scanner_02_event.dws_user_event_bound_reports` 
+	SELECT
+		event_date
+		,app_version
+		,event_name
+		,count(1) as event_num 
+		,count(distinct user_pseudo_id) as user_num 
+	FROM
+		(
+		SELECT
+			event_date
+			,event_name
+			,user_pseudo_id
+			,app_version
+			,rn
+			,last_event_name
+			,case when event_name='sn_5_call_dial_end_out' and last_event_name ='sn_dev_call_dial_outbound_did_answer' then 1 
+			when event_name not in ('sn_5_call_dial_end_out','sn_5_call_dial_end_in','sn_dev_call_dial_inbound_did_answer') then 1 
+			when event_name='sn_5_call_dial_end_in' and last_event_name ='sn_dev_call_dial_inbound_did_answer' then 1
+			when event_name ='sn_dev_call_dial_inbound_did_answer' and rn=1 then 1  
+			else 0 end as tag 
+		FROM
+			(
+			SELECT
+				event_date
+				--,event_name
+				,user_pseudo_id
+				,ifnull(country_code,a.country) as country_code
+				,app_version
+				,event_timestamp
+				,uuid
+				,mode
+				,provider
+				,case when event_name='sn_5_call_dial_end' and mode='outbound' then 'sn_5_call_dial_end_out'
+				when event_name='sn_5_call_dial_end' and mode='inbound' then 'sn_5_call_dial_end_in'
+				else event_name end as event_name
+				,row_number() over(partition by user_pseudo_id,event_name,uuid) as rn 
+				,lag(event_name)  over(partition by user_pseudo_id order by event_timestamp) as last_event_name 
+			FROM  `gzdw2024.scanner_02_event.dwd_user_event_time_di`       a
+			left join `gzdw2024.gz_dim.country_info` b
+			on upper(a.country)=upper(b.country_name)
+			where  event_date >=date_add(run_date,interval -history_day day)
+			and event_date <=date_add(run_date,interval -history_end_day day)
+			and package_name='second.phone.number.text.free.call.app'
+			and event_name in ('sn_5_call_dial_request','sn_dev_call_dial_outbound_sdk_call','sn_5_call_dial_outbound_succ'
+			,'sn_5_call_dial_outbound_ring','sn_dev_call_dial_outbound_did_answer','sn_5_call_dial_end','sn_5_serve_voice_answer_begin','sn_5_serve_voice_answer_fail'
+			,'sn_5_serve_voice_answer_succ','sn_dev_call_dial_inbound_click_answer','sn_dev_call_dial_inbound_did_answer','sn_dev_call_dial_inbound_connect_sdk'
+			,'sn_5_call_dial_inbound_succ')
+			and ((safe_CAST(SPLIT(app_version, '.')[SAFE_OFFSET(0)] AS INT)>=3 and safe_CAST(SPLIT(app_version, '.')[SAFE_OFFSET(1)] AS INT)>=8  )
+			      or app_version='undefined'
+			      or (safe_CAST(SPLIT(app_version, '.')[SAFE_OFFSET(0)] AS INT)>=4 ))
+			)a 
+		
+		)b 
+		where tag=1
+		group by event_date,event_name,app_version;
+
+
+
 	end;
