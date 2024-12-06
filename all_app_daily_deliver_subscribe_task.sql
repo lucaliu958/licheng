@@ -468,7 +468,7 @@ and  stats_date<=date_add(run_date,interval -history_end_day day);
 			and  stats_date<=date_add(run_date,interval -history_end_day day)
 			union all 
 			SELECT  
-				date_add(stats_date,interval 7 day)
+				date_add(stats_date,interval -7 day)
 				,package_name
 				,ifnull(b.country_code,a.country_code) as country_code
 				,'TOTAL' AS product_id
@@ -488,8 +488,8 @@ and  stats_date<=date_add(run_date,interval -history_end_day day);
 			FROM `gzdw2024.gz_bi.dws_app_country_daily_reports`  a
 			left join `gzdw2024.gz_dim.country_info` b
 			on upper(a.country_code)=upper(b.country_name)
-			WHERE stats_date>=date_add(run_date,interval -(4+7) day)
-			and  stats_date<=date_add(run_date,interval -(1+7) day)
+			WHERE stats_date>=date_add(run_date,interval -history_day day)
+			and  stats_date<=date_add(run_date,interval -history_end_day day)
 			union all 
 			SELECT  
 				stats_date
