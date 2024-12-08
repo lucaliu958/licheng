@@ -55,7 +55,7 @@ insert `gzdw2024.text_03_bi.dws_event_report`
 							,'sn_5_serve_voice_answer_begin','sn_5_serve_voice_answer_succ','sn_5_serve_voice_answer_fail'
 							,'sn_dev_call_dial_inbound_insert_item','sn_dev_call_dial_inbound_callkit','sn_dev_call_dial_inbound_connect_sdk'
 							,'sn_dev_call_dial_inbound_click_answer','sn_dev_call_dial_inbound_will_answer','sn_dev_call_dial_inbound_did_answer'
-							,'sn_dev_call_dial_click_hangup','sn_5_serve_voice_status')
+							,'sn_dev_call_dial_click_hangup','sn_5_serve_voice_status','sn_5_call_quality_action')
 		)a 
 		group by 	event_date,country_code,last_app_version,event_name,is_new;
 
@@ -115,7 +115,7 @@ insert `gzdw2024.text_03_bi.dws_event_params_report`
 							,'sn_5_serve_voice_answer_begin','sn_5_serve_voice_answer_succ','sn_5_serve_voice_answer_fail'
 							,'sn_dev_call_dial_inbound_insert_item','sn_dev_call_dial_inbound_callkit','sn_dev_call_dial_inbound_connect_sdk'
 							,'sn_dev_call_dial_inbound_click_answer','sn_dev_call_dial_inbound_will_answer','sn_dev_call_dial_inbound_did_answer'
-							,'sn_dev_call_dial_click_hangup','sn_5_serve_voice_status')
+							,'sn_dev_call_dial_click_hangup','sn_5_serve_voice_status','sn_5_call_quality_action')
 		and event_params_key in('error_code','reason','star','mode','provider','ga_session_id','net_description')
 		)a 
 		group by 	event_date,event_name,event_params_value,country_code,event_params_key;
