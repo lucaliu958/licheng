@@ -1,7 +1,4 @@
-
-
-
-CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.fb_zp_event_pro`(run_date DATE, history_day INT64, hitory_retain_day INT64,history_end_day  INT64)
+CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.fb_zp_event_pro`(run_date DATE, history_day INT64, hitory_retain_day INT64, history_end_day INT64)
 begin
 
 
@@ -1491,7 +1488,7 @@ insert `gzdw2024.fb_zp_game.dws_start_pv_report`
 						,max(fbUserID) as fbUserID
 					FROM `gzdw2024.fb_zp_game.dwd_user_active_di` 
 					WHERE  1=1
-					event_date>=date_add(run_date,interval -history_day day)
+				and	event_date>=date_add(run_date,interval -history_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
 					group by event_date,user_pseudo_id
 				   )b 
@@ -1506,5 +1503,54 @@ insert `gzdw2024.fb_zp_game.dws_start_pv_report`
 			event_date
 		,CASE WHEN start_pv <=8 then start_pv
 		else 9 end,package_name,country_code,platform,is_new;
+
+
+			----死局报告
+delete `gzdw2024.fb_zp_game.dws_finsh_false_report`
+where stats_date>=date_add(run_date,interval -history_day day)
+and stats_date<=date_add(run_date,interval -history_end_day day);
+
+insert `gzdw2024.fb_zp_game.dws_finsh_false_report`
+--create table  `gzdw2024.fb_zp_game.dws_finsh_false_report`
+--	PARTITION BY stats_date as 
+	SELECT
+		event_date as stats_date
+		,package_name
+		,platform
+		,country_code
+		,level_id
+		,count(case when win='true' then user_pseudo_id else null end) as win_pv
+		,count(case when win='false' then user_pseudo_id else null end) as false_pv
+		,count(user_pseudo_id) as finsh_pv
+	FROM
+		(
+		SELECT 
+			package_name
+			,user_pseudo_id
+			,ARRAY['TOTAL',ifnull(country_code,upper(a.country))] as country_code
+			,ARRAY['TOTAL',case when operating_system ='iOS' then 'iOS'
+			when operating_system ='Android' then 'Android' 
+			else 'web' end] as platform						
+			,event_date
+			,timeuse
+			,steps
+			,win
+			,array['TOTAL',CASE when level_id is null then 'other' else level_id end ] as level_id
+		FROM `gzdw2024.fb_zp_game.dwd_user_event_di` 	a
+		left join `gzdw2024.gz_dim.country_info` b
+		on upper(a.country)=upper(b.country_name)
+		WHERE event_name in ('fb_zp_game_play_finish')
+		and event_date>=date_add(run_date,interval -history_day day)
+						and event_date<=date_add(run_date,interval -history_end_day day)
+		--AND win='true'
+	)a 
+	,UNNEST(platform) as platform
+	,UNNEST(country_code) as country_code
+	,UNNEST(level_id) as level_id
+	--where platform='TOTAL'
+	--and country_code='TOTAL'
+	--and level_id='TOTAL'
+	group by event_date,platform,country_code,level_id,package_name;
+	--order by event_date
 
 	end;
