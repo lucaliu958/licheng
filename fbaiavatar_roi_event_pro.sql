@@ -38,6 +38,7 @@ insert `gzdw2024.fbgame_01_basic.dwd_all_game_user_event_di`
 	,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='level') level_id
 	,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='gameID') gameID
 	,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='gameShowTime') gameShowTime
+	,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='code') e_code
 	FROM `recorder-pro-50451.analytics_250268757.events_*`
 	WHERE 1=1
 	 and  stream_id in('9692329810','9817620337')
