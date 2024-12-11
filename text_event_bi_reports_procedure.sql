@@ -1,3 +1,4 @@
+
 CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.text_event_bi_reports_procedure`(run_date DATE, history_day INT64, history_end_day INT64)
 begin
 
@@ -437,11 +438,11 @@ and  event_date<=date_add(run_date,interval -history_end_day day);
 		group by event_date,event_name,app_version,package_name;
 
 	----积分消耗
-	delete `gzdw2024.text_03_bi.dws_event_params_report`
+	delete `gzdw2024.text_03_bi.dws_credit_cost_report`
 	where event_date>=date_add(run_date,interval -history_day day)
 	and  event_date<=date_add(run_date,interval -history_end_day day);
 
-	insert `gzdw2024.text_03_bi.dws_event_params_report`
+	insert `gzdw2024.text_03_bi.dws_credit_cost_report`
 	--create table   `gzdw2024.text_03_bi.dws_credit_cost_report`
 	--PARTITION BY event_date as
 	SELECT  
