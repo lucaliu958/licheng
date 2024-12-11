@@ -403,7 +403,7 @@ PARSE_DATE('%Y%m%d',a.event_date) event_date
 FROM `scanner-master-android.analytics_196427335.events_*` a 
 cross join unnest(event_params) event_params
 left join (select * from  gzdw2024.scanner_01_basic.dwd_user_active_di where event_date>=date_add(run_date,interval -history_day day)) b on a.user_pseudo_id=b.user_pseudo_id and PARSE_DATE('%Y%m%d',a.event_date) =b.event_date
-WHERE_TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','') 
+WHERE _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','') 
 and a.user_pseudo_id is not null
 AND event_name NOT IN ('screen_view','user_engagement','session_start','firebase_campaign')
 and (event_params.key not in ('engagement_time_msec','ga_session_number','engaged_session_event','ga_session_id'
