@@ -745,7 +745,11 @@ insert `gzdw2024.fb_zp_game.dws_event_active_report`
 						,'fb_zp_reward_ad_not_complete'
 						,'fb_zp_openAdWatchTask_watch_ad_s'
 						,'fb_zp_start_move_click_card'
-	,'fb_zp_game_play_start'
+						,'fb_zp_game_play_start'
+						,'fb_zp_game_play_finishhide'
+						,'fb_zp_game_play_clickautocom'
+						,'fb_zp_game_play_finishautocom'
+						,'fb_zp_tip_show'
 						)
 				)a 
 				 left	join 
@@ -902,6 +906,10 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 										,'fb_zp_openAdWatchTask_watch_ad_s'
 										,'fb_zp_start_move_click_card'
 										,'fb_zp_game_play_start'
+										,'fb_zp_game_play_finishhide'
+										,'fb_zp_game_play_clickautocom'
+										,'fb_zp_game_play_finishautocom'
+										,'fb_zp_tip_show'
 										)
 									 AND event_params.key IN ("error",
 											    "code",
