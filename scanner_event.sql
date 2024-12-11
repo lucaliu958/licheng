@@ -366,7 +366,7 @@ group by a.event_date
 
 -----6.dws_event_param_profile_di 
 delete gzdw2024.scanner_02_event.dws_event_param_profile_di
-where event_date>=date_add(run_date,interval -history_day day)
+where event_date>=date_add('2024-12-11',interval -1 day)
 ;
 
 insert gzdw2024.scanner_02_event.dws_event_param_profile_di
@@ -399,17 +399,16 @@ PARSE_DATE('%Y%m%d',a.event_date) event_date
 ,event_name
 ,event_params.key as event_params_key
      ,case when traffic_source.medium='' or traffic_source.medium is null then 'undefined' else traffic_source.medium end as traffic_source_medium
-,coalesce(cast(event_params.value.int_value as string),cast(event_params.value.string_value as string),cast(event_params.value.float_value as string),cast(event_params.value.double_value as string))  as event_params_value
+,ifnull(coalesce(cast(event_params.value.int_value as string),cast(event_params.value.string_value as string),cast(event_params.value.float_value as string),cast(event_params.value.double_value as string)),'None')  as event_params_value
 FROM `scanner-master-android.analytics_196427335.events_*` a 
 cross join unnest(event_params) event_params
-inner join  gzdw2024.scanner_01_basic.dwd_user_active_di b on a.user_pseudo_id=b.user_pseudo_id and PARSE_DATE('%Y%m%d',a.event_date) =b.event_date
-WHERE _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','') 
+left join (select * from  gzdw2024.scanner_01_basic.dwd_user_active_di where event_date>=date_add(run_date,interval -history_day day)) b on a.user_pseudo_id=b.user_pseudo_id and PARSE_DATE('%Y%m%d',a.event_date) =b.event_date
+WHERE_TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','') 
 and a.user_pseudo_id is not null
-and b.event_date>=date_add(run_date,interval -history_day day)
 AND event_name NOT IN ('screen_view','user_engagement','session_start','firebase_campaign')
-and event_params.key not in ('engagement_time_msec','ga_session_number','engaged_session_event','ga_session_id'
+and (event_params.key not in ('engagement_time_msec','ga_session_number','engaged_session_event','ga_session_id'
 'firebase_screen','firebase_screen_class','firebase_screen_id','firebase_conversion','ga_session_id',
-'firebase_previous_class','firebase_previous_id','firebase_error')
+'firebase_previous_class','firebase_previous_id','firebase_error') )
 ) a
 group by 
 event_date
@@ -425,9 +424,6 @@ event_date
 ,event_params_value
    ,traffic_source_medium
 ;
-
-
-
 
 -----7.dwd_user_event_param_di 
 delete gzdw2024.scanner_02_event.dwd_user_event_param_di
@@ -770,6 +766,8 @@ and  event_date<=date_add(run_date,interval -history_end_day day);
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(user_properties) WHERE key='exp_cat') exp_cat
 		,date(format_timestamp("%Y-%m-%d %H:%M:%S", timestamp_seconds( cast ((user_first_touch_timestamp/1000000) as int64)),'Pacific/Auckland')) as active_date
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='time') duration_time
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='status') status
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='credit') credit
 	FROM `scanner-master-android.analytics_196427335.events_*`
 	WHERE 1=1
 	and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
