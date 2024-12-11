@@ -769,6 +769,7 @@ and  event_date<=date_add(run_date,interval -history_end_day day);
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='time') time_use
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(user_properties) WHERE key='exp_cat') exp_cat
 		,date(format_timestamp("%Y-%m-%d %H:%M:%S", timestamp_seconds( cast ((user_first_touch_timestamp/1000000) as int64)),'Pacific/Auckland')) as active_date
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='time') duration_time
 	FROM `scanner-master-android.analytics_196427335.events_*`
 	WHERE 1=1
 	and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
