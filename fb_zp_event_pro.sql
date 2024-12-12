@@ -792,6 +792,7 @@ insert `gzdw2024.fb_zp_game.dws_event_active_report`
 
 
 ----------------事件参数明细
+----------------事件参数明细
 
 delete `gzdw2024.fb_zp_game.dws_fb_events_detail`
 where event_date>=date_add(run_date,interval -history_day day)
@@ -806,12 +807,14 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 		,C0.package_name
 		,C0.country_code
 		,C0.platform
-		,event_name
+		,c0.event_name
 		,event_params_key
 		,event_params_value
 		,event_num
 		,user_num
 		,active_uv
+		,pv as event_pv 
+		,uv as event_uv 
 	FROM
 		(
 		SELECT
@@ -980,58 +983,97 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 			and c0.platform=c1.platform
 			and c0.country_code=c1.country_code
 			AND c0.package_name=c1.package_name
+			left join
+			(
+			SELECT
+				stats_date event_date
+				,event_name
+				,package_name
+				,platform
+				,country_code
+				,pv 
+				,uv 
+			FROM	 `gzdw2024.fb_zp_game.dws_event_active_report`
+			WHERE stats_date>=date_add(run_date,interval -history_day  day)
+			and stats_date<=date_add(run_date,interval -history_end_day day)
+
+			)c2
+			on c0.event_date=c2.event_date
+			and c0.platform=c2.platform
+			and c0.country_code=c2.country_code
+			AND c0.package_name=c2.package_name
+			and c0.event_name=c2.event_name
 			;
 
 
-							
-----插屏与激励期望展示率
-delete `gzdw2024.fb_zp_game.dws_ad_expect_show_report`
-where stats_date>=date_add(run_date,interval -history_day day)
-and stats_date<=date_add(run_date,interval -history_end_day day);
+				----插屏与激励期望展示率
+		delete `gzdw2024.fb_zp_game.dws_ad_expect_show_report`
+		where stats_date>=date_add(run_date,interval -history_day day)
+		and stats_date<=date_add(run_date,interval -history_end_day day);
 
 
-insert `gzdw2024.fb_zp_game.dws_ad_expect_show_report`
---create table  `gzdw2024.fb_zp_game.dws_ad_expect_show_report`
---	PARTITION BY stats_date as 
-SELECT
-	a.stats_date
-	,a.package_name
-	,a.platform
-	,a.country_code
-	,pv 
-	,impressions
-FROM
-	(
-	SELECT
-		stats_date
-		,package_name
-		,platform
-		,country_code
-		,sum(pv ) as pv 
-	FROM `gzdw2024.fb_zp_game.dws_event_active_report`
-	WHERE event_name IN ('fb_zp_game_play_finish','fb_zp_new_game_play')
-	AND stats_date>=date_add(run_date,interval -history_day day)
-	and stats_date<=date_add(run_date,interval -history_end_day day)
-	group by stats_date,package_name,platform,Country_code
-	)a 
-	left join
-	(
+		insert `gzdw2024.fb_zp_game.dws_ad_expect_show_report`
+		--create table  `gzdw2024.fb_zp_game.dws_ad_expect_show_report`
+		--	PARTITION BY stats_date as 
 		SELECT
-		stats_date
-		,package_name
-		,platform
-		,country_code
-		,sum(impressions ) as impressions 
-	FROM `gzdw2024.fb_zp_game.dws_user_fb_ad_report`
-	WHERE ad_type like '%interstitial%'
-	AND stats_date>=date_add(run_date,interval -history_day day)
-	and stats_date<=date_add(run_date,interval -history_end_day day)
-	group by stats_date,package_name,platform,Country_code
-	)b 
-	on a.stats_date=b.stats_date
-	and a.package_name=b.package_name
-	and a.platform=b.platform
-	and a.country_code=b.country_code;
+			a.stats_date
+			,a.package_name
+			,a.platform
+			,a.country_code
+			,pv 
+			,impressions
+		FROM
+			(
+			SELECT
+				stats_date
+				,package_name
+				,platform
+				,country_code
+				,count(1) as pv 
+			FROM
+				(
+				SELECT
+					event_date stats_date
+					,package_name
+					,ARRAY['TOTAL',ifnull(country_code,a.country)] as country_code
+						,ARRAY['TOTAL',case when operating_system ='iOS' then 'iOS'
+						when operating_system ='Android' then 'Android' 
+						else 'web' end] as platform	
+					,user_pseudo_id
+					,fbUserID 
+				FROM `gzdw2024.fb_zp_game.dwd_user_event_di`         a
+					left join `gzdw2024.gz_dim.country_info` b
+					on upper(a.country)=upper(b.country_name)
+				WHERE (event_name IN ('fb_zp_new_game_play') or (event_name in ('fb_zp_game_play_finish') and win='true'))
+				AND event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				)a 
+				,UNNEST(country_code) as country_code
+				,UNNEST(platform) as platform
+				group by a.stats_date,package_name,platform,Country_code
+			)a 
+			left join
+			(
+				SELECT
+				stats_date
+				,package_name
+				,platform
+				,country_code
+				,sum(impressions ) as impressions 
+			FROM `gzdw2024.fb_zp_game.dws_user_fb_ad_report`
+			WHERE ad_type like '%interstitial%'
+			AND stats_date>=date_add(run_date,interval -history_day day)
+			and stats_date<=date_add(run_date,interval -history_end_day day)
+			group by stats_date,package_name,platform,Country_code
+			)b 
+			on a.stats_date=b.stats_date
+			and a.package_name=b.package_name
+			and a.platform=b.platform
+			and a.country_code=b.country_code;
+
+
+
+
 
 
 	----通关用户报告
