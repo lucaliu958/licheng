@@ -750,6 +750,10 @@ insert `gzdw2024.fb_zp_game.dws_event_active_report`
 						,'fb_zp_game_play_clickautocom'
 						,'fb_zp_game_play_finishautocom'
 						,'fb_zp_tip_show'
+						,'fb_zp_game_play_finishhide'
+						,'fb_zp_game_shuffle_show'
+						,'fb_zp_game_shuffle_clickads'
+
 						)
 				)a 
 				 left	join 
@@ -913,6 +917,9 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 										,'fb_zp_game_play_clickautocom'
 										,'fb_zp_game_play_finishautocom'
 										,'fb_zp_tip_show'
+										,'fb_zp_game_play_finishhide'
+										,'fb_zp_game_shuffle_show'
+										,'fb_zp_game_shuffle_clickads'
 										)
 									 AND event_params.key IN ("error",
 											    "code",
@@ -1044,7 +1051,7 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 				FROM `gzdw2024.fb_zp_game.dwd_user_event_di`         a
 					left join `gzdw2024.gz_dim.country_info` b
 					on upper(a.country)=upper(b.country_name)
-				WHERE (event_name IN ('fb_zp_new_game_play') or (event_name in ('fb_zp_game_play_finish') and win='true'))
+				WHERE (event_name IN ('fb_zp_new_game_play','fb_zp_game_shuffle_clickads') or (event_name in ('fb_zp_game_play_finish') and win='true'))
 				AND event_date>=date_add(run_date,interval -history_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
 				)a 
