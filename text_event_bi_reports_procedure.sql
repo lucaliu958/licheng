@@ -83,18 +83,21 @@ and  event_date<=date_add(run_date,interval -history_end_day day);
 
 insert `gzdw2024.text_03_bi.dws_event_params_report`
 	SELECT  
+	b.event_date
+	,b.event_name
+	,b.country_code
+	--,last_app_version
+	,b.event_params_key
+	,b.event_params_value
+	,sum(b.event_num) as event_num
+	,b.package_name
+	,max(c.event_num) as event_total_num
+FROM
+	(
+	SELECT  
 		event_date
 		,event_name
-		,case when country_code='SYRIA' then 'SY'
-			when country_code='TÜRKIYE' then 'TR'
-			when country_code='MYANMAR (BURMA)' then 'MM'
-			when country_code='PALESTINE' then 'PS'
-			when country_code='AUSTRALIA' then 'AU'
-			when country_code='CONGO - KINSHASA' then 'CD'
-			when country_code='BOSNIA & HERZEGOVINA' then 'BA'
-			when country_code='NORTH MACEDONIA' then 'MK'
-			when country_code='KOSOVO' then 'XK'
-			else country_code end as country_code
+		,country_code
 		--,last_app_version
 		,event_params_key
 		,event_params_value
@@ -114,8 +117,8 @@ insert `gzdw2024.text_03_bi.dws_event_params_report`
 		FROM `gzdw2024.scanner_02_event.dws_event_param_profile_di`a 
 		left join `gzdw2024.gz_dim.country_info` b
 		on upper(a.country)=upper(b.country_name)
-		WHERE event_date >= date_add(run_date,interval -history_day day)
-			    and event_date <= date_add(run_date,interval -history_end_day day)
+		WHERE event_date >=date_add(run_date,interval -history_day day)
+			and event_date <=date_add(run_date,interval -history_end_day day)
 		and package_name in ('second.phone.number.text.free.call.app','com.talknow.free.text.me.now.second.phone.number.burner.app')
 		and event_name in ('first_open','sn_0_app_launch','sn_1_signin_show','sn_1_signin_succ','sn_1_signin_fail'
 							,'sn_vip_all_show','sn_vip_all_click','sn_vip_all_succ','sn_vip_all_fail'
@@ -142,10 +145,41 @@ insert `gzdw2024.text_03_bi.dws_event_params_report`
 							,'sn_11_serve_sms_back_credit'
 							,'sn_11_serve_sms_activate_buy_credit'
 							,'sn_11_serve_sms_activate_back_credit'
-							,'sn_11_serve_call_paid')
+							,'sn_11_serve_call_paid'
+							,'sn_11_serve_send_queue_succ')
 		and event_params_key in('error_code','reason','star','mode','provider','ga_session_id','net_description','status','credit')
 		)a 
-		group by 	event_date,event_name,event_params_value,country_code,event_params_key,package_name;
+		group by 	event_date,event_name,event_params_value,country_code,event_params_key,package_name
+	)b 
+	left join
+	(
+	SELECT  
+		event_date
+		,event_name
+		,country_code
+		--,last_app_version
+		--,is_new
+		,count(1) as event_num
+		,package_name
+	FROM	`gzdw2024.scanner_02_event.dwd_user_event_time_di`     a
+	left join `gzdw2024.gz_dim.country_info` b
+	on upper(a.country)=upper(b.country_name)
+	where 1=1
+	and  event_date >=date_add(run_date,interval -history_day day)
+			and event_date <=date_add(run_date,interval -history_end_day day)
+	    and package_name in ('second.phone.number.text.free.call.app','com.talknow.free.text.me.now.second.phone.number.burner.app')
+    group by 	event_date,event_name,country_code,package_name
+	)c 
+	on b.event_date=c.event_date
+	and b.event_name=c.event_name
+	and b.country_code=c.country_code
+	and b.package_name=c.package_name
+	GROUP BY b.event_date
+	,b.event_name
+	,b.country_code
+	,b.event_params_key
+	,b.event_params_value
+	,b.package_name;
 
 ------通话时长
 --drop table  `gzdw2024.text_02_event.dwd_user_event_time_detail`;
