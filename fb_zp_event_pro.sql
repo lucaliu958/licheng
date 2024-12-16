@@ -753,7 +753,10 @@ insert `gzdw2024.fb_zp_game.dws_event_active_report`
 						,'fb_zp_game_play_finishhide'
 						,'fb_zp_fgame_shuffle_show'
 						,'fb_zp_game_shuffle_clickads'
-
+						,'fb_zp_ad_impression_first'
+						,'fb_zp_ad_impression_first_fail'
+						,'fb_zp_ad_impression_fail'
+						,'fb_zp_reward_interstitial_skip'
 						)
 				)a 
 				 left	join 
@@ -920,6 +923,10 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 										,'fb_zp_game_play_finishhide'
 										,'fb_zp_fgame_shuffle_show'
 										,'fb_zp_game_shuffle_clickads'
+										,'fb_zp_ad_impression_first'
+										,'fb_zp_ad_impression_first_fail'
+										,'fb_zp_ad_impression_fail'
+										,'fb_zp_reward_interstitial_skip'
 										)
 									 AND event_params.key IN ("error",
 											    "code",
