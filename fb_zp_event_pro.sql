@@ -1013,7 +1013,6 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 			;
 
 
-				----插屏与激励期望展示率
 		delete `gzdw2024.fb_zp_game.dws_ad_expect_show_report`
 		where stats_date>=date_add(run_date,interval -history_day day)
 		and stats_date<=date_add(run_date,interval -history_end_day day);
@@ -1029,6 +1028,7 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 			,a.country_code
 			,pv 
 			,impressions
+			,impression_pv
 		FROM
 			(
 			SELECT
@@ -1076,7 +1076,26 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 			on a.stats_date=b.stats_date
 			and a.package_name=b.package_name
 			and a.platform=b.platform
-			and a.country_code=b.country_code;
+			and a.country_code=b.country_code
+			left join
+			(
+				SELECT
+				event_date stats_date
+				,package_name
+				,platform
+				,country_code
+				,sum(impression_pv ) as impression_pv 
+			FROM `gzdw2024.fb_zp_game.dws_user_ad_report`
+			WHERE ad_type like '%interstitial%'
+			AND event_date>=date_add(run_date,interval -history_day day)
+			and event_date<=date_add(run_date,interval -history_end_day day)
+			AND placement='TOTAL'
+			group by stats_date,package_name,platform,Country_code
+			)c 
+			on a.stats_date=c.stats_date
+			and a.package_name=c.package_name
+			and a.platform=c.platform
+			and a.country_code=c.country_code;
 
 
 
