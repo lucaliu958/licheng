@@ -366,7 +366,7 @@ group by a.event_date
 
 -----6.dws_event_param_profile_di 
 delete gzdw2024.scanner_02_event.dws_event_param_profile_di
-where event_date>=date_add('2024-12-11',interval -1 day)
+where event_date>=date_add(run_date,interval -history_day day)
 ;
 
 insert gzdw2024.scanner_02_event.dws_event_param_profile_di
