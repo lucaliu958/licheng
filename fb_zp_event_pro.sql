@@ -40,6 +40,8 @@ insert `gzdw2024.fb_zp_game.dwd_user_event_di`
 		,gameID
 		,gameShowTime
 	,e_code
+	,entrance
+	,eventTime
 	FROM `gzdw2024.fbgame_01_basic.dwd_all_game_user_event_di`
 	WHERE event_date>=date_add(run_date,interval -history_day day)
 	and event_date<=date_add(run_date,interval -history_end_day day)
@@ -757,6 +759,8 @@ insert `gzdw2024.fb_zp_game.dws_event_active_report`
 						,'fb_zp_ad_impression_first_fail'
 						,'fb_zp_ad_impression_fail'
 						,'fb_zp_reward_interstitial_skip'
+						,'fb_zp_ad_impression_fail'
+						,'fb_zp_ad_expect_impression_c'
 						)
 				)a 
 				 left	join 
@@ -927,6 +931,8 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 										,'fb_zp_ad_impression_first_fail'
 										,'fb_zp_ad_impression_fail'
 										,'fb_zp_reward_interstitial_skip'
+										,'fb_zp_ad_impression_fail'
+										,'fb_zp_ad_expect_impression_c'
 										)
 									 AND event_params.key IN ("error",
 											    "code",
@@ -1019,7 +1025,7 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 			and c0.event_name=c2.event_name
 			;
 
-
+-------------期望展示报告
 		delete `gzdw2024.fb_zp_game.dws_ad_expect_show_report`
 		where stats_date>=date_add(run_date,interval -history_day day)
 		and stats_date<=date_add(run_date,interval -history_end_day day);
