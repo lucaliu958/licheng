@@ -6,7 +6,7 @@ begin
 
 -------1.dwd_user_event_di
 delete `gzdw2024.fb_zp_game.dwd_user_event_di`
-where event_date>=date_add(run_date,interval -history_day day)
+where event_date>=date_add(run_date,interval history_day day)
 and event_date<=date_add(run_date,interval -history_end_day day)
 ;
 insert `gzdw2024.fb_zp_game.dwd_user_event_di`
@@ -1114,7 +1114,6 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 
 
 
-
 	----通关用户报告
 delete `gzdw2024.fb_zp_game.dws_level_use_report`
 where stats_date>=date_add(run_date,interval -history_day day)
@@ -1137,34 +1136,68 @@ insert `gzdw2024.fb_zp_game.dws_level_use_report`
 		,COUNT(CASE WHEN timeuse/1000/60>=12   then user_pseudo_id else null end)/count(user_pseudo_id) as ratio_12
 		,count(user_pseudo_id) as pv 
 		,avg(steps) as avg_steps
+		,is_new
 	FROM
 		(
-		SELECT 
-			package_name
+		SELECT
+			a.package_name
 			,user_pseudo_id
-			,ARRAY['TOTAL',ifnull(country_code,upper(a.country))] as country_code
-			,ARRAY['TOTAL',case when operating_system ='iOS' then 'iOS'
-			when operating_system ='Android' then 'Android' 
-			else 'web' end] as platform						
-			,event_date
+			,country_code
+			,platform
+			,a.event_date
 			,timeuse
 			,steps
-			,array['TOTAL',CASE when level_id is null then 'other' else level_id end ] as level_id
-		FROM `gzdw2024.fb_zp_game.dwd_user_event_di` 	a
-		left join `gzdw2024.gz_dim.country_info` b
-		on upper(a.country)=upper(b.country_name)
-		WHERE event_name in ('fb_zp_game_play_finish')
-		and event_date>=date_add(run_date,interval -history_day day)
-						and event_date<=date_add(run_date,interval -history_end_day day)
-		AND win='true'
+			,level_id
+			,a.fbUserID
+			,ARRAY['TOTAL',case when is_new =1 then 'new'
+			when is_new =0 then 'old' 
+			else 'old' end] as is_new	
+		FROM
+			(	
+			SELECT 
+				package_name
+				,user_pseudo_id
+				,ARRAY['TOTAL',ifnull(country_code,upper(a.country))] as country_code
+				,ARRAY['TOTAL',case when operating_system ='iOS' then 'iOS'
+				when operating_system ='Android' then 'Android' 
+				else 'web' end] as platform						
+				,event_date
+				,timeuse
+				,steps
+				,array['TOTAL',CASE when level_id is null then 'other' else level_id end ] as level_id
+				,fbUserID
+			FROM `gzdw2024.fb_zp_game.dwd_user_event_di` 	a
+			left join `gzdw2024.gz_dim.country_info` b
+			on upper(a.country)=upper(b.country_name)
+			WHERE event_name in ('fb_zp_game_play_finish')
+			and event_date>=date_add(run_date,interval -history_day day)
+							and event_date<=date_add(run_date,interval -history_end_day day)
+			AND win='true'
+			)a 
+			left join
+			(
+				SELECT
+					package_name
+					,event_date
+					,fbUserID
+					,max(is_new) as is_new
+				FROM `gzdw2024.fb_zp_game.dwd_user_active_profile_di`
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				group by event_date,fbUserID,package_name
+				)b 
+			on a.fbUserID=b.fbUserID
+			and a.package_name=b.package_name
+			and a.event_date=b.event_date
 	)a 
 	,UNNEST(platform) as platform
 	,UNNEST(country_code) as country_code
 	,UNNEST(level_id) as level_id
+	,UNNEST(is_new) as is_new
 	--where platform='TOTAL'
 	--and country_code='TOTAL'
 	--and level_id='TOTAL'
-	group by event_date,platform,country_code,level_id,package_name;
+	group by event_date,platform,country_code,level_id,package_name,is_new;
 	--order by event_date
 
 	----退出用户报告
@@ -1186,6 +1219,7 @@ SELECT
 	,sum(hidesum) as hidesum
 	,sum(exit_pv) as exit_pv
 	,sum(game_show_min) as game_show_min
+	,is_new
 FROM
 	(
 	SELECT
@@ -1198,6 +1232,7 @@ FROM
 		,sum(hidesum) as hidesum
 		,0 as exit_pv
 		,0 as game_show_min
+		,is_new
 	FROM
 		(
 		SELECT
@@ -1209,30 +1244,63 @@ FROM
 			,event_date
 			,gameID
 			,level_id
+			,is_new
 		FROM
 			(
 			SELECT
-				package_name
+				a.package_name
 				,user_pseudo_id
-				,array['TOTAL',ifnull(country_code,upper(a.country))] as country_code
-				,array['TOTAL',case when operating_system ='iOS' then 'iOS'
-				when operating_system ='Android' then 'Android' 
-				else 'web' end] as platform
-				,safe_cast(hidesum as int) as hidesum
-				,event_date
+				,country_code
+				,platform
+				,a.event_date
+				,hidesum
 				,gameID
-				,array['TOTAL',CASE when level_id is null then 'other' else level_id end ] as level_id
-			FROM `gzdw2024.fb_zp_game.dwd_user_event_di`	a
-			left join `gzdw2024.gz_dim.country_info` b
-			on upper(a.country)=upper(b.country_name)
-			WHERE event_name in ('fb_zp_game_play_exit')
-			and event_date>=date_add(run_date,interval -history_day day)
-						and event_date<=date_add(run_date,interval -history_end_day day)
-			and safe_cast(hidesum as int)>0
+				,level_id
+				,ARRAY['TOTAL',case when is_new =1 then 'new'
+				when is_new =0 then 'old' 
+				else 'old' end] as is_new	
+			FROM
+				(
+				SELECT
+					package_name
+					,user_pseudo_id
+					,array['TOTAL',ifnull(country_code,upper(a.country))] as country_code
+					,array['TOTAL',case when operating_system ='iOS' then 'iOS'
+					when operating_system ='Android' then 'Android' 
+					else 'web' end] as platform
+					,safe_cast(hidesum as int) as hidesum
+					,event_date
+					,gameID
+					,array['TOTAL',CASE when level_id is null then 'other' else level_id end ] as level_id
+          ,fbUserID
+				FROM `gzdw2024.fb_zp_game.dwd_user_event_di`	a
+				left join `gzdw2024.gz_dim.country_info` b
+				on upper(a.country)=upper(b.country_name)
+				WHERE event_name in ('fb_zp_game_play_exit')
+				and event_date>=date_add(run_date,interval -history_day day)
+							and event_date<=date_add(run_date,interval -history_end_day day)
+				and safe_cast(hidesum as int)>0
+				)a 
+				left join
+				(
+					SELECT
+						package_name
+						,event_date
+						,fbUserID
+						,max(is_new) as is_new
+					FROM `gzdw2024.fb_zp_game.dwd_user_active_profile_di`
+					WHERE event_date>=date_add(run_date,interval -history_day day)
+					and event_date<=date_add(run_date,interval -history_end_day day)
+					group by event_date,fbUserID,package_name
+					)b 
+				on a.fbUserID=b.fbUserID
+				and a.package_name=b.package_name
+				and a.event_date=b.event_date
 			)a
 			,UNNEST(country_code) as country_code
 			,UNNEST(platform) as platform
 			,UNNEST(level_id) as level_id
+			,UNNEST(is_new) as is_new
 			group by package_name
 			,country_code
 			,user_pseudo_id
@@ -1240,12 +1308,14 @@ FROM
 			,event_date
 			,level_id
 			,platform
+			,is_new
 		)c 
 		group by event_date
 		,package_name
 		,platform
 		,country_code
 		,level_id
+    ,is_new
 	union all 
 	SELECT
 		event_date
@@ -1257,6 +1327,7 @@ FROM
 		,0 as hidesum
 		,count(1) as  exit_pv 
 		,sum(game_show_min) as game_show_min
+		,is_new
 	FROM
 		(
 		SELECT
@@ -1266,26 +1337,59 @@ FROM
 			,ifnull(fbUserID,a.user_pseudo_id) as fbUserID
 			,sum(gameShowTime/1000/60) as game_show_min
 			,a.event_date
+			,is_new
 		FROM
 			(
 			SELECT
-				package_name
+				a.package_name
 				,user_pseudo_id
-				,array['TOTAL',ifnull(country_code,upper(a.country))] as country_code
-				,array['TOTAL',case when operating_system ='iOS' then 'iOS'
-				when operating_system ='Android' then 'Android' 
-				else 'web' end] as platform
-				,safe_cast(hidesum as int) as hidesum
-				,safe_cast(gameShowTime as int) as gameShowTime
-				,event_date
+				,country_code
+				,platform
+				,hidesum
+				,gameShowTime
+				,a.event_date
 				,gameID
-				,'TOTAL' as level_id
-			FROM `gzdw2024.fb_zp_game.dwd_user_event_di`	a
-			left join `gzdw2024.gz_dim.country_info` b
-			on upper(a.country)=upper(b.country_name)
-			WHERE event_name in ('fb_zp_game_play_exit')
-			and event_date>=date_add(run_date,interval -history_day day)
-						and event_date<=date_add(run_date,interval -history_end_day day)
+				,level_id
+				,ARRAY['TOTAL',case when is_new =1 then 'new'
+				when is_new =0 then 'old' 
+				else 'old' end] as is_new	
+			FROM
+				(
+				SELECT
+					package_name
+					,user_pseudo_id
+					,array['TOTAL',ifnull(country_code,upper(a.country))] as country_code
+					,array['TOTAL',case when operating_system ='iOS' then 'iOS'
+					when operating_system ='Android' then 'Android' 
+					else 'web' end] as platform
+					,safe_cast(hidesum as int) as hidesum
+					,safe_cast(gameShowTime as int) as gameShowTime
+					,event_date
+					,gameID
+					,'TOTAL' as level_id
+					,fbUserID
+				FROM `gzdw2024.fb_zp_game.dwd_user_event_di`	a
+				left join `gzdw2024.gz_dim.country_info` b
+				on upper(a.country)=upper(b.country_name)
+				WHERE event_name in ('fb_zp_game_play_exit')
+				and event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				)a 
+				left join
+				(
+					SELECT
+						package_name
+						,event_date
+						,fbUserID
+						,max(is_new) as is_new
+					FROM `gzdw2024.fb_zp_game.dwd_user_active_profile_di`
+					WHERE event_date>=date_add(run_date,interval -history_day day)
+					and event_date<=date_add(run_date,interval -history_end_day day)
+					group by event_date,fbUserID,package_name
+					)b 
+				on a.fbUserID=b.fbUserID
+				and a.package_name=b.package_name
+				and a.event_date=b.event_date
 			)a
 			  left join 
 			(
@@ -1303,12 +1407,13 @@ FROM
 			and a.event_date=c.event_date
 			,UNNEST(country_code) as country_code
 			,UNNEST(platform) as platform
-			
+			,UNNEST(is_new) as is_new
 			group by package_name
 			,country_code
 			,ifnull(fbUserID,a.user_pseudo_id)
 			,event_date
 			,platform
+			,is_new
 		)c 
 	where game_show_min<=150 
 		group by event_date
@@ -1316,12 +1421,14 @@ FROM
 		,platform
 		,country_code
 		,level_id
+		,is_new
 	)d 
 	group by event_date
 		,package_name
 		,platform
 		,country_code
-		,level_id;
+		,level_id
+		,is_new;
 
 
 
@@ -1612,35 +1719,68 @@ insert `gzdw2024.fb_zp_game.dws_finsh_false_report`
 		,count(case when win='true' then user_pseudo_id else null end) as win_pv
 		,count(case when win='false' then user_pseudo_id else null end) as false_pv
 		,count(user_pseudo_id) as finsh_pv
+		,is_new
 	FROM
 		(
-		SELECT 
-			package_name
+		SELECT
+			a.package_name
 			,user_pseudo_id
-			,ARRAY['TOTAL',ifnull(country_code,upper(a.country))] as country_code
-			,ARRAY['TOTAL',case when operating_system ='iOS' then 'iOS'
-			when operating_system ='Android' then 'Android' 
-			else 'web' end] as platform						
-			,event_date
+			,country_code
+			,platform
+			,a.event_date
 			,timeuse
 			,steps
-			,win
-			,array['TOTAL',CASE when level_id is null then 'other' else level_id end ] as level_id
-		FROM `gzdw2024.fb_zp_game.dwd_user_event_di` 	a
-		left join `gzdw2024.gz_dim.country_info` b
-		on upper(a.country)=upper(b.country_name)
-		WHERE event_name in ('fb_zp_game_play_finish')
-		and event_date>=date_add(run_date,interval -history_day day)
-						and event_date<=date_add(run_date,interval -history_end_day day)
-		--AND win='true'
+			,win 
+			,level_id
+			,ARRAY['TOTAL',case when is_new =1 then 'new'
+				when is_new =0 then 'old' 
+				else 'old' end] as is_new	
+		FROM
+			(
+			SELECT 
+				package_name
+				,user_pseudo_id
+				,ARRAY['TOTAL',ifnull(country_code,upper(a.country))] as country_code
+				,ARRAY['TOTAL',case when operating_system ='iOS' then 'iOS'
+				when operating_system ='Android' then 'Android' 
+				else 'web' end] as platform						
+				,event_date
+				,timeuse
+				,steps
+				,win
+				,fbUserID
+				,array['TOTAL',CASE when level_id is null then 'other' else level_id end ] as level_id
+			FROM `gzdw2024.fb_zp_game.dwd_user_event_di` 	a
+			left join `gzdw2024.gz_dim.country_info` b
+			on upper(a.country)=upper(b.country_name)
+			WHERE event_name in ('fb_zp_game_play_finish')
+			and event_date>=date_add(run_date,interval -history_day day)
+							and event_date<=date_add(run_date,interval -history_end_day day)
+			)a 
+			left join
+			(
+				SELECT
+					package_name
+					,event_date
+					,fbUserID
+					,max(is_new) as is_new
+				FROM `gzdw2024.fb_zp_game.dwd_user_active_profile_di`
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				group by event_date,fbUserID,package_name
+				)b 
+			on a.fbUserID=b.fbUserID
+			and a.package_name=b.package_name
+			and a.event_date=b.event_date
 	)a 
 	,UNNEST(platform) as platform
 	,UNNEST(country_code) as country_code
 	,UNNEST(level_id) as level_id
+	,UNNEST(is_new) as is_new
 	--where platform='TOTAL'
 	--and country_code='TOTAL'
 	--and level_id='TOTAL'
-	group by event_date,platform,country_code,level_id,package_name;
+	group by event_date,platform,country_code,level_id,package_name,is_new;
 	--order by event_date
 
 	end;
