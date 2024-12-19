@@ -71,7 +71,40 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_cost_daily_reports`
 		order by stats_date desc ,cost desc;
 
 
+ delete `gzdw2024.fbgame_03_bi.dws_fb_cost_daily_reports`
+			where stats_date>=date_add(run_date,interval -history_day day)
+			and  stats_date<=date_add(run_date,interval -history_end_day day)
+			and stats_date>='2024-11-19';
 
+
+		insert `gzdw2024.fbgame_03_bi.dws_fb_cost_daily_reports`
+		SELECT  
+			PARSE_DATE('%Y-%m-%d', string_field_0) AS stats_date
+			,'fb.ai.avatar.puzzle' as package_name
+			,'TOTAL' AS platform
+			,'TOTAL' AS country_code
+			,sum(safe_CAST(REPLACE(REPLACE(string_field_3, '$', ''), ',', '') AS FLOAT64)) AS cost
+			,sum(safe_CAST(REPLACE(REPLACE(string_field_6, '$', ''), ',', '') AS FLOAT64)) AS install
+		FROM `gzdw2024.temp.oho_cost` 
+		where length(string_field_0)>6
+		and PARSE_DATE('%Y-%m-%d', string_field_0) >= date_add(run_date,interval -history_day day)
+		and PARSE_DATE('%Y-%m-%d', string_field_0) <= date_add(run_date,interval -history_end_day day)
+		and  PARSE_DATE('%Y-%m-%d', string_field_0)>='2024-11-19'
+		group by PARSE_DATE('%Y-%m-%d', string_field_0)
+		union all 
+		SELECT  
+			PARSE_DATE('%Y-%m-%d', string_field_0) AS stats_date
+			,'fb.zp' as package_name
+			,'TOTAL' AS platform
+			,upper(string_field_1) AS country_code
+			,sum(safe_CAST(REPLACE(REPLACE(string_field_3, '$', ''), ',', '') AS FLOAT64)) AS cost
+			,sum(safe_CAST(REPLACE(REPLACE(string_field_6, '$', ''), ',', '') AS FLOAT64)) AS install
+		FROM `gzdw2024.temp.oho_cost` 
+		where length(string_field_0)>6
+		and PARSE_DATE('%Y-%m-%d', string_field_0) >= date_add(run_date,interval -history_day day)
+		and PARSE_DATE('%Y-%m-%d', string_field_0) <= date_add(run_date,interval -history_end_day day)
+		and  PARSE_DATE('%Y-%m-%d', string_field_0)>='2024-11-19'
+		group by PARSE_DATE('%Y-%m-%d', string_field_0),upper(string_field_1);
 
 delete `gzdw2024.fbgame_03_bi.dws_fb_ad_revenue_daily_reports`
 where stats_date>=date_add(run_date,interval -history_day day)
@@ -767,6 +800,42 @@ insert `gzdw2024.fb_zp_game.dws_fb_cost_daily_reports`
 		,platform
 		,country_code
 		order by stats_date desc ,cost desc;
+
+		 delete `gzdw2024.fb_zp_game.dws_fb_cost_daily_reports`
+where stats_date>=date_add(run_date,interval -history_day day)
+and  stats_date<=date_add(run_date,interval -history_end_day day)
+and stats_date>='2024-12-09';
+
+
+		insert `gzdw2024.fb_zp_game.dws_fb_cost_daily_reports`
+		SELECT  
+			PARSE_DATE('%Y-%m-%d', string_field_0) AS stats_date
+			,'fb.zp' as package_name
+			,'TOTAL' AS platform
+			,'TOTAL' AS country_code
+			,sum(safe_CAST(REPLACE(REPLACE(string_field_3, '$', ''), ',', '') AS FLOAT64)) AS cost
+			,sum(safe_CAST(REPLACE(REPLACE(string_field_6, '$', ''), ',', '') AS FLOAT64)) AS install
+		FROM `gzdw2024.temp.slt_cost` 
+		where length(string_field_0)>6
+		and PARSE_DATE('%Y-%m-%d', string_field_0) >= date_add(run_date,interval -history_day day)
+		and PARSE_DATE('%Y-%m-%d', string_field_0) <= date_add(run_date,interval -history_end_day day)
+		and  PARSE_DATE('%Y-%m-%d', string_field_0)>='2024-12-09'
+		group by PARSE_DATE('%Y-%m-%d', string_field_0)
+		union all 
+		SELECT  
+			PARSE_DATE('%Y-%m-%d', string_field_0) AS stats_date
+			,'fb.zp' as package_name
+			,'TOTAL' AS platform
+			,upper(string_field_1) AS country_code
+			,sum(safe_CAST(REPLACE(REPLACE(string_field_3, '$', ''), ',', '') AS FLOAT64)) AS cost
+			,sum(safe_CAST(REPLACE(REPLACE(string_field_6, '$', ''), ',', '') AS FLOAT64)) AS install
+		FROM `gzdw2024.temp.slt_cost` 
+		where length(string_field_0)>6
+		and PARSE_DATE('%Y-%m-%d', string_field_0) >= date_add(run_date,interval -history_day day)
+		and PARSE_DATE('%Y-%m-%d', string_field_0) <= date_add(run_date,interval -history_end_day day)
+		and  PARSE_DATE('%Y-%m-%d', string_field_0)>='2024-12-09'
+		group by PARSE_DATE('%Y-%m-%d', string_field_0),upper(string_field_1);
+
 
 
 
