@@ -69,7 +69,11 @@ insert `gzdw2024.text_03_bi.dws_event_report`
 							,'sn_11_serve_sms_back_credit'
 							,'sn_11_serve_sms_activate_buy_credit'
 							,'sn_11_serve_sms_activate_back_credit'
-							,'sn_11_serve_call_paid')
+							,'sn_11_serve_call_paid'
+							,'sn_vip_newNumber_show'
+							,'sn_vip_newNumber_click'
+							,'sn_vip_newNumber_succ'
+							,'sn_vip_newNumber_fail')
 		)a 
 		group by 	event_date,country_code,last_app_version,event_name,is_new,package_name;
 
@@ -146,8 +150,12 @@ FROM
 							,'sn_11_serve_sms_activate_buy_credit'
 							,'sn_11_serve_sms_activate_back_credit'
 							,'sn_11_serve_call_paid'
-							,'sn_11_serve_send_queue_succ')
-		and event_params_key in('error_code','reason','star','mode','provider','ga_session_id','net_description','status','credit')
+							,'sn_11_serve_send_queue_succ'
+							,'sn_vip_newNumber_show'
+							,'sn_vip_newNumber_click'
+							,'sn_vip_newNumber_succ'
+							,'sn_vip_newNumber_fail')
+		and event_params_key in('error_code','reason','star','mode','provider','ga_session_id','net_description','status','credit','entrance')
 		)a 
 		group by 	event_date,event_name,event_params_value,country_code,event_params_key,package_name
 	)b 
