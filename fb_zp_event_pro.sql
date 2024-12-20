@@ -6,7 +6,7 @@ begin
 
 -------1.dwd_user_event_di
 delete `gzdw2024.fb_zp_game.dwd_user_event_di`
-where event_date>=date_add(run_date,interval history_day day)
+where event_date>=date_add(run_date,interval -history_day day)
 and event_date<=date_add(run_date,interval -history_end_day day)
 ;
 insert `gzdw2024.fb_zp_game.dwd_user_event_di`
@@ -227,11 +227,11 @@ FROM
 				left join
 			    (
 			    SELECT 
-			      upper(country_name_2) as country_name_2
-			      ,country_name_3 as country_code
-			    FROM `hzdw2024.hz_dim.dim_country`
+			      upper(country_name) as country_name
+			      ,country_code as country_code
+			    FROM `gzdw2024.gz_dim.country_info` 
 			    )c 
-			    on a.country=c.country_name_2
+			    on a.country=c.country_name
 			  )a 
 			left join
 			(
@@ -338,13 +338,13 @@ SELECT
 				and event_name in ('fb_zp_ad_load_c','fb_zp_ad_load_fail_c','fb_zp_ad_load_success_c','fb_zp_ad_impression_c')
 				)a 
 				left join
-			    (
+			   (
 			    SELECT 
-			      upper(country_name_2) as country_name_2
-			      ,country_name_3 as country_code
-			    FROM `hzdw2024.hz_dim.dim_country`
+			      upper(country_name) as country_name
+			      ,country_code as country_code
+			    FROM `gzdw2024.gz_dim.country_info` 
 			    )c 
-			    on a.country=c.country_name_2
+			    on a.country=c.country_name
 			    left	join 
 				(
 				SELECT
@@ -495,13 +495,13 @@ SELECT
 				and event_name in ('fb_zp_ad_load_fail_c')
 				)a 
 				left join
-			    (
+			   (
 			    SELECT 
-			      upper(country_name_2) as country_name_2
-			      ,country_name_3 as country_code
-			    FROM `hzdw2024.hz_dim.dim_country`
+			      upper(country_name) as country_name
+			      ,country_code as country_code
+			    FROM `gzdw2024.gz_dim.country_info` 
 			    )c 
-			    on a.country=c.country_name_2
+			    on a.country=c.country_name
 			    left	join 
 				(
 				SELECT
@@ -696,15 +696,15 @@ insert `gzdw2024.fb_zp_game.dws_event_active_report`
 				SELECT
 					 event_date
 					,user_pseudo_id
-					,ARRAY['TOTAL',ifnull(country_name_3,a.country)] as country_code
+					,ARRAY['TOTAL',ifnull(country_code,a.country)] as country_code
 					,ARRAY['TOTAL',case when operating_system ='iOS' then 'iOS'
 					when operating_system ='Android' then 'Android' 
 					else 'web' end] as platform						
 					,package_name
 					,event_name
 				FROM `gzdw2024.fb_zp_game.dwd_user_event_di`   a 
-				left join `hzdw2024.hz_dim.dim_country` b
-				on upper(a.country)=upper(b.country_name_2)
+							left join `gzdw2024.gz_dim.country_info` b
+				on upper(a.country)=upper(b.country_name)
 				WHERE event_date>=date_add(run_date,interval -history_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
 				and event_name in (
@@ -852,7 +852,7 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 			SELECT
 				a.event_date
 				,package_name
-				,array[ifnull(country_name_3,a.country),'TOTAL'] as country_code
+				,array[ifnull(country_code,a.country),'TOTAL'] as country_code
 				,array[platform,'TOTAL'] as platform
 				,event_name
 				,event_params_key
@@ -951,8 +951,8 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 												"hidesum",
 												"level_id")
 						)a 
-						left join `hzdw2024.hz_dim.dim_country` b
-						on upper(a.country)=upper(b.country_name_2)
+						left join `gzdw2024.gz_dim.country_info` b
+						on upper(a.country)=upper(b.country_name)
 					    left join 
 						(
 						SELECT
