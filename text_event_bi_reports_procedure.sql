@@ -78,7 +78,8 @@ insert `gzdw2024.text_03_bi.dws_event_report`
 							,'sn_11_serve_send_queue_fail'
 							,'sn_11_serve_send_queue_succ'
 							,'sn_11_serve_message_income_succ'
-							,'sn_11_serve_message_income_begin')
+							,'sn_11_serve_message_income_begin'
+	,'sn_11_serve_message_income_fail')
 		)a 
 		group by 	event_date,country_code,last_app_version,event_name,is_new,package_name;
 
@@ -164,7 +165,8 @@ FROM
 							,'sn_11_serve_send_queue_fail'
 							,'sn_11_serve_send_queue_succ'
 							,'sn_11_serve_message_income_succ'
-							,'sn_11_serve_message_income_begin')
+							,'sn_11_serve_message_income_begin'
+	,'sn_11_serve_message_income_fail')
 		and event_params_key in('error_code','reason','star','mode','provider','ga_session_id','net_description','status','credit','entrance','code')
 		)a 
 		group by 	event_date,event_name,event_params_value,country_code,event_params_key,package_name
