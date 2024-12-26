@@ -1146,7 +1146,7 @@ with a as (
 				,country_code
 				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 3 DAY) then ratio_2 else null end)	as avg_ratio2
 				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 4 DAY) then ratio_3 else null end)	as avg_ratio3
-				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL history_day day) then ratio_4 else null end)	as avg_ratio4
+				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 5 day) then ratio_4 else null end)	as avg_ratio4
 				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 6 DAY) then ratio_5 else null end)	as avg_ratio5
 				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 7 DAY) then ratio_6 else null end)	as avg_ratio6
 				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 8 DAY) then ratio_7 else null end)	as avg_ratio7				
@@ -1591,15 +1591,16 @@ insert `gzdw2024.fbgame_real_01_basic.dws_fb_daily_reports`
     )c;
 
 
-/*
+
+---实时的留存数据部分
 delete  `gzdw2024.fbgame_real_01_basic.dws_fb_rention_roi_reports`
 where stats_date >= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 9 DAY)
-and stats_date <= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 1 day);
+and stats_date <= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL history_end_day day);
 
 
 insert gzdw2024.fbgame_real_01_basic.dws_fb_rention_roi_reports
-	--create table  `gzdw2024.fbgame_real_01_basic.dws_fb_cost_daily_reports`
-	--	PARTITION BY stats_date as 
+	--create table  `gzdw2024.fbgame_real_01_basic.dws_fb_rention_roi_reports`
+	--PARTITION BY stats_date as 
 with a as (						
 		SELECT
 			platform
@@ -1620,13 +1621,13 @@ with a as (
 			SELECT
 				platform
 				,country_code
-				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 3 DAY) then ratio_2 else null end)	as avg_ratio2
-				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 4 DAY) then ratio_3 else null end)	as avg_ratio3
-				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 2 day) then ratio_4 else null end)	as avg_ratio4
-				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 6 DAY) then ratio_5 else null end)	as avg_ratio5
-				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 7 DAY) then ratio_6 else null end)	as avg_ratio6
-				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 8 DAY) then ratio_7 else null end)	as avg_ratio7				
-				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 9 DAY) then ratio_8 else null end)	as avg_ratio8
+				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 2 DAY) then ratio_2 else null end)	as avg_ratio2
+				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 3 DAY) then ratio_3 else null end)	as avg_ratio3
+				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 4 day) then ratio_4 else null end)	as avg_ratio4
+				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 5 DAY) then ratio_5 else null end)	as avg_ratio5
+				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 6 DAY) then ratio_6 else null end)	as avg_ratio6
+				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 7 DAY) then ratio_7 else null end)	as avg_ratio7				
+				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 8 DAY) then ratio_8 else null end)	as avg_ratio8
 			FROM 
 				(
 				SELECT 
@@ -1648,9 +1649,9 @@ with a as (
 			    	,safe_divide(retain_uv6,new_uv) as ratio_6
 			    	,safe_divide(retain_uv7,new_uv) as ratio_7
 			    	,safe_divide(retain_uv8,new_uv) as ratio_8
-			    FROM `gzdw2024.fb_zp_game.dws_user_active_report` 
-			    WHERE event_date >= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 9 DAY)
-			    and event_date <= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 1 day)
+			    FROM `gzdw2024.fbgame_real_01_basic.dws_user_active_report` 
+			    WHERE event_date >= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 15 DAY)
+			    and event_date <= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL history_end_day day)
 				--and platform='TOTAL'
 				--and country_code='TOTAL'
         		order by event_date
@@ -1681,9 +1682,9 @@ with a as (
 			    	,safe_divide(retain_uv6,new_uv) as ratio_6
 			    	,safe_divide(retain_uv7,new_uv) as ratio_7
 			    	,safe_divide(retain_uv8,new_uv) as ratio_8
-			    FROM `gzdw2024.fb_zp_game.dws_user_active_report` 
+			    FROM `gzdw2024.fbgame_real_01_basic.dws_user_active_report` 
 			    WHERE event_date >= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 9 DAY)
-			    and event_date <= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 1 day)
+			    and event_date <= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL history_end_day day)
 				--and platform='TOTAL'
 				--and country_code='TOTAL'
 				order by stats_date
@@ -1750,8 +1751,9 @@ with a as (
 			)d 
 		on c.platform=d.platform
 		and c.country_code=d.country_code
-		order by stats_date desc ;
-*/
+		;
+
+
 delete  `gzdw2024.fbgame_real_01_basic.dws_fb_daily_roi_total_reports`
 where  stats_date >= date_add(run_date,interval -history_day day)
   and stats_date <= date_add(run_date,interval -history_end_day day );
