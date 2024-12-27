@@ -1092,7 +1092,7 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 				,country_code
 				,sum(impressions ) as impressions 
 			FROM `gzdw2024.fb_zp_game.dws_user_fb_ad_report`
-			WHERE ad_type like '%interstitial%'
+			WHERE (ad_type like '%interstitial%' or  ad_type like '%video%')
 			AND stats_date>=date_add(run_date,interval -history_day day)
 			and stats_date<=date_add(run_date,interval -history_end_day day)
 			group by stats_date,package_name,platform,Country_code
@@ -1110,7 +1110,7 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 				,country_code
 				,sum(impression_pv ) as impression_pv 
 			FROM `gzdw2024.fb_zp_game.dws_user_ad_report`
-			WHERE ad_type like '%interstitial%'
+			WHERE (ad_type like '%interstitial%' or  ad_type like '%video%')
 			AND event_date>=date_add(run_date,interval -history_day day)
 			and event_date<=date_add(run_date,interval -history_end_day day)
 			AND placement='TOTAL'
