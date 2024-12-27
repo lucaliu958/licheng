@@ -9,7 +9,7 @@ delete `gzdw2024.fb_zp_game.dwd_user_event_di`
 where event_date>=date_add(run_date,interval -history_day day)
 and event_date<=date_add(run_date,interval -history_end_day day)
 ;
-insert `gzdw2024.fb_zp_game.dwd_user_event_di`
+insert  `gzdw2024.fb_zp_game.dwd_user_event_di`
 	SELECT
 		event_name
 		,event_date
@@ -330,6 +330,7 @@ SELECT
 					,case when lower(placement) like '%banner%' then 'banner'
 					when lower(placement) like '%reward%interstitial%' then 'rewarded_interstitial'
 					when lower(placement) like '%interstitial%' then 'interstitial'
+					when lower(placement) like '%reward%video%' then 'rewarded_video'
 						when lower(placement) like '%hint%' then 'interstitial'
 					else 'other' end as ad_type
 				FROM `gzdw2024.fb_zp_game.dwd_user_event_di` 
@@ -487,6 +488,7 @@ SELECT
 					,case when lower(placement) like '%banner%' then 'banner'
 					when lower(placement) like '%reward%interstitial%' then 'rewarded_interstitial'
 					when lower(placement) like '%interstitial%' then 'interstitial'
+					when lower(placement) like '%reward%video%' then 'rewarded_video'
 						when lower(placement) like '%hint%' then 'interstitial'
 					else 'other' end as ad_type
 				FROM `gzdw2024.fb_zp_game.dwd_user_event_di` 
@@ -619,6 +621,7 @@ insert `gzdw2024.fb_zp_game.dws_user_fb_ad_report`
 					,array['TOTAL',case when lower(placement_name) like '%banner%' then 'banner'
 					when lower(placement_name) like '%rewarded%interstitial%' then 'rewarded_interstitial'
 					when lower(placement_name) like '%interstitial%' then 'interstitial'
+					when lower(placement_name) like '%reward%video%' then 'rewarded_video'
 					else 'other' end ] as ad_type
 					,requests
 					,filled_requests
