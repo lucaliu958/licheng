@@ -731,6 +731,7 @@ insert `fb-ai-avatar-puzzle.fb_dw.dws_user_fb_ad_report`
 					,array['TOTAL',case when lower(placement_name) like '%banner%' then 'banner'
 					when lower(placement_name) like '%rewarded%interstitial%' then 'rewarded_interstitial'
 					when lower(placement_name) like '%interstitial%' then 'interstitial'
+					when lower(placement_name) like '%reward%video%' then 'rewarded_video'
 					else 'other' end ] as ad_type
 					,requests
 					,filled_requests
@@ -847,7 +848,7 @@ insert `fb-ai-avatar-puzzle.fb_dw.dws_user_fb_ad_report`
 				,country_code
 				,sum(impressions ) as impressions 
 			FROM `gzdw2024.fbgame_real_01_basic.dws_user_fb_ad_report`
-			WHERE ad_type like '%interstitial%'
+			WHERE  (ad_type like '%interstitial%' or  ad_type like '%video%')
 			AND stats_date>=date_add(run_date,interval -history_day day)
 			and stats_date<=date_add(run_date,interval -1 day)
 			group by stats_date,package_name,platform,Country_code
@@ -866,7 +867,7 @@ insert `fb-ai-avatar-puzzle.fb_dw.dws_user_fb_ad_report`
 				,is_new
 				,sum(impression_pv ) as impression_pv 
 			FROM `gzdw2024.fbgame_real_01_basic.dws_user_ad_report`
-			WHERE ad_type like '%interstitial%'
+			WHERE  (ad_type like '%interstitial%' or  ad_type like '%video%')
 			AND event_date>=date_add(run_date,interval -history_day day)
 			and event_date<=date_add(run_date,interval -1 day)
 			AND placement='TOTAL'
