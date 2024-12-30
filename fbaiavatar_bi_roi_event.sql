@@ -1451,12 +1451,12 @@ FROM
 	(
 	SELECT 
 		* 
-	,case when new_ad_uv is not null  then  new_ad_liebian_uv*new_arpu*new_ad_ratio  
+	,case when new_ad_uv is not null  then  install*new_arpu*new_ad_ratio  
 		else install*last_new_ratio*last_new_arpu*last_new_ad_ratio  end as first_day_revenue
-	,case when new_ad_uv is not null then  new_ad_liebian_uv*new_arpu*(1+total_bili_3)*new_ad_ratio 
+	,case when new_ad_uv is not null then  install*new_arpu*(1+total_bili_3)*new_ad_ratio 
 	else install*last_new_ratio*last_new_arpu*(1+ last_total_bili_3)*last_new_ad_ratio end as first_3day_revenue
 
-	,case when new_ad_uv is not null then  new_ad_liebian_uv*new_arpu*(1+total_bili_3)*new_ad_ratio  + new_ad_liebian_uv*arpu*(total_bili_7- total_bili_3)*new_ad_ratio 
+	,case when new_ad_uv is not null then  install*new_arpu*(1+total_bili_3)*new_ad_ratio  + new_ad_liebian_uv*arpu*(total_bili_7- total_bili_3)*new_ad_ratio 
 	else install*last_new_ratio*last_new_arpu*(1+last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_arpu*(last_total_bili_7- last_total_bili_3)*last_new_ad_ratio end as first_7day_revenue
 
     FROM a 
@@ -1929,12 +1929,12 @@ FROM
 	(
 	SELECT 
 		* 
-	,case when new_ad_uv is not null  then  new_ad_liebian_uv*new_arpu*new_ad_ratio  
+	,case when new_ad_uv is not null  then  new_uv*new_arpu*new_ad_ratio  
 		else install*last_new_ratio*last_new_arpu*last_new_ad_ratio  end as first_day_revenue
-	,case when new_ad_uv is not null then  new_ad_liebian_uv*new_arpu*(1+total_bili_3)*new_ad_ratio 
+	,case when new_ad_uv is not null then  new_uv*new_arpu*(1+total_bili_3)*new_ad_ratio 
 	else install*last_new_ratio*last_new_arpu*(1+ last_total_bili_3)*last_new_ad_ratio end as first_3day_revenue
 
-	,case when new_ad_uv is not null then  new_ad_liebian_uv*new_arpu*(1+total_bili_3)*new_ad_ratio  + new_ad_liebian_uv*arpu*(total_bili_7- total_bili_3)*new_ad_ratio 
+	,case when new_ad_uv is not null then  new_uv*new_arpu*(1+total_bili_3)*new_ad_ratio  + new_ad_liebian_uv*arpu*(total_bili_7- total_bili_3)*new_ad_ratio 
 	else install*last_new_ratio*last_new_arpu*(1+last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_arpu*(last_total_bili_7- last_total_bili_3)*last_new_ad_ratio end as first_7day_revenue
 
     FROM a 
