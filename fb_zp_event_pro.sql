@@ -1042,7 +1042,7 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 		and stats_date<=date_add(run_date,interval -history_end_day day);
 
 
-		insert `gzdw2024.fb_zp_game.dws_ad_expect_show_report`
+			insert `gzdw2024.fb_zp_game.dws_ad_expect_show_report`
 		--create table  `gzdw2024.fb_zp_game.dws_ad_expect_show_report`
 		--	PARTITION BY stats_date as 
 		SELECT
@@ -1053,6 +1053,7 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 			,pv 
 			,impressions
 			,impression_pv
+			,expect_pv
 		FROM
 			(
 			SELECT
@@ -1119,10 +1120,29 @@ and event_date<=date_add(run_date,interval -history_end_day day)
 			on a.stats_date=c.stats_date
 			and a.package_name=c.package_name
 			and a.platform=c.platform
-			and a.country_code=c.country_code;
+			and a.country_code=c.country_code
+			left join
+			(
+				SELECT
+				stats_date stats_date
+				,package_name
+				,platform
+				,country_code
+				,sum(pv ) as expect_pv 
+			FROM `gzdw2024.fb_zp_game.dws_event_active_report`
+			WHERE 1=1
+			AND stats_date>=date_add(run_date,interval -history_day day)
+			and stats_date<=date_add(run_date,interval -history_end_day day)
+			and event_name='fb_zp_ad_expect_impression_c'
+			
+			group by stats_date,package_name,platform,Country_code
+			)d 
+			on a.stats_date=d.stats_date
+			and a.package_name=d.package_name
+			and a.platform=d.platform
+			and a.country_code=d.country_code
 
-
-
+			;
 
 
 	----通关用户报告
