@@ -1139,18 +1139,20 @@ with a as (
 			,safe_divide(avg_ratio2 + avg_ratio3  ,avg_ratio2) as bili_3
 			,avg_ratio2 + avg_ratio3 + avg_ratio4 + avg_ratio5 + avg_ratio6 + avg_ratio7 as total_bili_7
 			,safe_divide(avg_ratio2 + avg_ratio3 + avg_ratio4 + avg_ratio5 + avg_ratio6 + avg_ratio7 ,avg_ratio2) as bili_7
+
 		FROM
 			(
 			SELECT
 				platform
 				,country_code
-				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 3 DAY) then ratio_2 else null end)	as avg_ratio2
-				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 4 DAY) then ratio_3 else null end)	as avg_ratio3
-				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 5 day) then ratio_4 else null end)	as avg_ratio4
-				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 6 DAY) then ratio_5 else null end)	as avg_ratio5
-				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 7 DAY) then ratio_6 else null end)	as avg_ratio6
-				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 8 DAY) then ratio_7 else null end)	as avg_ratio7				
-				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 9 DAY) then ratio_8 else null end)	as avg_ratio8
+				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 3 DAY) and event_date>=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 3+7 DAY) then ratio_2 else null end)	as avg_ratio2
+				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 4 DAY) and event_date>=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 4+7 DAY) then ratio_3 else null end)	as avg_ratio3
+				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 5 day) and event_date>=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 5+7 DAY) then ratio_4 else null end)	as avg_ratio4
+				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 6 DAY) and event_date>=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 6+7 DAY) then ratio_5 else null end)	as avg_ratio5
+				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 7 DAY) and event_date>=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 7+7 DAY) then ratio_6 else null end)	as avg_ratio6
+				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 8 DAY) and event_date>=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 8+7 DAY) then ratio_7 else null end)	as avg_ratio7				
+				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 9 DAY) and event_date>=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 9+7 DAY) then ratio_8 else null end)	as avg_ratio8
+				,avg(case when event_date<=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 15 DAY) and event_date>=DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 15+7 DAY) then ratio_8 else null end)	as avg_ratio14
 			FROM 
 				(
 				SELECT 
@@ -1173,8 +1175,9 @@ with a as (
 			    	,safe_divide(retain_uv7,new_uv) as ratio_7
 			    	,safe_divide(retain_uv8,new_uv) as ratio_8
 			    FROM `gzdw2024.fb_zp_game.dws_user_active_report` 
-			    WHERE event_date >= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 9 DAY)
+			    WHERE event_date >= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 18 DAY)
 			    and event_date <= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL history_end_day day)
+			    AND new_uv>10
 				--and platform='TOTAL'
 				--and country_code='TOTAL'
         		order by event_date
@@ -1214,19 +1217,15 @@ with a as (
 				)
 		SELECT
 			stats_date
-			,c.platform
-			,c.country_code	
+			,platform
+			,country_code
 			,active_uv
 			,new_uv
 			,new_ad_uv
 			,new_liebian_uv
 			,new_ad_liebian_uv 
-			,case when stats_date >= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 2 DAY)  then total_bili_3 
-			  when stats_date >= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 3 DAY)  then ratio_2*bili_3
-			    else ratio_2+ratio_3 end as total_bili_3
-			,case when stats_date >= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 2 DAY)  then total_bili_7 
-			  when stats_date >= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 8 DAY)  then ratio_2*bili_7
-			    else ratio_2+ratio_3 + ratio_4  + ratio_5  + ratio_6  + ratio_7 end as total_bili_7
+			,total_bili_3
+			,total_bili_7
 			 ,ratio_2
 			,ratio_3
 			,ratio_4
@@ -1234,51 +1233,80 @@ with a as (
 			,ratio_6
 			,ratio_7
 			,ratio_8
-		FROM 	
-		(
-		SELECT
-			stats_date
-			,platform
-			,country_code	
-			,active_uv
-			,new_uv
-			,new_ad_uv
-			,new_liebian_uv
-			,new_ad_uv+new_liebian_uv as new_ad_liebian_uv 
-			,ratio_2
-			,ratio_3
-			,ratio_4
-			,ratio_5
-			,ratio_6
-			,ratio_7
-			,ratio_8
-		FROM b  
-		)c 
-		left join 
-		(
-		SELECT
-			platform
-			,country_code
-			,avg_ratio2
-			,avg_ratio3
-			,avg_ratio4
-			,avg_ratio5
-			,avg_ratio6
-			,avg_ratio7
-			,avg_ratio8
-			,total_bili_3
-			,bili_3
-			,total_bili_7
-			,bili_7
-		FROM a 
-			)d 
-		on c.platform=d.platform
-		and c.country_code=d.country_code
-		order by stats_date desc ;
+			,case when total_bili_7<=0.3 then 1.28*total_bili_7
+			when total_bili_7>0.3 and total_bili_7<=0.4 then 1.48*total_bili_7
+			when total_bili_7>0.4 and total_bili_7<=0.6 then 1.68*total_bili_7
+			when total_bili_7>0.6  then 1.88*total_bili_7 end as total_bili_14
+		FROM
+			(
+				SELECT
+					stats_date
+					,c.platform
+					,c.country_code	
+					,active_uv
+					,new_uv
+					,new_ad_uv
+					,new_liebian_uv
+					,new_ad_liebian_uv 
+					,case when stats_date >= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 2 DAY)  then total_bili_3 
+					  when stats_date >= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 3 DAY)  then ratio_2*bili_3
+					    else ratio_2+ratio_3 end as total_bili_3
+					,case when stats_date >= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 2 DAY)  then total_bili_7 
+					  when stats_date >= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL 8 DAY)  then ratio_2*bili_7
+					    else ratio_2+ratio_3 + ratio_4  + ratio_5  + ratio_6  + ratio_7 end as total_bili_7
+					 ,ratio_2
+					,ratio_3
+					,ratio_4
+					,ratio_5
+					,ratio_6
+					,ratio_7
+					,ratio_8
+				FROM 	
+				(
+				SELECT
+					stats_date
+					,platform
+					,country_code	
+					,active_uv
+					,new_uv
+					,new_ad_uv
+					,new_liebian_uv
+					,new_ad_uv+new_liebian_uv as new_ad_liebian_uv 
+					,ratio_2
+					,ratio_3
+					,ratio_4
+					,ratio_5
+					,ratio_6
+					,ratio_7
+					,ratio_8
+				FROM b  
+				)c 
+				left join 
+				(
+				SELECT
+					platform
+					,country_code
+					,avg_ratio2
+					,avg_ratio3
+					,avg_ratio4
+					,avg_ratio5
+					,avg_ratio6
+					,avg_ratio7
+					,avg_ratio8
+					,total_bili_3
+					,bili_3
+					,total_bili_7
+					,bili_7
+				FROM a 
+					)d 
+				on c.platform=d.platform
+				and c.country_code=d.country_code
+			)e 
+				order by stats_date desc ;
 
 delete  `gzdw2024.fb_zp_game.dws_fb_daily_roi_total_reports`
-where  stats_date >= date_add(run_date,interval -history_day day)
-  and stats_date <= date_add(run_date,interval -history_end_day day);
+where  stats_date >= date_add('2025-01-08',interval -history_day day)
+  and stats_date <= date_add('2025-01-08',interval -history_end_day day);
 
 
 insert `gzdw2024.fb_zp_game.dws_fb_daily_roi_total_reports`
@@ -1315,7 +1343,9 @@ SELECT
 	,lag(new_ad_ratio) over(partition by platform,country_code order by stats_date) as last_new_ad_ratio
 	,lag(total_bili_3) over(partition by platform,country_code order by stats_date) as last_total_bili_3
 	,lag(total_bili_7) over(partition by platform,country_code order by stats_date) as last_total_bili_7
+	,lag(total_bili_14) over(partition by platform,country_code order by stats_date) as last_total_bili_14
 	,new_ad_ratio
+	,total_bili_14
 	--,new_ad_liebian_uv*new_arpu as first_day_revenue
 	--,new_ad_liebian_uv*new_arpu*(1+total_bili_3) as first_3day_revenue
 	--,new_ad_liebian_uv*new_arpu*(1+total_bili_3) + new_ad_liebian_uv*arpu*(total_bili_7- total_bili_3) as first_7day_revenue
@@ -1356,6 +1386,7 @@ FROM
 		when new_ad_ratio<1.5 then 1.4
 		when new_ad_ratio<1.6 then 1.5
 		else new_ad_ratio-0.1 end as new_ad_ratio
+		,total_bili_14
 
 	FROM
 		(
@@ -1381,8 +1412,8 @@ FROM
 		WHERE 1=1
 		--and platform='TOTAL'
 		--and country_code='TOTAL'
-		and stats_date >= date_add(run_date,interval -history_day day)
-    	and stats_date <= date_add(run_date,interval - history_end_day day)
+		and stats_date >= date_add('2025-01-08',interval -history_day day)
+    	and stats_date <= date_add('2025-01-08',interval -history_end_day day)
 		)a 
 		left join 
 		(
@@ -1405,6 +1436,7 @@ FROM
 			,ratio_6
 			,ratio_7
 			,ratio_8
+			,total_bili_14
 		FROM `gzdw2024.fb_zp_game.dws_fb_rention_roi_reports`
 		)b 
 		on a.stats_date=b.stats_date
@@ -1447,6 +1479,9 @@ stats_date
 	,first_7day_revenue
 	,new_ad_ratio
 	,last_new_ad_ratio
+	,total_bili_14
+	,last_total_bili_14
+	,first_14day_revenue
 FROM
 	(
 	SELECT 
@@ -1458,10 +1493,12 @@ FROM
 
 	,case when new_ad_uv is not null then  install*new_arpu*(1+total_bili_3)*new_ad_ratio  + new_ad_liebian_uv*arpu*(total_bili_7- total_bili_3)*new_ad_ratio 
 	else install*last_new_ratio*last_new_arpu*(1+last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_arpu*(last_total_bili_7- last_total_bili_3)*last_new_ad_ratio end as first_7day_revenue
-
+	,case when new_ad_uv is not null then  install*new_arpu*(1+total_bili_3)*new_ad_ratio  + new_ad_liebian_uv*arpu*(total_bili_7- total_bili_3)*new_ad_ratio  + new_ad_liebian_uv*arpu*(total_bili_14- total_bili_7)*new_ad_ratio 
+	else install*last_new_ratio*last_new_arpu*(1+last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_arpu*(last_total_bili_7- last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_arpu*(last_total_bili_14- last_total_bili_7)*last_new_ad_ratio end as first_14day_revenue
     FROM a 
 	WHERE 1=1
 	)a ;
+
 
 
 
