@@ -8,7 +8,7 @@ where event_date>=date_add(run_date,interval -history_day day)
 ;
 
 insert `gzdw2024.fbgame_01_basic.dwd_all_game_user_event_di`
-	SELECT 
+		SELECT 
 		event_name
 		,PARSE_DATE('%Y%m%d',event_date) event_date
     	,stream_id
@@ -51,11 +51,13 @@ insert `gzdw2024.fbgame_01_basic.dwd_all_game_user_event_di`
 	,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='buytype') buytype
 	,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='entrance') entrance
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='eventTime') eventTime
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='id') cat_id
 	FROM `recorder-pro-50451.analytics_250268757.events_*`
 	WHERE 1=1
 	 and  stream_id in('9692329810','9817620337','9900250753')
 	and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','');
 	
+
 
 
 -------1.dwd_user_event_di
