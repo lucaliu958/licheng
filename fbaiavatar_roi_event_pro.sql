@@ -6,19 +6,22 @@ begin
 delete `gzdw2024.fbgame_01_basic.dwd_all_game_user_event_di`
 where event_date>=date_add(run_date,interval -history_day day)
 ;
+
 insert `gzdw2024.fbgame_01_basic.dwd_all_game_user_event_di`
 	SELECT 
-				event_name
+		event_name
 		,PARSE_DATE('%Y%m%d',event_date) event_date
-    ,stream_id
+    	,stream_id
 		,user_pseudo_id
 		,event_timestamp
-		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='fbUserID') fbUserID 
+		,COALESCE((SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='fbUserID')
+			,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='userId')) fbUserID 
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='isFirst') isFirst 
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='type') type 
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='from') fromon 
 		,case when stream_id ='9692329810' then 'fb.ai.avatar.puzzle' 
-       when stream_id ='9817620337' then 'fb.zp' end  as package_name
+       when stream_id ='9817620337' then 'fb.zp' 
+	when stream_id ='9900250753' then 'fb.otme.fate.quest' else 'other'  end  as package_name
 		,geo.country
 		,device.category as device_category
 		,device.mobile_brand_name
@@ -50,7 +53,7 @@ insert `gzdw2024.fbgame_01_basic.dwd_all_game_user_event_di`
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='eventTime') eventTime
 	FROM `recorder-pro-50451.analytics_250268757.events_*`
 	WHERE 1=1
-	 and  stream_id in('9692329810','9817620337')
+	 and  stream_id in('9692329810','9817620337','9900250753')
 	and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','');
 	
 
