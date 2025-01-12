@@ -899,7 +899,7 @@ insert `gzdw2024.fb_zp_game.dws_fb_ad_revenue_daily_reports`
 				group by stats_date
 				union all 
 					SELECT 
-					date(start_timestamp) as stats_date
+					date(stats_date) as stats_date
 					,'fb.zp' as package_name
 					,case when platform='ios' then 'iOS' when platform='android' then 'Android' else platform end  as platform
 					,upper(country) as country_code
@@ -908,12 +908,13 @@ insert `gzdw2024.fb_zp_game.dws_fb_ad_revenue_daily_reports`
 					,sum(impressions)  as impressions
 					,sum(revenue)  as revenue
 					,sum(clicks)  as clicks
-				FROM `fb-ai-avatar-puzzle.analytics_439907691.ad_analytics_detail_day_*` 
-				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
-				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
-					and _TABLE_SUFFIX!='20241103'
+				FROM `fb-ai-avatar-puzzle.analytics_439907691.facebook_ad_backup_detail_day` 
+				where stats_date >= date_add(run_date,interval -history_day day)
+			    and stats_date <= date_add(run_date,interval -history_end_day day)
+			    
+					
 					and app_name='Solitaire'
-				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
+				--and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
 				group by stats_date,platform,country_code
 				union all 
 				SELECT 
@@ -926,12 +927,14 @@ insert `gzdw2024.fb_zp_game.dws_fb_ad_revenue_daily_reports`
 					,sum(impressions)  as impressions
 					,sum(revenue)  as revenue
 					,sum(clicks)  as clicks
-				FROM `fb-ai-avatar-puzzle.analytics_439907691.ad_analytics_detail_day_*` 
-				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
-				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
-					and _TABLE_SUFFIX!='20241103'
+					FROM `fb-ai-avatar-puzzle.analytics_439907691.facebook_ad_backup_detail_day` 
+				where stats_date >= date_add(run_date,interval -history_day day)
+			    and stats_date <= date_add(run_date,interval -history_end_day day)
+			    
+					
 					and app_name='Solitaire'
-				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
+					--and app_name='Solitaire'
+				--and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
 				group by stats_date,platform,country_code
 					union all 
 					SELECT 
@@ -944,12 +947,12 @@ insert `gzdw2024.fb_zp_game.dws_fb_ad_revenue_daily_reports`
 					,sum(impressions)  as impressions
 					,sum(revenue)  as revenue
 					,sum(clicks)  as clicks
-				FROM `fb-ai-avatar-puzzle.analytics_439907691.ad_analytics_detail_day_*` 
-				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
-				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
-				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
+				FROM `fb-ai-avatar-puzzle.analytics_439907691.facebook_ad_backup_detail_day` 
+				where stats_date >= date_add(run_date,interval -history_day day)
+			    and stats_date <= date_add(run_date,interval -history_end_day day)					
 					and app_name='Solitaire'
-					and _TABLE_SUFFIX!='20241103'
+					--and app_name='Solitaire'
+					--and _TABLE_SUFFIX!='20241103'
 				group by stats_date,platform,country_code
 				)a 
 		group by stats_date,platform,country_code,package_name;
@@ -1305,8 +1308,8 @@ with a as (
 				order by stats_date desc ;
 
 delete  `gzdw2024.fb_zp_game.dws_fb_daily_roi_total_reports`
-where  stats_date >= date_add('2025-01-08',interval -history_day day)
-  and stats_date <= date_add('2025-01-08',interval -history_end_day day);
+where  stats_date >= date_add(run_date,interval -history_day day)
+  and stats_date <= date_add(run_date,interval -history_end_day day);
 
 
 insert `gzdw2024.fb_zp_game.dws_fb_daily_roi_total_reports`
@@ -1412,8 +1415,8 @@ FROM
 		WHERE 1=1
 		--and platform='TOTAL'
 		--and country_code='TOTAL'
-		and stats_date >= date_add('2025-01-08',interval -history_day day)
-    	and stats_date <= date_add('2025-01-08',interval -history_end_day day)
+		and stats_date >= date_add(run_date,interval -history_day day)
+    	and stats_date <= date_add(run_date,interval -history_end_day day)
 		)a 
 		left join 
 		(
