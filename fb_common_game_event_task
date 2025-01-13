@@ -1,0 +1,835 @@
+CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.fb_common_game_event_task`(run_date DATE, history_day INT64, history_retain_day INT64, history_end_day INT64)
+begin
+
+
+-------0.dwd_common_game_user_event_di
+delete `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day)
+;
+--drop table if exists `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`;
+--create table `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`
+--	PARTITION BY event_date as 
+insert `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`
+	SELECT 
+		event_name
+		,case when stream_id ='9692329810' then 'fb.ai.avatar.puzzle' 
+        when stream_id ='9817620337' then 'fb.zp' 
+		when stream_id ='9900250753' then 'fb.otme.fate.quest' 
+		when stream_id ='9985702455' then 'fb.fruit.bubble' 
+		else 'other'  end  as package_name
+		,PARSE_DATE('%Y%m%d',event_date) event_date
+    	,stream_id
+		,user_pseudo_id
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='eventTime') eventTime		
+		,COALESCE((SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='fbUserID')
+			,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='userId')
+			,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='fbUserId')
+		 ) user_id 
+		,event_timestamp
+		,ifnull(country_code,geo.country) as country_code
+		,device.category as device_category
+		,device.mobile_brand_name
+		,device.mobile_model_name
+		,device.mobile_marketing_name
+		,device.operating_system as operating_system
+		,device.operating_system_version
+		,device.language
+	   	,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='isFirst') isFirst 
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='type') type 
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='from') fromon 
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='fromUser') fromUser 
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='abtestVersion') abtestVersion
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='placement') placement
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='timeuse') timeuse
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='steps') steps
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='error') error_code
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='win') win
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='hidesum') hidesum
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='level') level_id
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='gameID') gameID
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='gameShowTime') gameShowTime
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='code') e_code
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='score') score
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='coinsum') coinsum
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='starsum') starsum
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='livesum') livesum
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='coinsum') proptype
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='propsum') propsum
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='buytype') buytype
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='entrance') entrance
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='id') cat_id
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='proplist') proplist
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='propselect') propselect
+	FROM `recorder-pro-50451.analytics_250268757.events_*` a 
+	left join
+			    (
+			    SELECT 
+			      upper(country_name) as country_name
+			      ,country_code as country_code
+			    FROM `gzdw2024.gz_dim.country_info` 
+			    )c 
+			    on upper(a.geo.country)=c.country_name
+	WHERE 1=1
+	 and  stream_id in('9692329810','9817620337','9900250753','9985702455')
+	and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
+	and  _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
+	 ;
+	
+
+
+
+
+
+-------1.dwd_common_game_user_active_di
+delete `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_di`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+
+insert `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_di`
+	--drop table if exists `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_di`;
+--create table `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_di`
+--	PARTITION BY event_date as 
+SELECT 
+	event_date
+	,user_id
+	,package_name
+	,MIN_BY(country_code, event_timestamp) AS country_code
+	,max(fromUser) as fromUser
+	,MIN_BY(operating_system, event_timestamp) AS operating_system
+FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`
+WHERE 1=1
+and event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day)
+group by event_date
+	,user_id
+	,package_name;
+
+
+-------2.dwd_common_game_user_active_profile_di
+delete `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+where event_date>=date_add(run_date,interval -history_retain_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+insert `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+		--drop table if exists `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`;
+--create table `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+--	PARTITION BY event_date as 
+SELECT
+	a.user_id
+	,a.event_date	
+	,max(is_launch) as is_launch
+	,max(case when a.event_date=event_date_min  then 1 else 0 end ) as is_new
+	,max(is_ad) as is_ad
+	,max(is_liebian) as is_liebian
+	,a.package_name
+	,a.country_code
+	,a.operating_system
+FROM
+	(
+	SELECT
+		user_id
+		,event_date
+		,package_name
+		,max(country_code) as country_code
+		,max(operating_system) as operating_system
+	FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_di`
+	WHERE event_date>=date_add(run_date,interval -history_retain_day day)
+	and event_date<=date_add(run_date,interval -history_end_day day)
+	group by user_id,package_name,event_date
+	)a 
+	join
+	(
+	 SELECT 
+	 	user_id
+	 	,package_name
+	 	,event_date
+	 	,max(case when event_name  like '%app_launch%'  then 1 else 0 end) as is_launch
+	 	,max(case when event_name  like '%app_launch%' and isFirst='true' then 1 else 0 end) as is_new
+	 	,max(case when event_name  like '%app_launch%' and fromon='ad' then 1 else 0 end) as is_ad
+	 	,max(case  when event_name like '%app_launch%' and fromon in ('shareable_link','feed') then 1 else 0 end) as is_liebian
+	 FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di` 
+	 where 1=1
+	 and event_date>=date_add(run_date,interval -history_retain_day day)
+	 and event_date<=date_add(run_date,interval -history_end_day day)
+	 group by user_id,event_date,package_name
+	)b 
+	on a.user_id=b.user_id
+	and a.event_date=b.event_date
+	and a.package_name=b.package_name
+	left join 
+	(
+	SELECT
+		user_id
+		,min(event_date) as event_date_min
+		,package_name
+	FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`
+	WHERE event_date>=date_add(run_date,interval -(history_retain_day +150) day)
+	and event_date<=date_add(run_date,interval -history_end_day day)
+	group by user_id,package_name
+	)c 
+	on a.user_id=c.user_id
+	and a.package_name=c.package_name
+	group by a.user_id,a.event_date,a.package_name,a.country_code,a.operating_system;
+
+----------3.活跃、新增、广告新增、裂变新增
+
+
+delete `gzdw2024.fbgame_01_basic.dws_common_game_user_active_report`
+where event_date>=date_add(run_date,interval -history_retain_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+insert `gzdw2024.fbgame_01_basic.dws_common_game_user_active_report`
+	--create table `gzdw2024.fbgame_01_basic.dws_common_game_user_active_report`
+	--PARTITION BY event_date as 
+		SELECT
+			a.event_date
+			,a.package_name	
+			,country_code
+			,platform
+			,count(distinct case when is_launch=1 then a.user_id else null end) as active_uv 
+			,count(distinct case when is_launch=1 and is_new=1 then a.user_id else null end) as new_uv
+			,count(distinct case when is_launch=1 and is_new=1 and is_ad=1 then a.user_id else null end) as new_ad_uv
+			,count(distinct case when is_launch=1 and is_new=1 and is_ad=0 and  is_liebian=1  then a.user_id else null end) as new_liebian_uv 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=1 and is_new=1 then a.user_id else null end) as retain_uv2 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=2 and is_new=1 then a.user_id else null end) as retain_uv3 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=3 and is_new=1 then a.user_id else null end) as retain_uv4 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=4 and is_new=1 then a.user_id else null end) as retain_uv5 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=5 and is_new=1 then a.user_id else null end) as retain_uv6 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=6 and is_new=1 then a.user_id else null end) as retain_uv7 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=7 and is_new=1 then a.user_id else null end) as retain_uv8 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=14 and is_new=1 then a.user_id else null end) as retain_uv15 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=28 and is_new=1 then a.user_id else null end) as retain_uv29
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=1 and is_new=1  and is_ad=1 then a.user_id else null end) as retain_ad_uv2 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=2 and is_new=1  and is_ad=1 then a.user_id else null end) as retain_ad_uv3 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=3 and is_new=1  and is_ad=1 then a.user_id else null end) as retain_ad_uv4 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=4 and is_new=1  and is_ad=1 then a.user_id else null end) as retain_ad_uv5 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=5 and is_new=1  and is_ad=1 then a.user_id else null end) as retain_ad_uv6 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=6 and is_new=1  and is_ad=1 then a.user_id else null end) as retain_ad_uv7 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=7 and is_new=1  and is_ad=1 then a.user_id else null end) as retain_ad_uv8 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=14 and is_new=1  and is_ad=1 then a.user_id else null end) as retain_ad_uv15 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=28 and is_new=1  and is_ad=1 then a.user_id else null end) as retain_ad_uv29
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=1 and is_new=1 and is_ad=0 and  is_liebian=1  then a.user_id else null end) as retain_liebian_uv2 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=2 and is_new=1 and is_ad=0 and  is_liebian=1  then a.user_id else null end) as retain_liebian_uv3 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=3 and is_new=1 and is_ad=0 and  is_liebian=1  then a.user_id else null end) as retain_liebian_uv4 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=4 and is_new=1 and is_ad=0 and  is_liebian=1  then a.user_id else null end) as retain_liebian_uv5 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=5 and is_new=1 and is_ad=0 and  is_liebian=1  then a.user_id else null end) as retain_liebian_uv6 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=6 and is_new=1 and is_ad=0 and  is_liebian=1  then a.user_id else null end) as retain_liebian_uv7 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=7 and is_new=1 and is_ad=0 and  is_liebian=1  then a.user_id else null end) as retain_liebian_uv8 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=14 and is_new=1 and is_ad=0 and  is_liebian=1  then a.user_id else null end) as retain_liebian_uv15 
+			,count(distinct case when  date_diff(b.event_date,a.event_date,day)=28 and is_new=1 and is_ad=0 and  is_liebian=1  then a.user_id else null end) as retain_liebian_uv29
+			,count(distinct case when is_launch=1 and is_new=1 and is_ad=1    then c.user_id else null end) as source_liebian_uv_ad 
+			,count(distinct case when is_launch=1 and is_new=1 and is_ad=1 and date_diff(c.event_date_min,a.event_date,day)<=0  then c.user_id else null end) as source_liebian_uv_ad_0_day 
+			,count(distinct case when is_launch=1 and is_new=1 and is_ad=1 and date_diff(c.event_date_min,a.event_date,day)<=1  then c.user_id else null end) as source_liebian_uv_ad_1_day
+			,count(distinct case when is_launch=1 and is_new=1 and is_ad=1 and  date_diff(c.event_date_min,a.event_date,day)<=2  then c.user_id else null end) as source_liebian_uv_ad_2_day 
+			,
+		FROM
+			(			
+			SELECT
+				event_date
+				,user_id
+				,is_launch
+				,is_new
+				,is_ad
+				,is_liebian
+				,array[country_code,'TOTAL'] as country_code
+				,array[case when operating_system ='iOS' then 'iOS'
+				when operating_system ='Android' then 'Android' 
+				else 'web' end,'TOTAL']  as platform
+				,package_name
+			FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+			WHERE event_date>=date_add(run_date,interval -history_retain_day day)
+			and event_date<=date_add(run_date,interval -history_end_day day)	
+		    )a 
+			left join
+			(
+			SELECT
+				event_date
+				,user_id
+				,package_name
+			FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+			WHERE event_date>=date_add(run_date,interval -history_retain_day day)
+			and event_date<=date_add(run_date,interval -history_end_day day)
+			group by event_date,user_id,package_name
+			)b 
+			on a.user_id=b.user_id
+			and a.package_name=b.package_name
+			left join
+			(
+			SELECT
+				user_id
+				,package_name
+				,MIN_BY(fromUser, event_date) AS fromUser
+				,min(event_date) as event_date_min
+			FROM
+				(
+				SELECT
+					event_date
+					,user_id
+					,max(fromUser) as fromUser
+					,package_name
+	 			FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_di` 
+				WHERE event_date>=date_add(run_date,interval -history_retain_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				group by event_date,user_id,package_name
+				)a 
+				group by user_id,package_name			
+			)c
+			on a.user_id=c.fromUser
+			and a.package_name=c.package_name
+			,UNNEST(country_code) as country_code
+			,UNNEST(platform) as platform
+			group by a.event_date,country_code,platform,package_name;
+
+
+
+
+------4.各事件活跃次数与人数
+
+delete `gzdw2024.fbgame_01_basic.dws_common_game_event_active_report`
+where stats_date>=date_add(run_date,interval -history_day day)
+and stats_date<=date_add(run_date,interval -history_end_day day);
+
+
+insert `gzdw2024.fbgame_01_basic.dws_common_game_event_active_report`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dws_common_game_event_active_report`;
+	--create table  `gzdw2024.fbgame_01_basic.dws_common_game_event_active_report`
+	--PARTITION BY stats_date as 
+	SELECT
+		c0.event_date  AS stats_date
+		,c0.package_name
+		,c0.platform
+		,c0.country_code
+		,is_new
+		,event_name
+		,pv 
+		,uv 
+		,case when is_new='TOTAL' then  active_uv  when is_new='new' then  new_uv
+	when is_new='old' then active_uv -  new_uv end as active_uv
+	FROM
+		(
+		SELECT
+			event_date
+			,package_name
+			,platform
+			,country_code
+			,event_name
+			,is_new
+			,count(1) as pv 
+			,count(distinct user_id) as uv 
+		FROM
+			(
+			SELECT
+				a.event_date
+				,a.package_name
+				,a.user_id 
+				,event_name
+				,platform
+				,country_code
+				,ARRAY['TOTAL',case when is_new =1 then 'new'
+				when is_new =0 then 'old' 
+				else 'old' end] as is_new	
+			FROM
+				(
+				SELECT
+					 event_date
+					,user_id
+					,ARRAY['TOTAL',country_code] as country_code
+					,array[case when operating_system ='iOS' then 'iOS'
+					when operating_system ='Android' then 'Android' 
+					else 'web' end,'TOTAL']  as platform					
+					,package_name
+					,event_name
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				)a 
+			 left	join 
+				(
+				SELECT
+					package_name
+					,event_date
+					,user_id
+					,max(is_new) as is_new
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				group by event_date,user_id,package_name
+			   )b 
+				on a.user_id=b.user_id
+				and a.package_name=b.package_name
+				and a.event_date=b.event_date
+				,UNNEST(platform) AS platform
+				,UNNEST(country_code) AS country_code
+				
+				)c 
+				,UNNEST(is_new) AS is_new
+			group by event_date
+			,package_name
+			,platform
+			,country_code
+			,event_name
+			,is_new
+			)c0 
+			left join
+			(
+			SELECT
+				event_date
+				,package_name
+				,platform
+				,country_code
+				,active_uv
+				,new_uv
+			FROM	`gzdw2024.fbgame_01_basic.dws_common_game_user_active_report`
+			WHERE event_date>=date_add(run_date,interval -history_day day)
+			and event_date<=date_add(run_date,interval -history_end_day day)
+
+			)c1 
+			on c0.event_date=c1.event_date
+			and c0.platform=c1.platform
+			and c0.country_code=c1.country_code
+			and c0.package_name=c1.package_name;
+
+
+------4.1乙游事件
+delete `gzdw2024.fbgame_01_basic.dws_common_fq_event_active_report`
+where stats_date>=date_add(run_date,interval -history_day day)
+and stats_date<=date_add(run_date,interval -history_end_day day);
+
+insert `gzdw2024.fbgame_01_basic.dws_common_fq_event_active_report`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dws_common_fq_event_active_report`;
+--	create table  `gzdw2024.fbgame_01_basic.dws_common_fq_event_active_report`
+--	PARTITION BY stats_date as 
+	SELECT
+		* 
+	FROM `gzdw2024.fbgame_01_basic.dws_common_game_event_active_report`
+	WHERE 1=1
+	and stats_date>=date_add(run_date,interval -history_day day)
+	and stats_date<=date_add(run_date,interval -history_end_day day)
+	and package_name='fb.otme.fate.quest';
+
+
+------4.2纸牌事件
+delete `gzdw2024.fbgame_01_basic.dws_common_zp_event_active_report`
+where stats_date>=date_add(run_date,interval -history_day day)
+and stats_date<=date_add(run_date,interval -history_end_day day);
+
+insert `gzdw2024.fbgame_01_basic.dws_common_zp_event_active_report`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dws_common_zp_event_active_report`;
+--	create table  `gzdw2024.fbgame_01_basic.dws_common_zp_event_active_report`
+--	PARTITION BY stats_date as 
+	SELECT
+		* 
+	FROM `gzdw2024.fbgame_01_basic.dws_common_game_event_active_report`
+	WHERE 1=1
+	and stats_date>=date_add(run_date,interval -history_day day)
+	and stats_date<=date_add(run_date,interval -history_end_day day)
+	and package_name='fb.zp';
+
+
+
+------4.3 oho事件
+delete `gzdw2024.fbgame_01_basic.dws_common_oho_event_active_report`
+where stats_date>=date_add(run_date,interval -history_day day)
+and stats_date<=date_add(run_date,interval -history_end_day day);
+
+insert `gzdw2024.fbgame_01_basic.dws_common_oho_event_active_report`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dws_common_oho_event_active_report`;
+--	create table  `gzdw2024.fbgame_01_basic.dws_common_oho_event_active_report`
+--	PARTITION BY stats_date as 
+	SELECT
+		* 
+	FROM `gzdw2024.fbgame_01_basic.dws_common_game_event_active_report`
+	WHERE 1=1
+	and stats_date>=date_add(run_date,interval -history_day day)
+	and stats_date<=date_add(run_date,interval -history_end_day day)
+	and package_name='fb.ai.avatar.puzzle';
+
+------4.4 水果泡事件
+delete `gzdw2024.fbgame_01_basic.dws_common_fruit_event_active_report`
+where stats_date>=date_add(run_date,interval -history_day day)
+and stats_date<=date_add(run_date,interval -history_end_day day);
+
+insert `gzdw2024.fbgame_01_basic.dws_common_fruit_event_active_report`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dws_common_fruit_event_active_report`;
+--	create table  `gzdw2024.fbgame_01_basic.dws_common_fruit_event_active_report`
+--	PARTITION BY stats_date as 
+	SELECT
+		* 
+	FROM `gzdw2024.fbgame_01_basic.dws_common_game_event_active_report`
+	WHERE 1=1
+	and stats_date>=date_add(run_date,interval -history_day day)
+	and stats_date<=date_add(run_date,interval -history_end_day day)
+	and package_name='fb.fruit.bubble';
+
+
+----------------5.事件参数明细
+
+delete `gzdw2024.fbgame_01_basic.dws_common_game_events_detail`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+	insert `gzdw2024.fbgame_01_basic.dws_common_game_events_detail`
+	--drop table if exists  `gzdw2024.fbgame_01_basic.dws_common_game_events_detail`;
+--	create table  `gzdw2024.fbgame_01_basic.dws_common_game_events_detail`
+--	PARTITION BY event_date as 
+	  with a as 
+	  (
+  		SELECT
+  			event_date
+  			,package_name
+  			,user_id
+  			,event_name
+			,platform
+			,country_code
+			,is_new
+			,fromon
+			,error_code
+			,e_code
+			,win
+			,level_id
+			,cat_id
+			,buytype
+		FROM
+			(	
+			SELECT
+				a.event_date
+				,a.package_name
+				,a.user_id 
+				,event_name
+				,platform
+				,country_code
+				,ARRAY['TOTAL',case when is_new =1 then 'new'
+				when is_new =0 then 'old' 
+				else 'old' end] as is_new
+				,fromon
+				,error_code
+				,e_code
+				,win
+				,level_id
+				,cat_id
+				,buytype
+			FROM
+				(
+				SELECT
+					 event_date
+					,user_id
+					,ARRAY['TOTAL',country_code] as country_code
+					,array[case when operating_system ='iOS' then 'iOS'
+					when operating_system ='Android' then 'Android' 
+					else 'web' end,'TOTAL']  as platform					
+					,package_name
+					,event_name
+					,fromon
+					,error_code
+					,e_code
+					,win
+					,level_id
+					,cat_id
+					,buytype
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				and event_name in (
+					'otme_app_launch'
+					,'otme_share_click'
+					,'otme_game_show'
+					,'otme_game_click'
+					,'otme_game_start'
+					,'otme_game_keep'
+					,'otme_game_finish'
+					,'otme_game_back'
+					,'otme_changeface_start'
+					,'otme_changeface_succ'
+					,'otme_changeface_fail'
+					,'otme_change_switch'
+					,'fb_zp_game_play_finish'
+					,'fb_zp_app_launch'
+					,'fb_zp_app_launch'
+					,'fb_templ_res_show'
+					,'fb_templ_res_click'
+					,'fb_templ_res_export'
+					,'fb_templ_res_share'
+					,'fb_templ_categ_show'
+					,'fb_templ_categ_click'
+					,'fb_templ_categ_export'
+					,'fb_templ_categ_share'
+					,'fb_fruit_shop_buyprop'
+					,'fb_fruit_app_launch'
+					,'fb_app_launch'
+
+						)
+				)a 
+			 left	join 
+				(
+				SELECT
+					package_name
+					,event_date
+					,user_id
+					,max(is_new) as is_new
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				group by event_date,user_id,package_name
+			   )b 
+				on a.user_id=b.user_id
+				and a.package_name=b.package_name
+				and a.event_date=b.event_date
+				,UNNEST(platform) AS platform
+				,UNNEST(country_code) AS country_code
+				
+				)c 
+				,UNNEST(is_new) AS is_new
+			),
+	  	 transformed_data AS (
+				  SELECT
+				    event_name
+				    ,event_date
+				    ,package_name
+				    ,platform
+				    ,country_code
+				    ,is_new
+				    ,key_value.key AS event_key        
+				    ,key_value.value AS event_value
+				    ,COUNT(*) AS event_num
+				    ,COUNT(DISTINCT user_id) AS user_num
+				  FROM
+				    a,
+				    UNNEST([
+				      STRUCT('fromon' AS key, fromon AS value),
+				      STRUCT('error_code' AS key, error_code AS value),
+				      STRUCT('e_code' AS key, e_code AS value),
+				      STRUCT('win' AS key, win AS value),
+				      STRUCT('level_id' AS key, level_id AS value),
+				      STRUCT('cat_id' AS key, cat_id AS value),
+				      STRUCT('buytype' AS key, cat_id AS value)
+				    ]) AS key_value
+				  GROUP BY event_name, event_date, event_key, event_value,package_name,country_code,platform,is_new
+				)
+	  	 		SELECT
+					c0.event_date
+					,c0.package_name
+					,c0.country_code
+					,c0.platform
+					,c0.is_new
+					,c0.event_name
+					,event_key
+					,event_value
+					,event_num
+					,user_num
+					,active_uv
+				FROM
+					(
+					SELECT
+						event_date
+						,package_name
+						,country_code
+						,platform
+						,is_new
+						,event_name
+						,event_key
+						,event_value
+						,event_num
+						,user_num
+					FROM
+					    transformed_data
+					  )c0
+						 left join
+						(
+						SELECT
+							stats_date
+							,package_name
+							,platform
+							,country_code
+							,is_new
+							,event_name
+							,active_uv
+						FROM	`gzdw2024.fbgame_01_basic.dws_common_oho_event_active_report`
+						WHERE stats_date>=date_add(run_date,interval -history_day day)
+						and stats_date<=date_add(run_date,interval -history_end_day day)
+						)c2 
+						on c0.event_date=c2.stats_date
+						and c0.platform=c2.platform
+						and c0.country_code=c2.country_code
+						AND c0.package_name=c2.package_name
+						and c0.is_new=c2.is_new
+						and c0.event_name=c2.event_name;
+
+
+
+
+------5.1乙游事件明细
+delete `gzdw2024.fbgame_01_basic.dws_common_fq_events_detail`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+insert `gzdw2024.fbgame_01_basic.dws_common_fq_events_detail`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dws_common_fq_events_detail`;
+	--create table  `gzdw2024.fbgame_01_basic.dws_common_fq_events_detail`
+	--PARTITION BY event_date as 
+	SELECT
+		* 
+	FROM `gzdw2024.fbgame_01_basic.dws_common_game_events_detail`
+	WHERE 1=1
+	and event_date>=date_add(run_date,interval -history_day day)
+	and event_date<=date_add(run_date,interval -history_end_day day)
+	and package_name='fb.otme.fate.quest';
+
+
+------5.2纸牌事件明细
+delete `gzdw2024.fbgame_01_basic.dws_common_zp_events_detail`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+insert `gzdw2024.fbgame_01_basic.dws_common_zp_events_detail`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dws_common_zp_events_detail`;
+--	create table  `gzdw2024.fbgame_01_basic.dws_common_zp_events_detail`
+	--PARTITION BY event_date as 
+	SELECT
+		* 
+	FROM `gzdw2024.fbgame_01_basic.dws_common_game_events_detail`
+	WHERE 1=1
+	and event_date>=date_add(run_date,interval -history_day day)
+	and event_date<=date_add(run_date,interval -history_end_day day)
+	and package_name='fb.zp';
+
+
+
+------5.3 oho事件明细
+delete `gzdw2024.fbgame_01_basic.dws_common_oho_events_detail`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+insert `gzdw2024.fbgame_01_basic.dws_common_oho_events_detail`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dws_common_oho_events_detail`;
+	--create table  `gzdw2024.fbgame_01_basic.dws_common_oho_events_detail`
+	--PARTITION BY event_date as 
+	SELECT
+		* 
+	FROM `gzdw2024.fbgame_01_basic.dws_common_game_events_detail`
+	WHERE 1=1
+	and event_date>=date_add(run_date,interval -history_day day)
+	and event_date<=date_add(run_date,interval -history_end_day day)
+	and package_name='fb.ai.avatar.puzzle';
+
+
+
+------5.4 fruit事件明细
+delete `gzdw2024.fbgame_01_basic.dws_common_fruit_events_detail`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+insert `gzdw2024.fbgame_01_basic.dws_common_fruit_events_detail`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dws_common_fruit_events_detail`;
+	--create table  `gzdw2024.fbgame_01_basic.dws_common_fruit_events_detail`
+	--PARTITION BY event_date as 
+	SELECT
+		* 
+	FROM `gzdw2024.fbgame_01_basic.dws_common_game_events_detail`
+	WHERE 1=1
+	and event_date>=date_add(run_date,interval -history_day day)
+	and event_date<=date_add(run_date,interval -history_end_day day)
+	and package_name='fb.fruit.bubble';
+
+
+------------6.水果泡自己统计
+delete `gzdw2024.fbgame_01_basic.dws_fruit_level_finish_report`
+where stats_date>=date_add(run_date,interval -history_day day)
+and stats_date<=date_add(run_date,interval -history_end_day day);
+
+
+insert `gzdw2024.fbgame_01_basic.dws_fruit_level_finish_report`
+--create table  `gzdw2024.fbgame_01_basic.dws_fruit_level_finish_report`
+--	PARTITION BY stats_date as 
+		SELECT
+			event_date as stats_date
+			,package_name
+			,platform
+			,country_code
+			,is_new
+			,level_id 
+			,COUNT(CASE WHEN score<6000 then user_id else null end) as score_0_6000
+			,COUNT(CASE WHEN score>=6000 and   score<7000 then user_id else null end) as score_6000_7000
+			,COUNT(CASE WHEN score>=7000 and   score<8000 then user_id else null end) as score_7000_8000
+			,COUNT(CASE WHEN score>=8000 and   score<10000 then user_id else null end) as score_8000_10000
+			,COUNT(CASE WHEN score>=10000 and   score<12000  then user_id else null end) as score_10000_12000
+			,COUNT(CASE WHEN score>=12000 then user_id else null end) as score_12000
+			,COUNT(CASE WHEN steps<10 then user_id else null end) as steps_0_10
+			,COUNT(CASE WHEN steps>=10 and   steps<20 then user_id else null end) as steps_10_20
+			,COUNT(CASE WHEN steps>=20 and   steps<30 then user_id else null end) as steps_20_30
+			,COUNT(CASE WHEN steps>=30 and   steps<40 then user_id else null end) as steps_30_40
+			,COUNT(CASE WHEN steps>=40 then user_id else null end) as steps_40
+			,COUNT(CASE WHEN starsum>=1 and   starsum<2 then user_id else null end) as starsum_1_2
+			,COUNT(CASE WHEN starsum>=2 and   starsum<3 then user_id else null end) as starsum_2_3
+			,COUNT(CASE WHEN starsum>=3 and   starsum<4 then user_id else null end) as starsum_3_4
+			,COUNT(CASE WHEN starsum>=4 then user_id else null end) as starsum_4
+		    ,count(user_id) as pv 
+			,avg(steps) as avg_steps
+			,avg(score) as avg_score
+			,avg(starsum) as avg_starsum
+			
+		FROM
+			(
+			SELECT
+				a.event_date
+				,a.package_name
+				,a.user_id 
+				,event_name
+				,platform
+				,country_code
+				,ARRAY['TOTAL',case when is_new =1 then 'new'
+				when is_new =0 then 'old' 
+				else 'old' end] as is_new
+        ,level_id
+				,score
+				,steps
+				,starsum	
+			FROM
+				(
+				SELECT
+					 event_date
+					,user_id
+					,ARRAY['TOTAL',country_code] as country_code
+					,array[case when operating_system ='iOS' then 'iOS'
+					when operating_system ='Android' then 'Android' 
+					else 'web' end,'TOTAL']  as platform						
+					,package_name
+					,event_name
+					,array['TOTAL',CASE when level_id is null then 'other' else level_id end ] as level_id
+					,safe_cast(score as int64) as score
+					,safe_cast(steps as int64) as steps
+					,safe_cast(starsum as int64) as starsum
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				and event_name in ('fb_fruit_game_play_finish')
+				
+				)a 
+			 left	join 
+				(
+				SELECT
+					package_name
+					,event_date
+					,user_id
+					,max(is_new) as is_new
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				group by event_date,user_id,package_name
+			   )b 
+				on a.user_id=b.user_id
+				and a.package_name=b.package_name
+				and a.event_date=b.event_date
+				,UNNEST(platform) AS platform
+				,UNNEST(country_code) AS country_code
+			)c 
+			,UNNEST(is_new) AS is_new
+			,UNNEST(level_id) as level_id
+			--where platform='TOTAL'
+			--and country_code='TOTAL'
+			--and level_id='TOTAL'
+			group by event_date,platform,country_code,level_id,package_name,is_new;
+
+
+end;
