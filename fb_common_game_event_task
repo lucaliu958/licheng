@@ -734,7 +734,7 @@ insert `gzdw2024.fbgame_01_basic.dws_common_fruit_events_detail`
 	and package_name='fb.fruit.bubble';
 
 
-------------6.水果泡自己统计
+-------6.1水果泡通关报告
 delete `gzdw2024.fbgame_01_basic.dws_fruit_level_finish_report`
 where stats_date>=date_add(run_date,interval -history_day day)
 and stats_date<=date_add(run_date,interval -history_end_day day);
@@ -770,12 +770,12 @@ insert `gzdw2024.fbgame_01_basic.dws_fruit_level_finish_report`
 			,COUNT(CASE WHEN starsum>=4 then user_id else null end) as starsum_4
 			,avg(starsum) as avg_starsum
 		    ,count(user_id) as pv 
-			,COUNT(CASE WHEN steps<0.5 then user_id else null end) as time_30
-			,COUNT(CASE WHEN steps>=0.5 and   steps<1 then user_id else null end) as time_30_60
-			,COUNT(CASE WHEN steps>=1 and   steps<1.5 then user_id else null end) as time_60_90
-			,COUNT(CASE WHEN steps>=1.5 and   steps<2 then user_id else null end) as time_90_120
-			,COUNT(CASE WHEN steps>=2 and   steps<3 then user_id else null end) as time_120_180
-			,COUNT(CASE WHEN steps>=3 then user_id else null end) as time_180
+			,COUNT(CASE WHEN time_min<0.5 then user_id else null end) as time_30
+			,COUNT(CASE WHEN time_min>=0.5 and   time_min<1 then user_id else null end) as time_30_60
+			,COUNT(CASE WHEN time_min>=1 and   time_min<1.5 then user_id else null end) as time_60_90
+			,COUNT(CASE WHEN time_min>=1.5 and   time_min<2 then user_id else null end) as time_90_120
+			,COUNT(CASE WHEN time_min>=2 and   time_min<3 then user_id else null end) as time_120_180
+			,COUNT(CASE WHEN time_min>=3 then user_id else null end) as time_180
 			,avg(time_min) as avg_timemin
 		FROM
 			(
@@ -841,6 +841,333 @@ insert `gzdw2024.fbgame_01_basic.dws_fruit_level_finish_report`
 			--and country_code='TOTAL'
 			--and level_id='TOTAL'
 			group by event_date,platform,country_code,level_id,package_name,is_new;
+
+
+-------6.2水果泡会话次数分布
+delete `gzdw2024.fbgame_01_basic.dws_fruit_lanuch_finish_pv_report`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+
+insert `gzdw2024.fbgame_01_basic.dws_fruit_lanuch_finish_pv_report`
+	--drop table if exists  `gzdw2024.fbgame_01_basic.dws_fruit_lanuch_finish_pv_report`;
+--create table  `gzdw2024.fbgame_01_basic.dws_fruit_lanuch_finish_pv_report`
+--	PARTITION BY event_date as 
+			with a as (
+				SELECT
+					event_date
+					,package_name
+					,user_id
+					,platform
+					,country_code
+					,is_new
+					,CASE WHEN launch_pv>=8 then 8 else launch_pv end as launch_pv
+					,CASE WHEN start_pv>=8 then 8 else start_pv end as start_pv
+					,CASE WHEN finsh_pv>=8 then 8 else finsh_pv end as finsh_pv
+				FROM 
+					(
+					SELECT
+						a.event_date
+						,a.package_name
+						,a.user_id 
+						,platform
+						,country_code
+						,is_new
+						,max(case when event_name='fb_fruit_app_launch' then pv else 0 end) as launch_pv
+						,max(case when event_name='fb_fruit_game_play_start' then pv else 0 end) as start_pv
+						,max(case when event_name='fb_fruit_game_play_finish' then pv else 0 end) as finsh_pv
+					FROM
+						(
+						SELECT
+							 event_date
+							,user_id
+							,ARRAY['TOTAL',country_code] as country_code
+							,array[case when operating_system ='iOS' then 'iOS'
+							when operating_system ='Android' then 'Android' 
+							else 'web' end,'TOTAL']  as platform						
+							,package_name
+							,ARRAY['TOTAL',case when is_new =1 then 'new'
+								when is_new =0 then 'old' 
+								else 'old' end] as is_new
+						FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`  
+						WHERE event_date>=date_add(run_date,interval -history_day day)
+						and event_date<=date_add(run_date,interval -history_end_day day)
+						and package_name in ('fb.fruit.bubble')
+						and is_launch=1			
+						)a 
+						left join
+						(
+						SELECT
+							 event_date
+							,user_id									
+							,package_name
+							,event_name
+							,count(1) as pv 
+						FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
+						WHERE event_date>=date_add(run_date,interval -history_day day)
+						and event_date<=date_add(run_date,interval -history_end_day day)
+						and event_name in ('fb_fruit_app_launch','fb_fruit_game_play_finish','fb_fruit_game_play_start')
+						and package_name in ('fb.fruit.bubble')
+						group by  event_date,user_id,package_name,event_name
+						)c 
+						on a.user_id=c.user_id
+						and a.package_name=c.package_name
+						and a.event_date=c.event_date
+						,UNNEST(platform) AS platform
+						,UNNEST(country_code) AS country_code
+						,UNNEST(is_new) AS is_new
+						group by event_date,platform,country_code,package_name,is_new,user_id
+						)d
+					)
+				  SELECT
+				   event_date
+				    ,package_name
+				    ,platform
+				    ,country_code
+				    ,is_new
+				    ,key_value.key AS event_key        
+				    ,key_value.value AS event_value
+				    ,COUNT(DISTINCT user_id) AS user_num
+				  FROM
+				    a,
+				    UNNEST([
+				      STRUCT('launch' AS key, launch_pv AS value),
+				      STRUCT('start' AS key, start_pv AS value),
+				      STRUCT('finsh' AS key, finsh_pv AS value)
+				    ]) AS key_value
+				  GROUP BY  event_date, event_key, event_value,package_name,country_code,platform,is_new;
+
+
+-----------6.3水果泡游戏与会话时长分布
+delete `gzdw2024.fbgame_01_basic.dws_fruit_finish_time_report`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+
+insert `gzdw2024.fbgame_01_basic.dws_fruit_finish_time_report`
+	--drop table if exists  `gzdw2024.fbgame_01_basic.dws_fruit_finish_time_report`;
+--create table  `gzdw2024.fbgame_01_basic.dws_fruit_finish_time_report`
+--	PARTITION BY event_date as 
+	with a as (
+		SELECT
+			package_name
+			,user_id
+			,country_code
+			,platform
+			,event_name
+			,event_date
+			,is_new
+			,SUM(timeuse) AS timeuse
+			,SUM(gameShowTime) AS gameShowTime
+		FROM
+			(
+			SELECT
+				a.package_name
+				,a.user_id
+				,country_code
+				,platform
+				,event_name
+				,a.event_date
+				,timeuse
+				,gameShowTime
+				,ARRAY['TOTAL',case when is_new =1 then 'new'
+								when is_new =0 then 'old' 
+								else 'old' end] as is_new
+			FROM
+				(
+				SELECT
+					package_name
+					,user_id
+					,ARRAY['TOTAL',country_code] as country_code
+					,array[case when operating_system ='iOS' then 'iOS'
+						when operating_system ='Android' then 'Android' 
+						else 'web' end,'TOTAL']  as platform	
+					,safe_cast(timeuse as int)/1000/60 as timeuse
+					,safe_cast(gameShowTime as int)/1000/60 as gameShowTime
+					,event_date
+					,event_name
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  	a
+				WHERE event_name in ('fb_fruit_game_play_finish')
+				and event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				)a 
+				 left	join 
+				(
+				SELECT
+					package_name
+					,event_date
+					,user_id
+					,max(is_new) as is_new
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				group by event_date,user_id,package_name
+			   )b 
+				on a.user_id=b.user_id
+				and a.package_name=b.package_name
+				and a.event_date=b.event_date
+			
+			)c 
+			,UNNEST(is_new) AS is_new
+			,UNNEST(platform) AS platform
+			,UNNEST(country_code) AS country_code
+			group by  package_name
+				,user_id
+				,country_code
+				,platform
+				,event_name
+				,event_date
+				,is_new
+		),
+
+	b as (	SELECT
+			package_name
+			,user_id
+			,country_code
+			,platform
+			,event_name
+			,event_date
+			,is_new
+			,case when timeuse<1 then 1  
+				when timeuse>=1 and timeuse<2 then 2
+				when timeuse>=2 and timeuse<3 then 3
+				when timeuse>=3 and timeuse<4 then 4
+				when timeuse>=4 and timeuse<5 then 5
+				when timeuse>=5  then 6 end as timeuse
+				,avg(timeuse)  over(partition by package_name,country_code,platform,is_new,event_date) as avg_timeuse
+		FROM a  
+		where 1=1 
+		and event_name='fb_fruit_game_play_finish' 
+		and timeuse<60
+		)
+		SELECT
+			package_name
+			,event_date
+			,country_code
+			,platform
+			,is_new
+			,timeuse
+			,COUNT(DISTINCT user_id) as uv 
+			,max(avg_timeuse) as avg_timeuse
+		FROM b 
+		group BY package_name,event_date,country_code,platform,is_new,timeuse;
+				
+
+-------6.4水果泡游戏时长分布
+delete `gzdw2024.fbgame_01_basic.dws_fruit_game_time_report`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+
+insert `gzdw2024.fbgame_01_basic.dws_fruit_game_time_report`
+	--drop table if exists  `gzdw2024.fbgame_01_basic.dws_fruit_game_time_report`;
+--create table  `gzdw2024.fbgame_01_basic.dws_fruit_game_time_report`
+--	PARTITION BY event_date as 
+	with a as (
+		SELECT
+			package_name
+			,user_id
+			,country_code
+			,platform
+			,event_name
+			,event_date
+			,is_new
+			,SUM(timeuse) AS timeuse
+			,SUM(gameShowTime) AS gameShowTime
+		FROM
+			(
+			SELECT
+				a.package_name
+				,a.user_id
+				,country_code
+				,platform
+				,event_name
+				,a.event_date
+				,timeuse
+				,gameShowTime
+				,ARRAY['TOTAL',case when is_new =1 then 'new'
+								when is_new =0 then 'old' 
+								else 'old' end] as is_new
+			FROM
+				(
+				SELECT
+					package_name
+					,user_id
+					,ARRAY['TOTAL',country_code] as country_code
+					,array[case when operating_system ='iOS' then 'iOS'
+						when operating_system ='Android' then 'Android' 
+						else 'web' end,'TOTAL']  as platform	
+					,safe_cast(timeuse as int)/1000/60 as timeuse
+					,safe_cast(gameShowTime as int)/1000/60 as gameShowTime
+					,event_date
+					,event_name
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  	a
+				WHERE event_name in ('fb_fruit_game_play_exit')
+				and event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				)a 
+				 left	join 
+				(
+				SELECT
+					package_name
+					,event_date
+					,user_id
+					,max(is_new) as is_new
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				group by event_date,user_id,package_name
+			   )b 
+				on a.user_id=b.user_id
+				and a.package_name=b.package_name
+				and a.event_date=b.event_date
+			
+			)c 
+			,UNNEST(is_new) AS is_new
+			,UNNEST(platform) AS platform
+			,UNNEST(country_code) AS country_code
+			group by  package_name
+				,user_id
+				,country_code
+				,platform
+				,event_name
+				,event_date
+				,is_new
+		),
+
+	b as (	SELECT
+			package_name
+			,user_id
+			,country_code
+			,platform
+			,event_name
+			,event_date
+			,is_new
+			,case when gameShowTime<1 then 'a_0_1_min'
+				when gameShowTime>=1 and gameShowTime<3 then 'b_1_3_min'
+				when gameShowTime>=3 and gameShowTime<5 then 'c_3_5_min'
+				when gameShowTime>=5 and gameShowTime<10 then 'd_5_10_min'
+				when gameShowTime>=10 and gameShowTime<20 then 'e_10_20_min'
+				when gameShowTime>=20 and gameShowTime<30 then 'f_20_30_min'
+				when gameShowTime>=30 and gameShowTime<60 then 'g_30_60_min'
+				when gameShowTime>=60  then 'h_60_min' end as gameShowTime
+				,avg(gameShowTime)  over(partition by package_name,country_code,platform,is_new,event_date) as avg_gameShowTime
+		FROM a  
+		where 1=1 
+		and event_name='fb_fruit_game_play_exit' 
+		and gameShowTime<120
+		)
+		SELECT
+			package_name
+			,event_date
+			,country_code
+			,platform
+			,is_new
+			,gameShowTime
+			,COUNT(DISTINCT user_id) as uv 
+			,max(avg_gameShowTime) as avg_gameShowTime
+		FROM b 
+		group BY package_name,event_date,country_code,platform,is_new,gameShowTime;
 
 
 end;
