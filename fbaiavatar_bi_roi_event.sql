@@ -901,7 +901,7 @@ insert `gzdw2024.fb_zp_game.dws_fb_ad_revenue_daily_reports`
 					SELECT 
 					date(stats_date) as stats_date
 					,'fb.zp' as package_name
-					,case when platform='ios' then 'iOS' when platform='android' then 'Android' else platform end  as platform
+					,case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end  as platform
 					,upper(country) as country_code
 					,sum(requests)  as requests
 					,sum(filled_requests)  as filled_requests
@@ -920,7 +920,7 @@ insert `gzdw2024.fb_zp_game.dws_fb_ad_revenue_daily_reports`
 				SELECT 
 					date(start_timestamp) as stats_date
 						,'fb.zp' as package_name
-					,case when platform='ios' then 'iOS' when platform='android' then 'Android' else platform end  as platform
+					,case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end  as platform
 					,'TOTAL' as country_code
 					,sum(requests)  as requests
 					,sum(filled_requests)  as filled_requests
