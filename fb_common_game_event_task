@@ -66,8 +66,9 @@ insert `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`
 			    (
 			    SELECT 
 			      upper(country_name) as country_name
-			      ,country_code as country_code
+			      ,max(country_code) as country_code
 			    FROM `gzdw2024.gz_dim.country_info` 
+					group by upper(country_name)
 			    )c 
 			    on upper(a.geo.country)=c.country_name
 	WHERE 1=1
