@@ -741,6 +741,7 @@ and stats_date<=date_add(run_date,interval -history_end_day day);
 
 
 insert `gzdw2024.fbgame_01_basic.dws_fruit_level_finish_report`
+	--drop table if exists `gzdw2024.fbgame_01_basic.dws_fruit_level_finish_report`;
 --create table  `gzdw2024.fbgame_01_basic.dws_fruit_level_finish_report`
 --	PARTITION BY stats_date as 
 		SELECT
@@ -756,20 +757,26 @@ insert `gzdw2024.fbgame_01_basic.dws_fruit_level_finish_report`
 			,COUNT(CASE WHEN score>=8000 and   score<10000 then user_id else null end) as score_8000_10000
 			,COUNT(CASE WHEN score>=10000 and   score<12000  then user_id else null end) as score_10000_12000
 			,COUNT(CASE WHEN score>=12000 then user_id else null end) as score_12000
+			,avg(score) as avg_score
 			,COUNT(CASE WHEN steps<10 then user_id else null end) as steps_0_10
 			,COUNT(CASE WHEN steps>=10 and   steps<20 then user_id else null end) as steps_10_20
 			,COUNT(CASE WHEN steps>=20 and   steps<30 then user_id else null end) as steps_20_30
 			,COUNT(CASE WHEN steps>=30 and   steps<40 then user_id else null end) as steps_30_40
 			,COUNT(CASE WHEN steps>=40 then user_id else null end) as steps_40
+			,avg(steps) as avg_steps
 			,COUNT(CASE WHEN starsum>=1 and   starsum<2 then user_id else null end) as starsum_1_2
 			,COUNT(CASE WHEN starsum>=2 and   starsum<3 then user_id else null end) as starsum_2_3
 			,COUNT(CASE WHEN starsum>=3 and   starsum<4 then user_id else null end) as starsum_3_4
 			,COUNT(CASE WHEN starsum>=4 then user_id else null end) as starsum_4
-		    ,count(user_id) as pv 
-			,avg(steps) as avg_steps
-			,avg(score) as avg_score
 			,avg(starsum) as avg_starsum
-			
+		    ,count(user_id) as pv 
+			,COUNT(CASE WHEN steps<0.5 then user_id else null end) as time_30
+			,COUNT(CASE WHEN steps>=0.5 and   steps<1 then user_id else null end) as time_30_60
+			,COUNT(CASE WHEN steps>=1 and   steps<1.5 then user_id else null end) as time_60_90
+			,COUNT(CASE WHEN steps>=1.5 and   steps<2 then user_id else null end) as time_90_120
+			,COUNT(CASE WHEN steps>=2 and   steps<3 then user_id else null end) as time_120_180
+			,COUNT(CASE WHEN steps>=3 then user_id else null end) as time_180
+			,avg(time_min) as avg_timemin
 		FROM
 			(
 			SELECT
@@ -782,10 +789,11 @@ insert `gzdw2024.fbgame_01_basic.dws_fruit_level_finish_report`
 				,ARRAY['TOTAL',case when is_new =1 then 'new'
 				when is_new =0 then 'old' 
 				else 'old' end] as is_new
-        ,level_id
+        		,level_id
 				,score
 				,steps
-				,starsum	
+				,starsum
+				,time_min	
 			FROM
 				(
 				SELECT
@@ -801,10 +809,12 @@ insert `gzdw2024.fbgame_01_basic.dws_fruit_level_finish_report`
 					,safe_cast(score as int64) as score
 					,safe_cast(steps as int64) as steps
 					,safe_cast(starsum as int64) as starsum
+					,safe_cast(timeuse as int64)/1000/60 as time_min
 				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
 				WHERE event_date>=date_add(run_date,interval -history_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
 				and event_name in ('fb_fruit_game_play_finish')
+				and package_name in ('fb.fruit.bubble')
 				
 				)a 
 			 left	join 
