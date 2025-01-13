@@ -112,7 +112,7 @@ FROM
 	 	,max(case when event_name  in ('fb_zp_app_launch')  then 1 else 0 end) as is_launch
 	 	,max(case when event_name  in ('fb_zp_app_launch') and isFirst='true' then 1 else 0 end) as is_new
 	 	,max(case when event_name  in ('fb_zp_app_launch') and fromon='ad' then 1 else 0 end) as is_ad
-	 	,max(case  when event_name  in ('fb_zp_app_launch') and fromon in ('shareable_link','feed') then 1 else 0 end) as is_liebian
+	 	,max(case  when event_name  in ('fb_zp_app_launch') and fromon in ('feed') then 1 else 0 end) as is_liebian
 	 FROM `gzdw2024.fb_zp_game.dwd_user_event_di` 
 	 where 1=1
 	 and event_date>=date_add(run_date,interval -hitory_retain_day day)
@@ -616,7 +616,7 @@ insert `gzdw2024.fb_zp_game.dws_user_fb_ad_report`
 				SELECT 
 					date(start_timestamp) as stats_date
 						,'fb.zp' as package_name
-					,array['TOTAL',case when platform='ios' then 'iOS' when platform='android' then 'Android' else platform end]  as platform
+					,array['TOTAL',case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end]  as platform
 					,array['TOTAL',upper(country)] as country_code
 					,array['TOTAL',case when lower(placement_name) like '%banner%' then 'banner'
 					when lower(placement_name) like '%rewarded%interstitial%' then 'rewarded_interstitial'
@@ -628,10 +628,9 @@ insert `gzdw2024.fb_zp_game.dws_user_fb_ad_report`
 					,impressions
 					,revenue
 					,clicks
-				FROM `fb-ai-avatar-puzzle.analytics_439907691.ad_analytics_detail_day_*` 
-				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
-				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
-				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
+			FROM `fb-ai-avatar-puzzle.analytics_439907691.facebook_ad_backup_detail_day` 
+				where stats_date >= date_add(run_date,interval -history_day day)
+			    and stats_date <= date_add(run_date,interval -history_end_day day)
 				and app_name='Solitaire'
 					--and _TABLE_SUFFIX!='20241103'
 				)c 
