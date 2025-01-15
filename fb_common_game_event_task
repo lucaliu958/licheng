@@ -17,7 +17,6 @@ insert `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`
         when stream_id ='9817620337' then 'fb.zp' 
 		when stream_id ='9900250753' then 'fb.otme.fate.quest' 
 		when stream_id ='9985702455' then 'fb.fruit.bubble' 
-		when stream_id ='10014848977' then 'fb.ai.aha' 
 		else 'other'  end  as package_name
 		,PARSE_DATE('%Y%m%d',event_date) event_date
     	,stream_id
@@ -466,7 +465,6 @@ insert `gzdw2024.fbgame_01_basic.dws_common_fruit_event_active_report`
 	and package_name='fb.fruit.bubble';
 
 
-
 ----------------5.事件参数明细
 
 delete `gzdw2024.fbgame_01_basic.dws_common_game_events_detail`
@@ -734,24 +732,6 @@ insert `gzdw2024.fbgame_01_basic.dws_common_fruit_events_detail`
 	and event_date>=date_add(run_date,interval -history_day day)
 	and event_date<=date_add(run_date,interval -history_end_day day)
 	and package_name='fb.fruit.bubble';
-
-
-------5.5 aha事件明细
-delete `gzdw2024.fbgame_01_basic.dws_common_aha_events_detail`
-where event_date>=date_add(run_date,interval -history_day day)
-and event_date<=date_add(run_date,interval -history_end_day day);
-
-insert `gzdw2024.fbgame_01_basic.dws_common_aha_events_detail`
---drop table if exists  `gzdw2024.fbgame_01_basic.dws_common_aha_events_detail`;
-	--create table  `gzdw2024.fbgame_01_basic.dws_common_aha_events_detail`
-	--PARTITION BY event_date as 
-	SELECT
-		* 
-	FROM `gzdw2024.fbgame_01_basic.dws_common_game_events_detail`
-	WHERE 1=1
-	and event_date>=date_add(run_date,interval -history_day day)
-	and event_date<=date_add(run_date,interval -history_end_day day)
-	and package_name='fb.ai.aha';
 
 
 
@@ -1820,8 +1800,8 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_game_prop_sale_report`
 
 				     
 delete `gzdw2024.fbgame_01_basic.dws_common_fq_back_report`
-where stats_date>=date_add(run_date,interval -history_day day)
-and stats_date<=date_add(run_date,interval -history_end_day day);
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
 
 
 insert `gzdw2024.fbgame_01_basic.dws_common_fq_back_report`
