@@ -1694,6 +1694,7 @@ with a as (
 			    and event_date <= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL history_end_day day)
 				--and platform='TOTAL'
 				--and country_code='TOTAL'
+					and package_name='fb.zp'
         		order by event_date
 				)a 
 				group by platform,country_code
@@ -1727,6 +1728,7 @@ with a as (
 			    and event_date <= DATE_SUB(CURRENT_DATE('America/Los_Angeles') , INTERVAL history_end_day day)
 				--and platform='TOTAL'
 				--and country_code='TOTAL'
+					and package_name='fb.zp'
 				order by stats_date
 				)
 		SELECT
@@ -1901,6 +1903,7 @@ FROM
 		--and country_code='TOTAL'
 		and stats_date >= date_add(run_date,interval -history_day day)
     	and stats_date <= date_add(run_date,interval -history_end_day day )
+    		and package_name='fb.zp'
 		)a 
 		left join 
 		(
@@ -1923,7 +1926,7 @@ FROM
 			,ratio_6
 			,ratio_7
 			,ratio_8
-		FROM `gzdw2024.fb_zp_game.dws_fb_rention_roi_reports`
+		FROM `gzdw2024.fbgame_real_01_basic.dws_fb_rention_roi_reports`
 		)b 
 		on a.stats_date=b.stats_date
 		and a.platform=b.platform
@@ -2026,6 +2029,7 @@ insert `gzdw2024.fbgame_real_01_basic.dws_user_fb_ad_report`
 					,array['TOTAL',case when lower(placement_name) like '%banner%' then 'banner'
 					when lower(placement_name) like '%rewarded%interstitial%' then 'rewarded_interstitial'
 					when lower(placement_name) like '%interstitial%' then 'interstitial'
+					when lower(placement_name) like '%reward%video%' then 'rewarded_video'
 					else 'other' end ] as ad_type
 					,requests
 					,filled_requests
@@ -2054,6 +2058,7 @@ insert `gzdw2024.fbgame_real_01_basic.dws_user_fb_ad_report`
 			FROM	`gzdw2024.fbgame_real_01_basic.dws_user_active_report`
 			WHERE event_date>=date_add(run_date,interval -history_day day)
 			and event_date<=date_add(run_date,interval -history_end_day day)
+			and package_name='fb.zp'
 
 			)c1 
 			on c0.stats_date=c1.event_date
