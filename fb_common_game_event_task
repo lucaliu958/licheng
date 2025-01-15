@@ -1104,7 +1104,7 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_game_select_event_active_report`
 
 ------6.4玩家资源统计-分布
 delete `gzdw2024.fbgame_01_basic.dws_bubble_game_player_resource_distribution_report`
-where event_date>=date_add(run_date,interval -4 day)
+where event_date>=date_add(run_date,interval -history_day day)
 and event_date<=date_add(run_date,interval -history_end_day day);
 
 
@@ -1236,7 +1236,7 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_game_player_resource_distribution_re
 
 -------6.5玩家资源统计-中位数与平均
 delete `gzdw2024.fbgame_01_basic.dws_bubble_game_player_resource_avg_med_report`
-where event_date>=date_add(run_date,interval -4 day)
+where event_date>=date_add(run_date,interval -history_day day)
 and event_date<=date_add(run_date,interval -history_end_day day);
 
 
