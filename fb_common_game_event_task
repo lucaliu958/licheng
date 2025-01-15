@@ -17,6 +17,7 @@ insert `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`
         when stream_id ='9817620337' then 'fb.zp' 
 		when stream_id ='9900250753' then 'fb.otme.fate.quest' 
 		when stream_id ='9985702455' then 'fb.fruit.bubble' 
+		when stream_id ='10014848977' then 'fb.ai.aha' 
 		else 'other'  end  as package_name
 		,PARSE_DATE('%Y%m%d',event_date) event_date
     	,stream_id
@@ -72,7 +73,7 @@ insert `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`
 			    )c 
 			    on upper(a.geo.country)=c.country_name
 	WHERE 1=1
-	 and  stream_id in('9692329810','9817620337','9900250753','9985702455')
+	 and  stream_id in('9692329810','9817620337','9900250753','9985702455','10014848977')
 	and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 	and  _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
 	 ;
@@ -465,6 +466,7 @@ insert `gzdw2024.fbgame_01_basic.dws_common_fruit_event_active_report`
 	and package_name='fb.fruit.bubble';
 
 
+
 ----------------5.事件参数明细
 
 delete `gzdw2024.fbgame_01_basic.dws_common_game_events_detail`
@@ -492,7 +494,6 @@ and event_date<=date_add(run_date,interval -history_end_day day);
 			,level_id
 			,cat_id
 			,buytype
-			,type
 		FROM
 			(	
 			SELECT
@@ -512,7 +513,6 @@ and event_date<=date_add(run_date,interval -history_end_day day);
 				,level_id
 				,cat_id
 				,buytype
-				,type
 			FROM
 				(
 				SELECT
@@ -531,7 +531,6 @@ and event_date<=date_add(run_date,interval -history_end_day day);
 					,level_id
 					,cat_id
 					,buytype
-					,type
 				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
 				WHERE event_date>=date_add(run_date,interval -history_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
@@ -562,7 +561,6 @@ and event_date<=date_add(run_date,interval -history_end_day day);
 					,'fb_fruit_shop_buyprop'
 					,'fb_fruit_app_launch'
 					,'fb_app_launch'
-					,'fb_share_show'
 
 						)
 				)a 
@@ -608,8 +606,7 @@ and event_date<=date_add(run_date,interval -history_end_day day);
 				      STRUCT('win' AS key, win AS value),
 				      STRUCT('level_id' AS key, level_id AS value),
 				      STRUCT('cat_id' AS key, cat_id AS value),
-				      STRUCT('buytype' AS key, buytype AS value),
-				       STRUCT('type' AS key, type AS value)
+				      STRUCT('buytype' AS key, cat_id AS value)
 				    ]) AS key_value
 				  GROUP BY event_name, event_date, event_key, event_value,package_name,country_code,platform,is_new
 				)
@@ -737,6 +734,24 @@ insert `gzdw2024.fbgame_01_basic.dws_common_fruit_events_detail`
 	and event_date>=date_add(run_date,interval -history_day day)
 	and event_date<=date_add(run_date,interval -history_end_day day)
 	and package_name='fb.fruit.bubble';
+
+
+------5.5 aha事件明细
+delete `gzdw2024.fbgame_01_basic.dws_common_aha_events_detail`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+insert `gzdw2024.fbgame_01_basic.dws_common_aha_events_detail`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dws_common_aha_events_detail`;
+	--create table  `gzdw2024.fbgame_01_basic.dws_common_aha_events_detail`
+	--PARTITION BY event_date as 
+	SELECT
+		* 
+	FROM `gzdw2024.fbgame_01_basic.dws_common_game_events_detail`
+	WHERE 1=1
+	and event_date>=date_add(run_date,interval -history_day day)
+	and event_date<=date_add(run_date,interval -history_end_day day)
+	and package_name='fb.ai.aha';
 
 
 
