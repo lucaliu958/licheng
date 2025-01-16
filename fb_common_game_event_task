@@ -465,6 +465,24 @@ insert `gzdw2024.fbgame_01_basic.dws_common_fruit_event_active_report`
 	and stats_date<=date_add(run_date,interval -history_end_day day)
 	and package_name='fb.fruit.bubble';
 
+------4.5 AHA事件
+delete `gzdw2024.fbgame_01_basic.dws_common_aha_event_active_report`
+where stats_date>=date_add(run_date,interval -history_day day)
+and stats_date<=date_add(run_date,interval -history_end_day day);
+
+insert `gzdw2024.fbgame_01_basic.dws_common_aha_event_active_report`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dws_common_aha_event_active_report`;
+--	create table  `gzdw2024.fbgame_01_basic.dws_common_aha_event_active_report`
+--	PARTITION BY stats_date as 
+	SELECT
+		* 
+	FROM `gzdw2024.fbgame_01_basic.dws_common_game_event_active_report`
+	WHERE 1=1
+	and stats_date>=date_add(run_date,interval -history_day day)
+	and stats_date<=date_add(run_date,interval -history_end_day day)
+	and package_name='fb.ai.aha';
+
+
 
 
 ----------------5.事件参数明细
@@ -752,6 +770,80 @@ insert `gzdw2024.fbgame_01_basic.dws_common_aha_events_detail`
 	and event_date>=date_add(run_date,interval -history_day day)
 	and event_date<=date_add(run_date,interval -history_end_day day)
 	and package_name='fb.ai.aha';
+
+-----5.5 乙游事件-时间明细
+
+delete `gzdw2024.fbgame_01_basic.dwd_common_fq_events_time_di`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+insert `gzdw2024.fbgame_01_basic.dwd_common_fq_events_time_di`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dwd_common_fq_events_time_di`;
+--	create table  `gzdw2024.fbgame_01_basic.dwd_common_fq_events_time_di`
+--PARTITION BY event_date as 
+	SELECT
+		* 
+	FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`
+	WHERE 1=1
+	and event_date>=date_add(run_date,interval -history_day day)
+	and event_date<=date_add(run_date,interval -history_end_day day)
+	and package_name='fb.otme.fate.quest';
+
+
+-----5.6 纸牌事件-时间明细
+delete `gzdw2024.fbgame_01_basic.dwd_common_zp_events_time_di`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+insert `gzdw2024.fbgame_01_basic.dwd_common_zp_events_time_di`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dwd_common_zp_events_time_di`;
+--create table  `gzdw2024.fbgame_01_basic.dwd_common_zp_events_time_di`
+	--PARTITION BY event_date as 
+	SELECT
+		* 
+	FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`
+	WHERE 1=1
+	and event_date>=date_add(run_date,interval -history_day day)
+	and event_date<=date_add(run_date,interval -history_end_day day)
+	and package_name='fb.zp';
+
+
+
+------5.7 oho事件-时间明细
+delete `gzdw2024.fbgame_01_basic.dwd_common_oho_events_time_di`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+insert `gzdw2024.fbgame_01_basic.dwd_common_oho_events_time_di`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dwd_common_oho_events_time_di`;
+--	create table  `gzdw2024.fbgame_01_basic.dwd_common_oho_events_time_di`
+--	PARTITION BY event_date as 
+	SELECT
+		* 
+	FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`
+	WHERE 1=1
+	and event_date>=date_add(run_date,interval -history_day day)
+	and event_date<=date_add(run_date,interval -history_end_day day)
+	and package_name='fb.ai.avatar.puzzle';
+
+
+
+------5.8 fruit事件-时间明细
+delete `gzdw2024.fbgame_01_basic.dws_common_fruit_events_time_di`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+insert `gzdw2024.fbgame_01_basic.dws_common_fruit_events_time_di`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dws_common_fruit_events_time_di`;
+--	create table  `gzdw2024.fbgame_01_basic.dws_common_fruit_events_time_di`
+--	PARTITION BY event_date as 
+	SELECT
+		* 
+	FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`
+	WHERE 1=1
+	and event_date>=date_add(run_date,interval -history_day day)
+	and event_date<=date_add(run_date,interval -history_end_day day)
+	and package_name='fb.fruit.bubble';
 
 
 
@@ -1818,7 +1910,7 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_game_prop_sale_report`
 				    a
 				  GROUP BY  event_date, proptype,package_name,country_code,platform,is_new;
 
-				     
+------------7.1 乙游退出剧本统计			     
 delete `gzdw2024.fbgame_01_basic.dws_common_fq_back_report`
 where event_date>=date_add(run_date,interval -history_day day)
 and event_date<=date_add(run_date,interval -history_end_day day);
