@@ -333,7 +333,7 @@ FROM
 			group by a.event_date,country_code,platform;
 
 
-
+/*
 --------------生成时间小时级数据
 
 delete `fb-ai-avatar-puzzle.fb_dw.dws_user_export_time_report`
@@ -538,7 +538,7 @@ FROM
 	,country_code
 	,event_day_hour
 	,event_hour;
-
+*/
 
 ----------广告统计表
 delete `fb-ai-avatar-puzzle.fb_dw.dws_user_ad_report`
