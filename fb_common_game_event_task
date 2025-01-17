@@ -62,6 +62,7 @@ insert `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='id') cat_id
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='proplist') proplist
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='propselect') propselect
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='browserType') browserType
 	FROM `recorder-pro-50451.analytics_250268757.events_*` a 
 	left join
 			    (
@@ -771,6 +772,7 @@ insert `gzdw2024.fbgame_01_basic.dws_common_aha_events_detail`
 	and event_date<=date_add(run_date,interval -history_end_day day)
 	and package_name='fb.ai.aha';
 
+/*
 -----5.5 乙游事件-时间明细
 
 delete `gzdw2024.fbgame_01_basic.dwd_common_fq_events_time_di`
@@ -844,7 +846,7 @@ insert `gzdw2024.fbgame_01_basic.dws_common_fruit_events_time_di`
 	and event_date>=date_add(run_date,interval -history_day day)
 	and event_date<=date_add(run_date,interval -history_end_day day)
 	and package_name='fb.fruit.bubble';
-
+*/
 
 
 -------6.1泡泡龙通关报告-分布
@@ -1909,6 +1911,120 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_game_prop_sale_report`
 				  FROM
 				    a
 				  GROUP BY  event_date, proptype,package_name,country_code,platform,is_new;
+
+
+
+-------6.10泡泡龙失败继续报告
+delete `gzdw2024.fbgame_01_basic.dws_bubble_level_fail_continue_report`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+
+insert `gzdw2024.fbgame_01_basic.dws_bubble_level_fail_continue_report`
+	--drop table if exists `gzdw2024.fbgame_01_basic.dws_bubble_level_fail_continue_report`;
+--create table  `gzdw2024.fbgame_01_basic.dws_bubble_level_fail_continue_report`
+--	PARTITION BY event_date as 
+	with a  
+		as (
+		SELECT
+			event_date
+			,user_id
+			,package_name
+			,platform
+			,country_code
+			,level_id
+			,is_new
+			,event_name
+		FROM
+			(
+			SELECT
+				a.event_date
+				,a.package_name
+				,a.user_id 	
+				,platform
+				,country_code
+				,ARRAY['TOTAL',case when is_new =1 then 'new'
+				when is_new =0 then 'old' 
+				else 'old' end] as is_new
+        		,level_id
+				,event_name
+			FROM
+				(
+				SELECT
+					 event_date
+					,user_id
+					,ARRAY['TOTAL',country_code] as country_code
+					,array[case when operating_system ='iOS' then 'iOS'
+					when operating_system ='Android' then 'Android' 
+					else 'web' end,'TOTAL']  as platform						
+					,package_name
+					,event_name
+					,array['TOTAL',CASE when level_id is null then 'other' else level_id end ] as level_id
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				and event_name in ('fb_fruit_game_play_fail_continuecoin','fb_fruit_game_play_fail_continuefree','fb_fruit_game_play_start')
+				--and package_name in ('fb.fruit.bubble')
+				
+				)a 
+			 left	join 
+				(
+				SELECT
+					package_name
+					,event_date
+					,user_id
+					,max(is_new) as is_new
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				group by event_date,user_id,package_name
+			   )b 
+				on a.user_id=b.user_id
+				and a.package_name=b.package_name
+				and a.event_date=b.event_date
+				,UNNEST(platform) AS platform
+				,UNNEST(country_code) AS country_code
+			)c 
+			,UNNEST(is_new) AS is_new
+			,UNNEST(level_id) as level_id
+		) 
+			 SELECT
+			   	event_date
+			    ,package_name
+			    ,platform
+			    ,country_code
+			    ,is_new
+			    ,level_id
+			   	,max(case when event_name='fb_fruit_game_play_fail_continuecoin' then pv else 0 end ) as continu_coin_pv
+			   	,max(case when event_name='fb_fruit_game_play_fail_continuecoin' then uv else 0 end ) as continu_coin_uv
+			   	,max(case when event_name='fb_fruit_game_play_fail_continuefree' then pv else 0 end ) as continu_free_pv
+			   	,max(case when event_name='fb_fruit_game_play_fail_continuefree' then uv else 0 end ) as continu_free_uv
+			   	,max(case when event_name='fb_fruit_game_play_start' then pv else 0 end ) as start_pv
+			   	,max(case when event_name='fb_fruit_game_play_start' then uv else 0 end ) as start_uv
+			   FROM
+			   	(
+		 		 SELECT
+				   event_date
+				    ,package_name
+				    ,platform
+				    ,country_code
+				    ,is_new
+				    ,level_id
+				   	,event_name
+				   	,count(1) as pv 
+				   	,count(distinct user_id) as uv 
+				  FROM
+				    a
+				  GROUP BY  event_date,package_name,country_code,platform,is_new,level_id,event_name
+				  )a1 
+			   	where country_code='TOTAL'
+			   	and platform='TOTAL'
+			   	and is_new='TOTAL'
+			   	GROUP BY  event_date,package_name,country_code,platform,is_new,level_id;
+
+
+
+
 
 ------------7.1 乙游退出剧本统计			     
 delete `gzdw2024.fbgame_01_basic.dws_common_fq_back_report`
