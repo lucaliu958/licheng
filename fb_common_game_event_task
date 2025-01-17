@@ -2243,5 +2243,525 @@ insert `gzdw2024.fbgame_01_basic.dws_common_fq_back_report`
 
 
 
+-------8.1人均广告数据
+
+delete `gzdw2024.fbgame_01_basic.dws_common_game_user_ad_report`
+where event_date>=date_add(run_date,interval -history_day day)
+	and event_date<=date_add(run_date,interval -1  day);
+
+insert `gzdw2024.fbgame_01_basic.dws_common_game_user_ad_report`
+	--drop table if exists  `gzdw2024.fbgame_01_basic.dws_common_game_user_ad_report`;
+	--create table  `gzdw2024.fbgame_01_basic.dws_common_game_user_ad_report`
+	--PARTITION BY event_date as 
+		with a as (
+		SELECT
+			a.event_date	
+			,country_code
+			,platform
+			,placement
+			,package_name
+			,event_name	
+			,user_id
+  			,ad_type
+  			,is_new
+		FROM
+			(
+			SELECT
+				a.event_date
+				,a.user_id
+				,array[country_code,'TOTAL'] as country_code
+				,array[platform,'TOTAL'] as platform
+
+				,array[placement,'TOTAL'] as placement
+				,array[ad_type,'TOTAL'] as ad_type
+				,event_name
+				,a.package_name
+				,ARRAY['TOTAL',case when is_new =1 then 'new'
+				when is_new =0 then 'old' 
+				else 'old' end] as is_new	
+			FROM
+				(
+				SELECT
+					 event_date
+					,user_id
+					,upper(country_code) as country_code
+					,case when operating_system ='iOS' then 'iOS'
+					when operating_system ='Android' then 'Android' 
+					else 'web' end as platform		
+					,package_name
+					,event_name
+					,placement
+					,case when (lower(placement)  like '%banner%' or lower(type) like '%banner%')  then 'banner'
+					when (lower(placement) like '%reward%interstitial%' or lower(type) like '%reward%interstitial%') then 'rewarded_interstitial'
+					when (lower(placement) like '%interstitial%' or lower(type)like '%interstitial%' )  then 'interstitial'
+					when lower(placement) like '%reward%video%' then 'rewarded_video'
+					--	when lower(placement) like '%hint%' then 'interstitial'
+					else 'other' end as ad_type
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di` 
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				and REGEXP_CONTAINS(event_name, r'.*(ad_load_c|ad_load_fail_c|ad_load_success_c|ad_impression_c|ad_expect_impression_c|ad_impression_fail_c|reward_interstitial_skip)$')
+				)a 
+			    left	join 
+				(
+				SELECT
+					package_name
+					,event_date
+					,user_id
+					,max(is_new) as is_new
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				group by event_date,user_id,package_name
+			   )b 
+				on a.user_id=b.user_id
+				and a.package_name=b.package_name
+				and a.event_date=b.event_date
+			  )a 
+			,UNNEST(country_code) as country_code
+			,UNNEST(platform) as platform
+			,UNNEST(placement) as placement
+      		,UNNEST(ad_type) as ad_type
+      		,UNNEST(is_new) as is_new
+		),
+ c as 
+(
+	SELECT
+	event_date
+	,package_name
+	,platform
+	,country_code
+	,is_new
+	,ad_type
+	,placement
+	,count(case when event_name like '%ad_load_c' then user_id else null end) as load_pv
+	,count(case when event_name like '%ad_load_success_c' then user_id else null end) as load_succ_pv
+	,count(case when event_name like '%ad_load_fail_c'  then user_id else null end) as load_fail_pv
+	,count(case when event_name like '%ad_impression_c' or event_name like '%reward_interstitial_skip' then user_id else null end) as impression_pv
+	,count(case when event_name like '%ad_expect_impression_c' then user_id else null end) as expect_pv
+	,count(case when event_name like '%ad_impression_fail_c' then user_id else null end) as impression_fail_pv
+	,count(distinct case when event_name like '%ad_load_c' then user_id else null end) as load_uv
+	,count(distinct case when event_name like '%ad_load_success_c' then user_id else null end) as load_succ_uv
+	,count(distinct case when event_name like '%ad_load_fail_c' then user_id else null end) as load_fail_uv
+	,count(distinct case when event_name like '%ad_impression_c' or event_name like '%reward_interstitial_skip' then user_id else null end) as impression_uv
+	,count(distinct case when event_name like '%ad_expect_impression_c' then user_id else null end) as expect_uv
+	,count(distinct case when event_name like '%ad_impression_fail_c' then user_id else null end) as impression_fail_uv
+FROM
+	(
+
+		select * 
+		from a  
+		where 1=1
+		--and event_name in ('fb_templ_res_click','fb_temp_export_fail')
+		
+	)e 
+	group by event_date,country_code,platform,package_name,placement,ad_type,is_new
+)
+SELECT
+	c0.event_date
+	,c0.package_name
+	,c0.platform
+	,c0.country_code
+	,c0.is_new
+	,ad_type
+	,placement
+	,load_pv
+	,load_succ_pv
+	,load_fail_pv
+	,impression_pv
+	,impression_fail_pv
+	,expect_pv
+	,load_uv
+	,load_succ_uv 
+	,load_fail_uv
+	,impression_uv
+	,impression_fail_uv
+	,expect_uv
+	,case when is_new='TOTAL' then  active_uv
+	when is_new='new' then  new_uv
+	when is_new='old' then active_uv -  new_uv end as active_uv
+	
+FROM
+	(
+	SELECT
+		*
+	FROM c 
+	)c0 
+	left join
+	(
+	SELECT
+		event_date
+		,package_name
+		,platform
+		,country_code
+		,active_uv
+		,new_uv
+	FROM	`gzdw2024.fbgame_01_basic.dws_common_game_user_active_report`
+	WHERE event_date>=date_add(run_date,interval -history_day day)
+	and event_date<=date_add(run_date,interval -history_end_day day)
+	)c1 
+	on c0.event_date=c1.event_date
+	and c0.package_name=c1.package_name
+	and c0.platform=c1.platform
+	and c0.country_code=c1.country_code;
+
+
+
+	---------8.2广告请求失败统计表
+delete `gzdw2024.fbgame_01_basic.dws_common_game_user_ad_fail_report`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+insert `gzdw2024.fbgame_01_basic.dws_common_game_user_ad_fail_report`
+--	drop table if exists  `gzdw2024.fbgame_01_basic.dws_common_game_user_ad_fail_report`;
+	--create table  `gzdw2024.fbgame_01_basic.dws_common_game_user_ad_fail_report`
+	--PARTITION BY event_date as 
+	with a as (
+	SELECT
+		a.event_date	
+		,country_code
+		,platform
+		,error_code
+		,ad_type
+		,package_name
+		,event_name	
+		,user_id
+		,is_new
+		,e_code
+	FROM
+		(
+
+			SELECT
+				a.event_date
+				,a.user_id as user_id
+				,array[country_code,'TOTAL'] as country_code
+				,array[platform,'TOTAL'] as platform
+				,array[ad_type,'TOTAL'] as ad_type
+				,event_name
+				,a.package_name
+				,error_code
+				,e_code
+				,ARRAY['TOTAL',case when is_new =1 then 'new'
+				when is_new =0 then 'old' 
+				else 'old' end] as is_new	
+			FROM
+				(
+				SELECT
+					 event_date
+					,user_id
+					,upper(country_code) as country_code
+					,case when operating_system ='iOS' then 'iOS'
+					when operating_system ='Android' then 'Android' 
+					else 'web' end as platform				
+					,package_name
+					,event_name
+					,error_code
+					,e_code
+					,case when (lower(placement)  like '%banner%' or lower(type) like '%banner%')  then 'banner'
+					when (lower(placement) like '%reward%interstitial%' or lower(type) like '%reward%interstitial%') then 'rewarded_interstitial'
+					when (lower(placement) like '%interstitial%' or lower(type)like '%interstitial%' )  then 'interstitial'
+					when lower(placement) like '%reward%video%' then 'rewarded_video'
+					--	when lower(placement) like '%hint%' then 'interstitial'
+					else 'other' end as ad_type
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di` 
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				and REGEXP_CONTAINS(event_name, r'.*(ad_load_fail_c|ad_impression_fail_c)$')
+				
+				)a
+			   left	join 
+				(
+				SELECT
+					package_name
+					,event_date
+					,user_id
+					,max(is_new) as is_new
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				group by event_date,user_id,package_name
+			   )b 
+				on a.user_id=b.user_id
+				and a.package_name=b.package_name
+				and a.event_date=b.event_date
+			  )a 
+			,UNNEST(country_code) as country_code
+			,UNNEST(platform) as platform
+		     ,UNNEST(is_new) as is_new
+		     ,UNNEST(ad_type) as ad_type
+	),
+ c as 
+(
+SELECT
+	event_date
+	,package_name
+	,platform
+	,country_code
+	,is_new
+	,error_code
+	,ad_type
+	,e_code
+	,count(case when event_name like '%ad_load_fail_c' then user_id else null end) as load_fail_pv
+	,count(case when event_name like '%ad_impression_fail_c' then user_id else null end) as impression_fail_pv
+FROM
+	(
+
+		select * 
+		from a  
+		where 1=1
+		--and event_name in ('fb_templ_res_click','fb_temp_export_fail')
+		
+	)e 
+			group by event_date,country_code,platform,package_name,error_code,ad_type,e_code,is_new
+)
+SELECT
+	c0.event_date
+	,c0.package_name
+	,c0.platform
+	,c0.country_code
+	,is_new
+	,e_code
+	,error_code
+	,ad_type
+	,load_fail_pv
+	,impression_fail_pv
+	,case when is_new='TOTAL' then  active_uv  when is_new='new' then  new_uv
+	when is_new='old' then active_uv -  new_uv end as active_uv
+FROM
+	(
+	SELECT
+		*
+	FROM c 
+	)c0 
+	left join
+	(
+	SELECT
+		package_name
+		,event_date
+		,platform
+		,country_code
+		,active_uv
+		,new_uv
+	FROM	`gzdw2024.fbgame_01_basic.dws_common_game_user_active_report`
+	WHERE event_date>=date_add(run_date,interval -history_day day)
+	and event_date<=date_add(run_date,interval -history_end_day day)
+
+		)c1 
+	on c0.event_date=c1.event_date
+	and c0.platform=c1.platform
+	and c0.country_code=c1.country_code
+	and c0.package_name=c1.package_name;
+
+
+
+--------8.3.fb后台广告统计表
+
+delete `gzdw2024.fbgame_01_basic.dws_common_game_user_fb_ad_report`
+where stats_date>=date_add(run_date,interval -4  day)
+and stats_date<=date_add(run_date,interval -history_end_day day);
+
+insert `gzdw2024.fbgame_01_basic.dws_common_game_user_fb_ad_report`
+--	create table  `gzdw2024.fbgame_01_basic.dws_common_game_user_fb_ad_report`
+	--	PARTITION BY stats_date as 
+		SELECT
+			stats_date
+			,c0.package_name
+			,c0.platform
+			,c0.country_code
+			,ad_type
+			,requests
+			,filled_requests
+			,impressions
+			,revenue
+			,clicks
+			,active_uv
+		FROM
+			(
+			SELECT
+				stats_date
+				,package_name
+				,platform
+				,country_code
+				,ad_type
+				,sum(requests)  as requests
+				,sum(filled_requests)  as filled_requests
+				,sum(impressions)  as impressions
+				,sum(revenue)  as revenue
+				,sum(clicks)  as clicks
+			FROM
+				(
+				SELECT 
+					date(start_timestamp) as stats_date
+					,case when app_name='Solitaire' then 'fb.zp' 
+					when app_name='OHO' then 'fb.ai.avatar.puzzle' 
+					when app_name='Bubble Pop Fruit' then 'fb.fruit.bubble' 
+					when app_name='AHA' then 'fb.ai.aha' 
+					when app_name='Fate Quest' then 'fb.otme.fate.quest' 
+					when app_name='Block Juggle' then 'fb.block.juggle' 
+					when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro' 
+					else 'other' end 
+					as package_name
+					,array['TOTAL',case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end]  as platform
+					,array['TOTAL',upper(country)] as country_code
+					,array['TOTAL',case when lower(placement_name) like '%banner%' then 'banner'
+					when lower(placement_name) like '%rewarded%interstitial%' or lower(placement_name) like '%激励插屏%' then 'rewarded_interstitial'
+					when lower(placement_name) like '%interstitial%' then 'interstitial'
+					when lower(placement_name) like '%reward%video%' or lower(placement_name) like '%激励视频%' then 'rewarded_video'
+					else 'interstitial' end ] as ad_type
+					,requests
+					,filled_requests
+					,impressions
+					,revenue
+					,clicks
+			FROM `fb-ai-avatar-puzzle.analytics_439907691.facebook_ad_backup_detail_day` 
+				where stats_date >= date_add(run_date,interval -history_day day)
+			    and stats_date <= date_add(run_date,interval -history_end_day day)
+				--and app_name='Solitaire'
+					--and _TABLE_SUFFIX!='20241103'
+				)c 
+				,UNNEST(platform) as platform
+				,UNNEST(country_code) as country_code
+				,UNNEST(ad_type) as ad_type
+				group by stats_date,platform,country_code,ad_type,package_name
+			)c0
+			left join
+			(
+			SELECT
+				package_name
+				,event_date
+				,platform
+				,country_code
+				,active_uv
+				,new_uv
+			FROM	`gzdw2024.fbgame_01_basic.dws_common_game_user_active_report`
+			WHERE event_date>=date_add(run_date,interval -history_day day)
+			and event_date<=date_add(run_date,interval -history_end_day day)
+
+				)c1 
+			on c0.stats_date=c1.event_date
+			and c0.platform=c1.platform
+			and c0.country_code=c1.country_code
+			and c0.package_name=c1.package_name;
+
+
+
+--------8.5.期望展示统计表
+
+delete `gzdw2024.fbgame_01_basic.dws_common_game_ad_expect_show_report`
+where stats_date>=date_add(run_date,interval -4  day)
+and stats_date<=date_add(run_date,interval -history_end_day day);
+
+insert `gzdw2024.fbgame_01_basic.dws_common_game_ad_expect_show_report`
+--	create table  `gzdw2024.fbgame_01_basic.dws_common_game_ad_expect_show_report`
+	--	PARTITION BY stats_date as 
+		SELECT
+			a.stats_date
+			,a.package_name
+			,a.platform
+			,a.country_code
+			,pv 
+			,impressions
+			,impression_pv
+			,expect_pv
+		FROM
+			(
+			SELECT
+				stats_date
+				,package_name
+				,platform
+				,country_code
+				,count(1) as pv 
+			FROM
+				(
+				SELECT
+					 event_date as stats_date
+					,user_id
+					,ARRAY['TOTAL',upper(country_code)] as country_code
+					,ARRAY['TOTAL',case when operating_system ='iOS' then 'iOS'
+					when operating_system ='Android' then 'Android' 
+					else 'web' end] as platform				
+					,package_name
+					,event_name
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`    
+				WHERE 1=1
+				and  (
+					event_name IN ('fb_zp_new_game_play','fb_zp_game_shuffle_clickads','fb_zp_fgame_star_click'
+						           ,'fb_fruit_get_heart_click','fb_fruit_get_coin_click','fb_fruit_shop_coinclick'
+						           ,'fb_fruit_daily_draw_watch_ad_click','fb_fruit_daily_draw_double_ad_click','fb_fruit_sign_clickdouble'
+						           ,'fb_fruit_shop_clickdouble','fb_fruit_game_play_fail_clickcoin','fb_fruit_game_play_fail_continuefree'
+						           ,'fb_fruit_game_prop_clickad','fb_fruit_get_morelives_clickcoin','fb_fruit_get_morelives_freelives'
+						           ,'fb_fruit_game_play_finish','fb_fruit_game_play_fail') 
+					or (event_name in ('fb_zp_game_play_finish') and win='true')
+					)
+
+				AND event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				)a 
+				,UNNEST(country_code) as country_code
+				,UNNEST(platform) as platform
+				group by a.stats_date,package_name,platform,Country_code
+			)a 
+			left join
+			(
+				SELECT
+				 stats_date
+				,package_name
+				,platform
+				,country_code
+				,sum(impressions ) as impressions 
+			FROM `gzdw2024.fbgame_01_basic.dws_common_game_user_fb_ad_report`
+			WHERE (ad_type like '%interstitial%' or  ad_type like '%video%')
+			AND stats_date>=date_add(run_date,interval -history_day day)
+			and stats_date<=date_add(run_date,interval -history_end_day day)
+			group by stats_date,package_name,platform,Country_code
+			)b 
+			on a.stats_date=b.stats_date
+			and a.package_name=b.package_name
+			and a.platform=b.platform
+			and a.country_code=b.country_code
+			left join
+			(
+				SELECT
+				event_date stats_date
+				,package_name
+				,platform
+				,country_code
+				,sum(impression_pv ) as impression_pv 
+			FROM `gzdw2024.fbgame_01_basic.dws_common_game_user_ad_report`
+			WHERE (ad_type like '%interstitial%' or  ad_type like '%video%')
+			AND event_date>=date_add(run_date,interval -history_day day)
+			and event_date<=date_add(run_date,interval -history_end_day day)
+			and is_new='TOTAL'
+			AND placement='TOTAL'
+			group by stats_date,package_name,platform,Country_code
+			)c 
+			on a.stats_date=c.stats_date
+			and a.package_name=c.package_name
+			and a.platform=c.platform
+			and a.country_code=c.country_code
+			left join
+			(
+				SELECT
+				stats_date
+				,package_name
+				,platform
+				,country_code
+				,sum(pv ) as expect_pv 
+			FROM `gzdw2024.fbgame_01_basic.dws_common_game_event_active_report`
+			WHERE 1=1
+			AND stats_date>=date_add(run_date,interval -history_day day)
+			and stats_date<=date_add(run_date,interval -history_end_day day)
+			and is_new='TOTAL'
+			and REGEXP_CONTAINS(event_name, r'.*(ad_expect_impression_c)$')		
+			group by stats_date,package_name,platform,country_code
+			)d 
+			on a.stats_date=d.stats_date
+			and a.package_name=d.package_name
+			and a.platform=d.platform
+			and a.country_code=d.country_code;
+			--where a.platform='TOTAL'
+			--AND a.country_code='TOTAL';
+
+
 
 end;
