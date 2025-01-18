@@ -2247,7 +2247,7 @@ insert `gzdw2024.fbgame_01_basic.dws_common_fq_back_report`
 
 delete `gzdw2024.fbgame_01_basic.dws_common_game_user_ad_report`
 where event_date>=date_add(run_date,interval -history_day day)
-	and event_date<=date_add(run_date,interval -1  day);
+	and event_date<=date_add(run_date,interval -history_end_day day);
 
 insert `gzdw2024.fbgame_01_basic.dws_common_game_user_ad_report`
 	--drop table if exists  `gzdw2024.fbgame_01_basic.dws_common_game_user_ad_report`;
@@ -2557,7 +2557,7 @@ FROM
 --------8.3.fb后台广告统计表
 
 delete `gzdw2024.fbgame_01_basic.dws_common_game_user_fb_ad_report`
-where stats_date>=date_add(run_date,interval -4  day)
+where stats_date>=date_add(run_date,interval -history_day day)
 and stats_date<=date_add(run_date,interval -history_end_day day);
 
 insert `gzdw2024.fbgame_01_basic.dws_common_game_user_fb_ad_report`
@@ -2648,7 +2648,7 @@ insert `gzdw2024.fbgame_01_basic.dws_common_game_user_fb_ad_report`
 --------8.5.期望展示统计表
 
 delete `gzdw2024.fbgame_01_basic.dws_common_game_ad_expect_show_report`
-where stats_date>=date_add(run_date,interval -history_day  day)
+where stats_date>=date_add(run_date,interval -history_day day)
 and stats_date<=date_add(run_date,interval -history_end_day day);
 
 insert `gzdw2024.fbgame_01_basic.dws_common_game_ad_expect_show_report`
