@@ -398,7 +398,7 @@ FROM
 		--,subscription_name
 		--,event
 		,sum(quantity) as pv 
-	 FROM `gzdata.appstoreconnect.p_subscription_event_atlasv` 
+	 FROM `gzdw2024.appstoreconnect.p_subscription_event_atlasv` 
 	WHERE event_date >= date_add(run_date,interval -(history_day +10) day)
 	and event_date <= date_add(run_date,interval -history_end_day day)
 	and package_name='second.phone.number.text.free.call.app'
@@ -413,7 +413,7 @@ FROM
 		--,subscription_name
 		--,event
 		,sum(quantity) as pv 
-	 FROM `gzdata.appstoreconnect.p_subscription_event_atlasv` 
+	 FROM `gzdw2024.appstoreconnect.p_subscription_event_atlasv` 
 	WHERE event_date >= date_add(run_date,interval -(history_day +10) day)
 	and event_date <= date_add(run_date,interval -history_end_day day)
 	and package_name='second.phone.number.text.free.call.app'
