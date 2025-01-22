@@ -1,4 +1,3 @@
-
 CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.fb_common_game_roi_task`(run_date DATE, history_day INT64, history_end_day INT64)
 begin
 			------google sheet成本数据
@@ -87,18 +86,23 @@ begin
 
 
 			--------api成本数据
-			CREATE OR REPLACE VIEW `gzdw2024.cost_data.all_api_data` AS
-			SELECT stats_date,campaign_name,country,spend,action_count,action_type,'fb.ai.avatar.puzzle'  as package_name
-			FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_*` 
-			where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
-			and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
-			UNION ALL
-			SELECT stats_date,campaign_name,country,spend,action_count ,action_type,'fb.zp'  as package_name
-			FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_SLT_*` 
-			where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
-			and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','');
-		
-
+		  EXECUTE IMMEDIATE FORMAT("""
+		    CREATE OR REPLACE VIEW `gzdw2024.cost_data.all_api_data` AS
+		    SELECT stats_date, campaign_name, country, spend, action_count, action_type, 'fb.ai.avatar.puzzle' AS package_name
+		    FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_*` 
+		    WHERE _TABLE_SUFFIX >= '%s'
+		      AND _TABLE_SUFFIX <= '%s'
+		    UNION ALL
+		    SELECT stats_date, campaign_name, country, spend, action_count, action_type, 'fb.zp' AS package_name
+		    FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_SLT_*` 
+		    WHERE _TABLE_SUFFIX >= '%s'
+		      AND _TABLE_SUFFIX <= '%s';
+		  """,
+		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_day DAY) AS STRING), '-', ''),
+		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_end_day DAY) AS STRING), '-', ''),
+		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_day DAY) AS STRING), '-', ''),
+		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_end_day DAY) AS STRING), '-', '')
+		  );
 
 
 			delete `gzdw2024.fbgame_03_bi.dws_fb_common_game_cost_daily_reports_api`
