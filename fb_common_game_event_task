@@ -2636,7 +2636,8 @@ insert `gzdw2024.fbgame_01_basic.dws_common_game_user_fb_ad_report`
 					when app_name='AHA' then 'fb.ai.aha' 
 					when app_name='Fate Quest' then 'fb.otme.fate.quest' 
 					when app_name='Block Juggle' then 'fb.block.juggle' 
-					when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro' 
+					when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
+					when app_name='Save The Dog' then 'fb.save.dog' 
 					else 'other' end 
 					as package_name
 					,array['TOTAL',case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end]  as platform
@@ -2728,8 +2729,10 @@ insert `gzdw2024.fbgame_01_basic.dws_common_game_ad_expect_show_report`
 						           ,'fb_fruit_daily_draw_watch_ad_click','fb_fruit_daily_draw_double_ad_click','fb_fruit_sign_clickdouble'
 						           ,'fb_fruit_shop_clickdouble','fb_fruit_game_play_fail_clickcoin','fb_fruit_game_play_fail_continuefree'
 						           ,'fb_fruit_game_prop_clickad','fb_fruit_get_morelives_clickcoin','fb_fruit_get_morelives_freelives'
-						           ,'fb_fruit_game_play_finish','fb_fruit_game_play_fail') 
+						           ,'fb_fruit_game_play_finish','fb_fruit_game_play_fail','fb_fruit_game_play_start_adclick'
+						           ,'fb_dog_game_market_bomb_get','fb_dog_game_brush_get_click','fb_dog_game_skip_click','fb_dog_game_hint_click') 
 					or (event_name in ('fb_zp_game_play_finish') and win='true')
+					or (event_name in ('fb_dog_game_play_succ_next') and type='is_ads')
 					)
 
 				AND event_date>=date_add(run_date,interval -history_day day)
