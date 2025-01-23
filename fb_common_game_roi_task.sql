@@ -383,8 +383,8 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_common_game_ad_revenue_daily_reports`
 					,sum(revenue)  as revenue
 					,sum(clicks)  as clicks
 				FROM `fb-ai-avatar-puzzle.analytics_439907691.ad_analytics_detail_day_*` 
-				where _TABLE_SUFFIX >=replace(cast(date_add('2025-01-22',interval -3 day) as string),'-','')
-				and _TABLE_SUFFIX <=replace(cast(date_add('2025-01-22',interval -1 day) as string),'-','')
+				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
+				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
 				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
 				group by stats_date,platform,country_code,package_name
 				)a 
