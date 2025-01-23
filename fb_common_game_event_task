@@ -570,7 +570,7 @@ and event_date<=date_add(run_date,interval -history_end_day day);
 				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
 				WHERE event_date>=date_add(run_date,interval -history_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
-				and event_name in (
+				and (event_name in (
 					'otme_app_launch'
 					,'otme_share_click'
 					,'otme_game_show'
@@ -599,6 +599,7 @@ and event_date<=date_add(run_date,interval -history_end_day day);
 					,'fb_app_launch'
 
 						)
+				or event_name like '%app_launch')
 				)a 
 			 left	join 
 				(
@@ -2730,7 +2731,7 @@ insert `gzdw2024.fbgame_01_basic.dws_common_game_ad_expect_show_report`
 						           ,'fb_fruit_shop_clickdouble','fb_fruit_game_play_fail_clickcoin','fb_fruit_game_play_fail_continuefree'
 						           ,'fb_fruit_game_prop_clickad','fb_fruit_get_morelives_clickcoin','fb_fruit_get_morelives_freelives'
 						           ,'fb_fruit_game_play_finish','fb_fruit_game_play_fail','fb_fruit_game_play_start_adclick'
-						           ,'fb_dog_game_market_bomb_get','fb_dog_game_brush_get_click','fb_dog_game_skip_click','fb_dog_game_hint_click') 
+						           ,'fb_dog_game_market_bomb_get','fb_dog_game_brush_get_click','fb_dog_game_skip_click','fb_dog_game_hint_click','fb_dog_game_play_finish') 
 					or (event_name in ('fb_zp_game_play_finish') and win='true')
 					or (event_name in ('fb_dog_game_play_succ_next') and type='is_ads')
 					)
