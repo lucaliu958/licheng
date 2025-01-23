@@ -345,7 +345,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_daily_reports`
 			    )b 
     )c;
 
-
+/*
 delete `gzdw2024.gz_bi.dws_app_country_daily_reports`
 where stats_date>=date_add(run_date,interval -history_day day)
 and  stats_date<=date_add(run_date,interval -history_end_day day)
@@ -377,7 +377,7 @@ FROM
     and platform='TOTAL'
     group by stats_date,app_name,package_name,country_code;
 
-
+*/
 
 
 delete  `gzdw2024.fbgame_03_bi.dws_fb_rention_roi_reports`
@@ -947,9 +947,10 @@ insert `gzdw2024.fb_zp_game.dws_fb_ad_revenue_daily_reports`
 					,sum(impressions)  as impressions
 					,sum(revenue)  as revenue
 					,sum(clicks)  as clicks
-				FROM `fb-ai-avatar-puzzle.analytics_439907691.facebook_ad_backup_detail_day` 
-				where stats_date >= date_add(run_date,interval -history_day day)
-			    and stats_date <= date_add(run_date,interval -history_end_day day)					
+				FROM `fb-ai-avatar-puzzle.analytics_439907691.ad_analytics_detail_day_*` 
+				where _TABLE_SUFFIX >=replace(cast(date_add('2025-01-22',interval -3 day) as string),'-','')
+				and _TABLE_SUFFIX <=replace(cast(date_add('2025-01-22',interval -1 day) as string),'-','')
+				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)			
 					and app_name='Solitaire'
 					--and app_name='Solitaire'
 					--and _TABLE_SUFFIX!='20241103'
@@ -1082,7 +1083,7 @@ insert `gzdw2024.fb_zp_game.dws_fb_daily_reports`
 			    )b 
     )c;
 
-
+/*
 delete `gzdw2024.gz_bi.dws_app_country_daily_reports`
 where stats_date>=date_add(run_date,interval -history_day day)
 and  stats_date<=date_add(run_date,interval -history_end_day day)
@@ -1115,8 +1116,7 @@ FROM
     and stats_date <= date_add(run_date,interval -history_end_day day)
     and platform='TOTAL'
     group by stats_date,app_name,package_name,country_code;
-
-
+*/
 
 
 delete  `gzdw2024.fb_zp_game.dws_fb_rention_roi_reports`
