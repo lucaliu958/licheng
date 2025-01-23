@@ -1,3 +1,6 @@
+
+
+
 CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.fb_common_game_roi_task`(run_date DATE, history_day INT64, history_end_day INT64)
 begin
 			------google sheet成本数据
@@ -379,12 +382,10 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_common_game_ad_revenue_daily_reports`
 					,sum(impressions)  as impressions
 					,sum(revenue)  as revenue
 					,sum(clicks)  as clicks
-				FROM `fb-ai-avatar-puzzle.analytics_439907691.facebook_ad_backup_detail_day` 
-				where stats_date >= date_add(run_date,interval -history_day day)
-			    and stats_date <= date_add(run_date,interval -history_end_day day)					
-				--	and app_name='Solitaire'
-					--and app_name='Solitaire'
-					--and _TABLE_SUFFIX!='20241103'
+				FROM `fb-ai-avatar-puzzle.analytics_439907691.ad_analytics_detail_day_*` 
+				where _TABLE_SUFFIX >=replace(cast(date_add('2025-01-22',interval -3 day) as string),'-','')
+				and _TABLE_SUFFIX <=replace(cast(date_add('2025-01-22',interval -1 day) as string),'-','')
+				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
 				group by stats_date,platform,country_code,package_name
 				)a 
 		group by stats_date,platform,country_code,package_name;
