@@ -768,6 +768,7 @@ with a as (
 			--	order by stats_date desc 
 			;
 
+
 delete  `gzdw2024.fbgame_03_bi.dws_fb_common_game_daily_roi_total_reports`
 where  stats_date >= date_add(run_date,interval -history_day day)
   and stats_date <= date_add(run_date,interval -history_end_day day);
@@ -912,9 +913,10 @@ FROM
 	order by stats_date desc
 	)
 select 
-stats_date
-	,package_name
-	,platform
+	stats_date
+	,a.package_name
+	,app_name
+	,a.platform
 	,country_code
 	,active_uv
 	,new_uv
@@ -948,6 +950,7 @@ stats_date
 	,total_bili_14
 	,last_total_bili_14
 	,first_14day_revenue
+
 FROM
 	(
 	SELECT 
@@ -963,8 +966,9 @@ FROM
 	else install*last_new_ratio*last_new_arpu*(1+last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_arpu*(last_total_bili_7- last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_arpu*(last_total_bili_14- last_total_bili_7)*last_new_ad_ratio end as first_14day_revenue
     FROM a 
 	WHERE 1=1
-	)a ;
-
+	)a
+	left join  `gzdw2024.gz_dim.app_info` b 
+	on a.package_name=b.package_name;
 
 
 
