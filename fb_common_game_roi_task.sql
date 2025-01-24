@@ -768,7 +768,6 @@ with a as (
 			--	order by stats_date desc 
 			;
 
-
 delete  `gzdw2024.fbgame_03_bi.dws_fb_common_game_daily_roi_total_reports`
 where  stats_date >= date_add(run_date,interval -history_day day)
   and stats_date <= date_add(run_date,interval -history_end_day day);
@@ -969,6 +968,8 @@ FROM
 	)a
 	left join  `gzdw2024.gz_dim.app_info` b 
 	on a.package_name=b.package_name;
+
+
 
 
 
