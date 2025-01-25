@@ -1,3 +1,4 @@
+
 CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.fb_common_game_event_task`(run_date DATE, history_day INT64, history_retain_day INT64, history_end_day INT64)
 begin
 
@@ -504,14 +505,14 @@ insert `gzdw2024.fbgame_01_basic.dws_common_dog_event_active_report`
 	and package_name='fb.save.dog';
 
 
-------4.6 DOG事件
-delete `gzdw2024.fbgame_01_basic.dws_common_dog_event_active_report`
+------4.7 egg事件
+delete `gzdw2024.fbgame_01_basic.dws_common_egg_event_active_report`
 where stats_date>=date_add(run_date,interval -history_day day)
 and stats_date<=date_add(run_date,interval -history_end_day day);
 
-insert `gzdw2024.fbgame_01_basic.dws_common_dog_event_active_report`
---drop table if exists  `gzdw2024.fbgame_01_basic.dws_common_dog_event_active_report`;
---	create table  `gzdw2024.fbgame_01_basic.dws_common_dog_event_active_report`
+insert `gzdw2024.fbgame_01_basic.dws_common_egg_event_active_report`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dws_common_egg_event_active_report`;
+--	create table  `gzdw2024.fbgame_01_basic.dws_common_egg_event_active_report`
 --	PARTITION BY stats_date as 
 	SELECT
 		* 
@@ -519,7 +520,7 @@ insert `gzdw2024.fbgame_01_basic.dws_common_dog_event_active_report`
 	WHERE 1=1
 	and stats_date>=date_add(run_date,interval -history_day day)
 	and stats_date<=date_add(run_date,interval -history_end_day day)
-	and package_name='fb.save.dog';
+	and package_name='fb.egg.bubble';
 
 
 
@@ -1592,9 +1593,9 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_game_lanuch_finish_pv_report`
 						,platform
 						,country_code
 						,is_new
-						,max(case when event_name='fb_fruit_app_launch' then pv else 0 end) as launch_pv
-						,max(case when event_name='fb_fruit_game_play_start' then pv else 0 end) as start_pv
-						,max(case when event_name='fb_fruit_game_play_finish' then pv else 0 end) as finsh_pv
+						,max(case when event_name like '%app_launch' then pv else 0 end) as launch_pv
+						,max(case when event_name like '%game_play_start' then pv else 0 end) as start_pv
+						,max(case when event_name like '%game_play_finish' then pv else 0 end) as finsh_pv
 					FROM
 						(
 						SELECT
@@ -1611,7 +1612,7 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_game_lanuch_finish_pv_report`
 						FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`  
 						WHERE event_date>=date_add(run_date,interval -history_day day)
 						and event_date<=date_add(run_date,interval -history_end_day day)
-						and package_name in ('fb.fruit.bubble')
+						--and package_name in ('fb.fruit.bubble')
 						and is_launch=1			
 						)a 
 						left join
@@ -1625,8 +1626,9 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_game_lanuch_finish_pv_report`
 						FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
 						WHERE event_date>=date_add(run_date,interval -history_day day)
 						and event_date<=date_add(run_date,interval -history_end_day day)
-						and event_name in ('fb_fruit_app_launch','fb_fruit_game_play_finish','fb_fruit_game_play_start')
-						and package_name in ('fb.fruit.bubble')
+						and REGEXP_CONTAINS(event_name, r'.*(app_launch|game_play_finish|game_play_start)$')
+						--and event_name in ('fb_fruit_app_launch','fb_fruit_game_play_finish','fb_fruit_game_play_start')
+						--and package_name in ('fb.fruit.bubble')
 						group by  event_date,user_id,package_name,event_name
 						)c 
 						on a.user_id=c.user_id
@@ -1707,7 +1709,7 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_game_finish_time_report`
 					,event_date
 					,event_name
 				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  	a
-				WHERE event_name in ('fb_fruit_game_play_finish')
+				WHERE event_name  like '%game_play_finish'
 				and event_date>=date_add(run_date,interval -history_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
 				)a 
@@ -1758,7 +1760,7 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_game_finish_time_report`
 			,PERCENTILE_CONT(timeuse,0.5)  over(partition by package_name,country_code,platform,is_new,event_date) as med_timeuse
 		FROM a  
 		where 1=1 
-		and event_name='fb_fruit_game_play_finish' 
+		and event_name like '%game_play_finish' 
 		and timeuse<60
 		)
 		SELECT
@@ -1825,7 +1827,7 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_game_time_report`
 					,event_date
 					,event_name
 				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  	a
-				WHERE event_name in ('fb_fruit_game_play_exit')
+				WHERE event_name like '%game_play_exit'
 				and event_date>=date_add(run_date,interval -history_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
 				)a 
@@ -1878,7 +1880,7 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_game_time_report`
 				,PERCENTILE_CONT(gameShowTime,0.5)  over(partition by package_name,country_code,platform,is_new,event_date) as med_gameShowTime
 		FROM a  
 		where 1=1 
-		and event_name='fb_fruit_game_play_exit' 
+		and event_name like '%game_play_exit'
 		and gameShowTime<120
 		)
 		SELECT
@@ -2580,6 +2582,8 @@ SELECT
 	,e_code
 	,count(case when event_name like '%ad_load_fail_c' then user_id else null end) as load_fail_pv
 	,count(case when event_name like '%ad_impression_fail_c' then user_id else null end) as impression_fail_pv
+	,count(distinct case when event_name like '%ad_load_fail_c' then user_id else null end) as load_fail_uv
+	,count(distinct case when event_name like '%ad_impression_fail_c' then user_id else null end) as impression_fail_uv
 FROM
 	(
 
@@ -2602,6 +2606,8 @@ SELECT
 	,ad_type
 	,load_fail_pv
 	,impression_fail_pv
+	,load_fail_uv
+	,impression_fail_uv
 	,case when is_new='TOTAL' then  active_uv  when is_new='new' then  new_uv
 	when is_new='old' then active_uv -  new_uv end as active_uv
 FROM
@@ -2841,6 +2847,124 @@ insert `gzdw2024.fbgame_01_basic.dws_common_game_ad_expect_show_report`
 			and a.country_code=d.country_code;
 			--where a.platform='TOTAL'
 			--AND a.country_code='TOTAL';
+
+
+
+-----9.1 save dog关卡统计
+
+delete `gzdw2024.fbgame_01_basic.dws_dog_level_report`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+
+insert `gzdw2024.fbgame_01_basic.dws_dog_level_report`
+	--drop table if exists `gzdw2024.fbgame_01_basic.dws_dog_level_report`;
+--create table  `gzdw2024.fbgame_01_basic.dws_dog_level_report`
+--	PARTITION BY event_date as 
+	with a  
+		as (
+		SELECT
+			event_date
+			,user_id
+			,package_name
+			,platform
+			,country_code
+			,level_id
+			,is_new
+			,event_name
+		FROM
+			(
+			SELECT
+				a.event_date
+				,a.package_name
+				,a.user_id 	
+				,platform
+				,country_code
+				,ARRAY['TOTAL',case when is_new =1 then 'new'
+				when is_new =0 then 'old' 
+				else 'old' end] as is_new
+        		,level_id
+				,event_name
+			FROM
+				(
+				SELECT
+					 event_date
+					,user_id
+					,ARRAY['TOTAL',country_code] as country_code
+					,array[case when operating_system ='iOS' then 'iOS'
+					when operating_system ='Android' then 'Android' 
+					else 'web' end,'TOTAL']  as platform						
+					,package_name
+					,event_name
+					,array['TOTAL',CASE when level_id is null then 'other' else level_id end ] as level_id
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				and event_name in ('fb_dog_game_play_start','fb_dog_game_play_fail_show','fb_dog_game_play_finish'
+					,'fb_dog_game_play_fail_retry','fb_dog_game_play_fail_back'
+					,'fb_dog_game_hint_click','fb_dog_game_skip_click')
+				--and package_name in ('fb.fruit.bubble')
+				
+				)a 
+			 left	join 
+				(
+				SELECT
+					package_name
+					,event_date
+					,user_id
+					,max(is_new) as is_new
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				group by event_date,user_id,package_name
+			   )b 
+				on a.user_id=b.user_id
+				and a.package_name=b.package_name
+				and a.event_date=b.event_date
+				,UNNEST(platform) AS platform
+				,UNNEST(country_code) AS country_code
+			)c 
+			,UNNEST(is_new) AS is_new
+			,UNNEST(level_id) as level_id
+		) 
+			 SELECT
+			   	event_date
+			    ,package_name
+			    ,platform
+			    ,country_code
+			    ,is_new
+			    ,level_id			 
+			   	,max(case when event_name='fb_dog_game_play_start' then pv else 0 end ) as start_pv
+			   	,max(case when event_name='fb_dog_game_play_start' then uv else 0 end ) as start_uv
+			   	,max(case when event_name='fb_dog_game_play_fail_show' then pv else 0 end ) as fail_pv
+		   		,max(case when event_name='fb_dog_game_play_fail_show' then uv else 0 end ) as fail_uv
+		   		,max(case when event_name='fb_dog_game_play_fail_retry' then pv else 0 end ) as fail_retry_pv
+			   	,max(case when event_name='fb_dog_game_play_fail_retry' then uv else 0 end ) as fail_retry_uv
+			   	,max(case when event_name='fb_dog_game_play_fail_back' then pv else 0 end ) as fail_back_pv
+			   	,max(case when event_name='fb_dog_game_play_fail_back' then uv else 0 end ) as fail_back_uv
+		   		,max(case when event_name='fb_dog_game_hint_click' then pv else 0 end ) as hint_pv
+			   	,max(case when event_name='fb_dog_game_hint_click' then uv else 0 end ) as hint_uv
+		   		,max(case when event_name='fb_dog_game_skip_click' then pv else 0 end ) as skip_pv
+			   	,max(case when event_name='fb_dog_game_skip_click' then uv else 0 end ) as skip_uv
+			   FROM
+			   	(
+		 		 SELECT
+				   event_date
+				    ,package_name
+				    ,platform
+				    ,country_code
+				    ,is_new
+				    ,level_id
+				   	,event_name
+				   	,count(1) as pv 
+				   	,count(distinct user_id) as uv 
+
+				  FROM
+				    a
+				  GROUP BY  event_date,package_name,country_code,platform,is_new,level_id,event_name
+				  )a1 
+			   	where 1=1
+			   	GROUP BY  event_date,package_name,country_code,platform,is_new,level_id;
 
 
 
