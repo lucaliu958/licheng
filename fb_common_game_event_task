@@ -3058,8 +3058,8 @@ insert `gzdw2024.fbgame_01_basic.dws_egg_level_report`
 		   		,max(case when event_name='fb_egg_game_play_fail' then uv else 0 end ) as fail_uv
 		   		,max(case when event_name='fb_egg_game_play_finish' then pv else 0 end ) as finsh_pv
 			   	,max(case when event_name='fb_egg_game_play_finish' then uv else 0 end ) as finsh_uv
-			   	,max(case when event_name='fb_egg_change_eggs_click' then pv else 0 end ) as eggs_click_pv
-			   	,max(case when event_name='fb_egg_change_eggs_click' then uv else 0 end ) as eggs_click_uv
+			   	,max(case when event_name='fb_egg_change_eggs_click' then pv else 0 end ) as eggs_change_pv
+			   	,max(case when event_name='fb_egg_change_eggs_click' then uv else 0 end ) as eggs_change_uv
 		   		,max(case when event_name='fb_egg_bomb_click' then pv else 0 end ) as bomb_click_pv
 			   	,max(case when event_name='fb_egg_bomb_click' then uv else 0 end ) as bomb_click_uv
 		   		,max(case when event_name='fb_egg_break_click' then pv else 0 end ) as break_click_pv
