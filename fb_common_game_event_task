@@ -3052,8 +3052,8 @@ insert `gzdw2024.fbgame_01_basic.dws_egg_level_report`
 			    ,country_code
 			    ,is_new
 			    ,level_id			 
-			   	,max(case when event_name='fb_dog_game_play_start' then pv else 0 end ) as start_pv
-			   	,max(case when event_name='fb_dog_game_play_start' then uv else 0 end ) as start_uv
+			   	,max(case when event_name='fb_egg_game_play_start' then pv else 0 end ) as start_pv
+			   	,max(case when event_name='fb_egg_game_play_start' then uv else 0 end ) as start_uv
 			   	,max(case when event_name='fb_egg_game_play_fail' then pv else 0 end ) as fail_pv
 		   		,max(case when event_name='fb_egg_game_play_fail' then uv else 0 end ) as fail_uv
 		   		,max(case when event_name='fb_egg_game_play_finish' then pv else 0 end ) as finsh_pv
