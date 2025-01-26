@@ -1013,7 +1013,7 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_level_finish_distribution_report`
 				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
 				WHERE event_date>=date_add(run_date,interval -history_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
-				and event_name in ('fb_fruit_game_play_finish')
+				and event_name like '%game_play_finish'
 				--and package_name in ('fb.fruit.bubble')
 				
 				)a 
@@ -1128,7 +1128,7 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_level_finish_report`
 				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
 				WHERE event_date>=date_add(run_date,interval -history_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
-				and event_name in ('fb_fruit_game_play_finish')
+				and event_name like '%game_play_finish'
 				--and package_name in ('fb.fruit.bubble')
 				
 				)a 
@@ -2968,4 +2968,125 @@ insert `gzdw2024.fbgame_01_basic.dws_dog_level_report`
 
 
 
+-----10.1 龙蛋泡关卡统计
+
+delete `gzdw2024.fbgame_01_basic.dws_egg_level_report`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+
+insert `gzdw2024.fbgame_01_basic.dws_egg_level_report`
+	--drop table if exists `gzdw2024.fbgame_01_basic.dws_egg_level_report`;
+--create table  `gzdw2024.fbgame_01_basic.dws_egg_level_report`
+--	PARTITION BY event_date as 
+	with a  
+		as (
+		SELECT
+			event_date
+			,user_id
+			,package_name
+			,platform
+			,country_code
+			,level_id
+			,is_new
+			,event_name
+		FROM
+			(
+			SELECT
+				a.event_date
+				,a.package_name
+				,a.user_id 	
+				,platform
+				,country_code
+				,ARRAY['TOTAL',case when is_new =1 then 'new'
+				when is_new =0 then 'old' 
+				else 'old' end] as is_new
+        		,level_id
+				,event_name
+			FROM
+				(
+				SELECT
+					 event_date
+					,user_id
+					,ARRAY['TOTAL',country_code] as country_code
+					,array[case when operating_system ='iOS' then 'iOS'
+					when operating_system ='Android' then 'Android' 
+					else 'web' end,'TOTAL']  as platform						
+					,package_name
+					,event_name
+					,array['TOTAL',CASE when level_id is null then 'other' else level_id end ] as level_id
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				and event_name in ('fb_egg_game_play_start','fb_egg_game_play_finish','fb_egg_game_play_fail'
+					,'fb_egg_change_eggs_click','fb_egg_bomb_click','fb_egg_break_click'
+					,'fb_egg_double_bomb_click','fb_egg_over_click','fb_egg_again_revive_click')
+				--and package_name in ('fb.fruit.bubble')
+				
+				)a 
+			 left	join 
+				(
+				SELECT
+					package_name
+					,event_date
+					,user_id
+					,max(is_new) as is_new
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				group by event_date,user_id,package_name
+			   )b 
+				on a.user_id=b.user_id
+				and a.package_name=b.package_name
+				and a.event_date=b.event_date
+				,UNNEST(platform) AS platform
+				,UNNEST(country_code) AS country_code
+			)c 
+			,UNNEST(is_new) AS is_new
+			,UNNEST(level_id) as level_id
+		) 
+			 SELECT
+			   	event_date
+			    ,package_name
+			    ,platform
+			    ,country_code
+			    ,is_new
+			    ,level_id			 
+			   	,max(case when event_name='fb_dog_game_play_start' then pv else 0 end ) as start_pv
+			   	,max(case when event_name='fb_dog_game_play_start' then uv else 0 end ) as start_uv
+			   	,max(case when event_name='fb_egg_game_play_fail' then pv else 0 end ) as fail_pv
+		   		,max(case when event_name='fb_egg_game_play_fail' then uv else 0 end ) as fail_uv
+		   		,max(case when event_name='fb_egg_game_play_finish' then pv else 0 end ) as finsh_pv
+			   	,max(case when event_name='fb_egg_game_play_finish' then uv else 0 end ) as finsh_uv
+			   	,max(case when event_name='fb_egg_change_eggs_click' then pv else 0 end ) as eggs_click_pv
+			   	,max(case when event_name='fb_egg_change_eggs_click' then uv else 0 end ) as eggs_click_uv
+		   		,max(case when event_name='fb_egg_bomb_click' then pv else 0 end ) as bomb_click_pv
+			   	,max(case when event_name='fb_egg_bomb_click' then uv else 0 end ) as bomb_click_uv
+		   		,max(case when event_name='fb_egg_break_click' then pv else 0 end ) as break_click_pv
+			   	,max(case when event_name='fb_egg_break_click' then uv else 0 end ) as break_click_uv
+			   	,max(case when event_name='fb_egg_double_bomb_click' then pv else 0 end ) as double_click_pv
+			   	,max(case when event_name='fb_egg_double_bomb_click' then uv else 0 end ) as double_click_uv
+			   	,max(case when event_name='fb_egg_over_click' then pv else 0 end ) as over_click_pv
+			   	,max(case when event_name='fb_egg_over_click' then uv else 0 end ) as over_click_uv
+			   	,max(case when event_name='fb_egg_again_revive_click' then pv else 0 end ) as revive_click_pv
+			   	,max(case when event_name='fb_egg_again_revive_click' then uv else 0 end ) as revive_click_uv
+			   FROM
+			   	(
+		 		 SELECT
+				   event_date
+				    ,package_name
+				    ,platform
+				    ,country_code
+				    ,is_new
+				    ,level_id
+				   	,event_name
+				   	,count(1) as pv 
+				   	,count(distinct user_id) as uv 
+
+				  FROM
+				    a
+				  GROUP BY  event_date,package_name,country_code,platform,is_new,level_id,event_name
+				  )a1 
+			   	where 1=1
+			   	GROUP BY  event_date,package_name,country_code,platform,is_new,level_id;
 end;
