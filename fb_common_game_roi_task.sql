@@ -1,6 +1,4 @@
 
-
-
 CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.fb_common_game_roi_task`(run_date DATE, history_day INT64, history_end_day INT64)
 begin
 			------google sheet成本数据
@@ -779,6 +777,8 @@ where  stats_date >= date_add(run_date,interval -history_day day)
 insert `gzdw2024.fbgame_03_bi.dws_fb_common_game_daily_roi_total_reports`
 	---create table  `gzdw2024.fbgame_03_bi.dws_fb_common_game_daily_roi_total_reports`
 	---	PARTITION BY stats_date as 
+
+
 with a as (
 SELECT
 	stats_date
@@ -879,8 +879,8 @@ FROM
 		WHERE 1=1
 		--and platform='TOTAL'
 		--and country_code='TOTAL'
-		and stats_date >= date_add(run_date,interval -history_day day)
-    	and stats_date <= date_add(run_date,interval -history_end_day day)
+		and stats_date >= date_add('2025-01-26',interval -10 day)
+    	and stats_date <= date_add('2025-01-26',interval -2 day)
 		)a 
 		left join 
 		(
@@ -913,7 +913,9 @@ FROM
 		and a.package_name=b.package_name
 	)c 
 	order by stats_date desc
-	)
+	),
+b as 
+(
 select 
 	stats_date
 	,a.package_name
@@ -970,10 +972,90 @@ FROM
 	WHERE 1=1
 	)a
 	left join  `gzdw2024.gz_dim.app_info` b 
-	on a.package_name=b.package_name;
+	on a.package_name=b.package_name
+)  
+SELECT
+	stats_date
+	,package_name
+	,app_name
+	,platform
+	,country_code
+	,active_uv
+	,new_uv
+	,retain_uv2
+	,cost
+	,install
+	,requests
+	,filled_requests
+	,impressions
+	,revenue
+	,clicks
+	,max_stats_date
+	,new_ad_uv
+	,new_liebian_uv
+	,new_ad_liebian_uv 
+	,total_bili_3
+	,total_bili_7
+	,arpu 
+	,new_arpu
+	,new_ratio
+	,last_new_ratio
+	,last_new_arpu
+	,last_arpu
+	,last_total_bili_3
+	,last_total_bili_7
+	,first_day_revenue
+	,first_3day_revenue
+	,first_7day_revenue
+	,new_ad_ratio
+	,last_new_ad_ratio
+	,total_bili_14
+	,last_total_bili_14
+	,first_14day_revenue
+FROM b  
+UNION all 
+SELECT
+	stats_date
+	,'fb.total' as package_name
+	,'FBG_TOTAL' AS app_name
+	,platform
+	,country_code
+	,sum(active_uv) AS active_uv
+	,sum(new_uv) AS new_uv
+	,sum(retain_uv2) AS retain_uv2
+	,sum(cost) AS cost
+	,sum(install) AS install
+	,sum(requests) AS requests
+	,sum(filled_requests) AS filled_requests
+	,sum(impressions) AS impressions
+	,sum(revenue) AS revenue
+	,sum(clicks) AS clicks
+	,max(max_stats_date) AS max_stats_date
+	,sum(new_ad_uv) AS new_ad_uv
+	,sum(new_liebian_uv) AS new_liebian_uv
+	,sum(new_ad_liebian_uv ) AS new_ad_liebian_uv
+	,avg(total_bili_3) AS total_bili_3
+	,avg(total_bili_7) AS total_bili_7
+	,avg(arpu ) AS arpu
+	,avg(new_arpu) AS new_arpu
+	,avg(new_ratio) AS new_ratio
+	,avg(last_new_ratio) AS last_new_ratio
+	,avg(last_new_arpu) AS last_new_arpu
+	,avg(last_arpu) AS last_arpu
+	,avg(last_total_bili_3) AS last_total_bili_3
+	,avg(last_total_bili_7) AS last_total_bili_7
+	,sum(first_day_revenue) AS first_day_revenue
+	,sum(first_3day_revenue) AS first_3day_revenue
+	,sum(first_7day_revenue) AS first_7day_revenue
+	,avg(new_ad_ratio) AS new_ad_ratio
+	,avg(last_new_ad_ratio) AS last_new_ad_ratio
+	,avg(total_bili_14) AS total_bili_14
+	,avg(last_total_bili_14) AS last_total_bili_14
+	,sum(first_14day_revenue) AS first_14day_revenue
+FROM b  
+group by stats_date,package_name,app_name,country_code,platform;
 
 
 
 
-
-end 
+end;
