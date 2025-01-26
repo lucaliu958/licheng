@@ -879,8 +879,8 @@ FROM
 		WHERE 1=1
 		--and platform='TOTAL'
 		--and country_code='TOTAL'
-		and stats_date >= date_add('2025-01-26',interval -10 day)
-    	and stats_date <= date_add('2025-01-26',interval -2 day)
+		and stats_date >= date_add(run_date,interval -history_day day)
+    	and stats_date <= date_add(run_date,interval -history_end_day day)
 		)a 
 		left join 
 		(
