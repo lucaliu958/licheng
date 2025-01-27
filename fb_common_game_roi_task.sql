@@ -103,13 +103,15 @@ begin
 		      AND _TABLE_SUFFIX <= '%s'
 			    UNION ALL
 		    SELECT stats_date, campaign_name, country, spend, action_count, action_type, 'fb.fruit.bubble' AS package_name
-		    FROM `fb-ai-avatar-puzzle.analytics_439907691.prefect_hourly_facebook_delivery_BBPF_*` 
+		    FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_BBPF_*` 
 		    WHERE _TABLE_SUFFIX >= '%s'
 		      AND _TABLE_SUFFIX <= '%s';
 		  """,
 		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_day DAY) AS STRING), '-', ''),
 		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_end_day DAY) AS STRING), '-', ''),
 		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_day DAY) AS STRING), '-', ''),
+		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_end_day DAY) AS STRING), '-', ''),
+        REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_day DAY) AS STRING), '-', ''),
 		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_end_day DAY) AS STRING), '-', '')
 		  );
 
