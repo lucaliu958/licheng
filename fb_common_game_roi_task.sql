@@ -272,6 +272,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_common_game_ad_revenue_daily_reports`
 						when app_name='Block Juggle' then 'fb.block.juggle' 
 						when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
 						when app_name='Save The Dog' then 'fb.save.dog' 
+	 					when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
 						else 'other' end as package_name
 					,'TOTAL' as platform
 					,'TOTAL' as country_code
@@ -298,6 +299,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_common_game_ad_revenue_daily_reports`
 						when app_name='Block Juggle' then 'fb.block.juggle' 
 						when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
 						when app_name='Save The Dog' then 'fb.save.dog' 
+						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
 						else 'other' end as package_name
 					,'TOTAL' as platform
 					,'TOTAL' as country_code
@@ -324,6 +326,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_common_game_ad_revenue_daily_reports`
 						when app_name='Block Juggle' then 'fb.block.juggle' 
 						when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
 						when app_name='Save The Dog' then 'fb.save.dog' 
+						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
 						else 'other' end as package_name
 					,case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end  as platform
 					,upper(country) as country_code
@@ -349,6 +352,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_common_game_ad_revenue_daily_reports`
 						when app_name='Block Juggle' then 'fb.block.juggle' 
 						when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
 						when app_name='Save The Dog' then 'fb.save.dog' 
+						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
 						else 'other' end as package_name
 					,case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end  as platform
 					,'TOTAL' as country_code
@@ -375,6 +379,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_common_game_ad_revenue_daily_reports`
 						when app_name='Block Juggle' then 'fb.block.juggle' 
 						when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
 						when app_name='Save The Dog' then 'fb.save.dog' 
+						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
 						else 'other' end as package_name
 					,'TOTAL'  as platform
 					,upper(country) as country_code
