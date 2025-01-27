@@ -767,6 +767,9 @@ insert `gzdw2024.fb_zp_game.dws_event_active_report`
 						,'fb_zp_theme_c'
 						,'fb_zp_theme_bg_c'
 						,'fb_zp_theme_cardbg_c'
+						    ,'fb_zp_game_refillstock_show'
+					            ,'fb_zp_game_refillstock_click'
+					            ,'fb_zp_game_homeshuffle_clickads'
 						)
 				)a 
 				 left	join 
