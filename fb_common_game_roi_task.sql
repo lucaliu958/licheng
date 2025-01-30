@@ -185,7 +185,6 @@ begin
 					where stats_date>='2024-09-08'
 					group by stats_date
 					,platform
-					,campaign_name
 					,country_code
 					,package_name;
 
