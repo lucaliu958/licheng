@@ -64,6 +64,25 @@ FROM
 	FROM gzdw2024.revenue.dws_app_country_vip_income 
 	WHERE stats_date >= DATE_SUB(run_date, INTERVAL history_day DAY)
 	union all 
+		SELECT
+		PARSE_DATE('%Y-%m-%d', string_field_0) AS  stats_date
+		,'com.textnumber.phone' as package_name
+		--,app_name
+		,'TOTAL' AS  country_code
+		,0 as active_uv
+		,0 as new_uv
+		,0 as ratio
+		,sum(safe_CAST(REPLACE(REPLACE(string_field_1, '$', ''), ',', '') AS FLOAT64)) vip_revenue
+		,0 as ad_revenue
+		,0 as asa_cost
+		,0 as ga_cost
+		,0 as new_retain_uv
+		,0 as conversions
+	FROM  `gzdw2024.appstoreconnect.p_sales_textnumber` 
+	where string_field_0!='stats_date'
+	and PARSE_DATE('%Y-%m-%d', string_field_0) >= date_add(run_date,interval -history_day day)
+      group by stats_date,country_code
+	union all 
 	---广告收入
 	SELECT
 		stats_date
