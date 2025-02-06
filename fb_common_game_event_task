@@ -21,6 +21,7 @@ insert `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`
 		when stream_id ='10014848977' then 'fb.ai.aha'
 		when stream_id ='10154828291' then 'fb.save.dog' 
 		when stream_id ='9963723224' then 'fb.egg.bubble' 
+		when stream_id ='9926653508' then 'fb.bubble.shoot.pro'
 		else 'other'  end  as package_name
 		,PARSE_DATE('%Y%m%d',event_date) event_date
     	,stream_id
@@ -78,7 +79,7 @@ insert `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`
 			    )c 
 			    on upper(a.geo.country)=c.country_name
 	WHERE 1=1
-	 and  stream_id in('9692329810','9817620337','9900250753','9985702455','10014848977','10154828291','9963723224')
+	 and  stream_id in('9692329810','9817620337','9900250753','9985702455','10014848977','10154828291','9963723224','9926653508')
 	and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 	and  _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
 	 ;
@@ -523,6 +524,22 @@ insert `gzdw2024.fbgame_01_basic.dws_common_egg_event_active_report`
 	and stats_date<=date_add(run_date,interval -history_end_day day)
 	and package_name='fb.egg.bubble';
 
+------4.8 无限泡事件
+delete `gzdw2024.fbgame_01_basic.dws_common_bubble_pro_event_active_report`
+where stats_date>=date_add(run_date,interval -history_day day)
+and stats_date<=date_add(run_date,interval -history_end_day day);
+
+insert `gzdw2024.fbgame_01_basic.dws_common_bubble_pro_event_active_report`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dws_common_bubble_pro_event_active_report`;
+--	create table  `gzdw2024.fbgame_01_basic.dws_common_bubble_pro_event_active_report`
+--	PARTITION BY stats_date as 
+	SELECT
+		* 
+	FROM `gzdw2024.fbgame_01_basic.dws_common_game_event_active_report`
+	WHERE 1=1
+	and stats_date>=date_add(run_date,interval -history_day day)
+	and stats_date<=date_add(run_date,interval -history_end_day day)
+	and package_name='fb.bubble.shoot.pro';
 
 
 
@@ -849,7 +866,22 @@ insert `gzdw2024.fbgame_01_basic.dws_common_egg_events_detail`
 	and event_date<=date_add(run_date,interval -history_end_day day)
 	and package_name='fb.egg.bubble';
 
+	------5.8 无限泡事件明细
+delete `gzdw2024.fbgame_01_basic.dws_common_bubble_pro_events_detail`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
 
+insert `gzdw2024.fbgame_01_basic.dws_common_bubble_pro_events_detail`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dws_common_bubble_pro_events_detail`;
+	--create table  `gzdw2024.fbgame_01_basic.dws_common_bubble_pro_events_detail`
+	--PARTITION BY event_date as 
+	SELECT
+		* 
+	FROM `gzdw2024.fbgame_01_basic.dws_common_game_events_detail`
+	WHERE 1=1
+	and event_date>=date_add(run_date,interval -history_day day)
+	and event_date<=date_add(run_date,interval -history_end_day day)
+	and package_name='fb.bubble.shoot.pro';
 /*
 -----5.5 乙游事件-时间明细
 
@@ -2969,6 +3001,201 @@ insert `gzdw2024.fbgame_01_basic.dws_dog_level_report`
 				  )a1 
 			   	where 1=1
 			   	GROUP BY  event_date,package_name,country_code,platform,is_new,level_id;
+
+
+------9.2玩家资源统计-分布
+delete `gzdw2024.fbgame_01_basic.dws_dog_player_resource_distribution_report`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+
+insert `gzdw2024.fbgame_01_basic.dws_dog_player_resource_distribution_report`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dws_dog_player_resource_distribution_report`;
+--	create table  `gzdw2024.fbgame_01_basic.dws_dog_player_resource_distribution_report`
+--	PARTITION BY event_date as 
+	with a  
+		as (
+		SELECT
+			event_date
+			,user_id
+			,package_name
+			,platform
+			,country_code
+			,livesum
+			,is_new
+		FROM
+			(
+			SELECT
+				a.event_date
+				,a.user_id
+				,a.package_name
+				,platform
+				,country_code	
+				,case when livesum<5 then 'a_0_4'
+					when livesum>=5 and livesum<10 then 'b_5_9'
+					when livesum>=10 and livesum<15 then 'c_10_14'
+					when livesum>=15 and livesum<20 then 'd_15_19'
+					when livesum>=20  and livesum<25  then 'e_20_24'
+					when livesum>=25  and livesum<30  then 'f_25_30'
+					when livesum>=30   then 'g_30'
+					end as livesum
+
+				,ARRAY['TOTAL',case when is_new =1 then 'new'
+					when is_new =0 then 'old' 
+					else 'old' end] as is_new
+
+			FROM
+				(
+				SELECT
+					 event_date
+					,user_id					
+					,package_name	
+					,ARRAY['TOTAL',country_code] as country_code
+					,array[case when operating_system ='iOS' then 'iOS'
+					when operating_system ='Android' then 'Android' 
+					else 'web' end,'TOTAL']  as platform	
+					
+					,safe_cast(livesum as int64) as livesum
+					,proplist
+					,event_timestamp
+					,row_number() over(partition by user_id,event_date,package_name order by event_timestamp desc ) as rn 
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				and event_name in ('fb_dog_game_play_exit') 
+				)a 
+				 left	join 
+				(
+				SELECT
+					package_name
+					,event_date
+					,user_id
+					,max(is_new) as is_new
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				group by event_date,user_id,package_name
+			   )b 
+				on a.user_id=b.user_id
+				and a.package_name=b.package_name
+				and a.event_date=b.event_date
+				where rn=1
+			)c
+			,UNNEST(country_code) as country_code
+			,UNNEST(platform) as platform
+			,UNNEST(is_new) as is_new
+		) 
+		 SELECT
+				   event_date
+				    ,package_name
+				    ,platform
+				    ,country_code
+				    ,is_new
+				    ,key_value.key AS event_key        
+				    ,key_value.value AS event_value
+				    ,count(1) as event_num
+				    ,COUNT(DISTINCT user_id) AS user_num
+				  FROM
+				    a,
+				    UNNEST([
+				    
+				      STRUCT('livesum' AS key, livesum AS value)
+				     
+				    ]) AS key_value
+				  GROUP BY  event_date, event_key, event_value,package_name,country_code,platform,is_new;
+
+
+
+
+
+-------9.3玩家资源统计-中位数与平均
+delete `gzdw2024.fbgame_01_basic.dws_dog_player_resource_avg_med_report`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+
+insert `gzdw2024.fbgame_01_basic.dws_dog_player_resource_avg_med_report`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dws_dog_player_resource_avg_med_report`;
+--	create table  `gzdw2024.fbgame_01_basic.dws_dog_player_resource_avg_med_report`
+--	PARTITION BY event_date as 
+	with a  
+		as (
+		SELECT
+			event_date
+			,user_id
+			,package_name
+			,platform
+			,country_code
+			,livesum
+			,is_new
+			,PERCENTILE_CONT(livesum, 0.5) OVER(partition by event_date,package_name,platform,country_code,is_new) AS livesum_50
+		FROM
+			(
+			SELECT
+				a.event_date
+				,a.user_id
+				,a.package_name
+				,platform
+				,country_code	
+				,livesum
+				,ARRAY['TOTAL',case when is_new =1 then 'new'
+					when is_new =0 then 'old' 
+					else 'old' end] as is_new				
+			FROM
+				(
+				SELECT
+					 event_date
+					,user_id					
+					,package_name	
+					,ARRAY['TOTAL',country_code] as country_code
+					,array[case when operating_system ='iOS' then 'iOS'
+					when operating_system ='Android' then 'Android' 
+					else 'web' end,'TOTAL']  as platform	
+					,safe_cast(livesum as int64) as livesum
+					,event_timestamp
+					,row_number() over(partition by user_id,event_date,package_name order by event_timestamp desc ) as rn 
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				and event_name in ('fb_dog_game_play_exit') 
+				)a 
+				 left	join 
+				(
+				SELECT
+					package_name
+					,event_date
+					,user_id
+					,max(is_new) as is_new
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				group by event_date,user_id,package_name
+			   )b 
+				on a.user_id=b.user_id
+				and a.package_name=b.package_name
+				and a.event_date=b.event_date
+				where rn=1
+			)c
+			,UNNEST(country_code) as country_code
+			,UNNEST(platform) as platform
+			,UNNEST(is_new) as is_new
+		) 
+		 SELECT
+		   event_date
+		    ,package_name
+		    ,platform
+		    ,country_code
+		    ,is_new
+			,avg(livesum) as avg_livesum
+			,max(livesum_50) as livesum_50
+			,sum(livesum) as sum_livesum
+			,count(1) as pv 
+			,count(distinct user_id) as uv 
+		  FROM
+		    a
+		  GROUP BY  event_date,package_name,country_code,platform,is_new;
+
+
 
 
 
