@@ -91,7 +91,6 @@ begin
 			group by PARSE_DATE('%Y-%m-%d', string_field_0),platform,package_name,country_code;
 
 
-
 			--------api成本数据
 		  EXECUTE IMMEDIATE FORMAT("""
 		    CREATE OR REPLACE VIEW `gzdw2024.cost_data.all_api_data` AS
@@ -99,20 +98,49 @@ begin
 		    FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_*` 
 		    WHERE _TABLE_SUFFIX >= '%s'
 		      AND _TABLE_SUFFIX <= '%s'
-		    UNION ALL
-		    SELECT stats_date, campaign_name, country, spend, action_count, action_type, 'fb.zp' AS package_name
-		    FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_SLT_*` 
+          	    UNION ALL
+		    SELECT stats_date, campaign_name, country, spend, action_count, action_type, 'fb.ai.aha' AS package_name
+		    FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_AHA_*` 
 		    WHERE _TABLE_SUFFIX >= '%s'
 		      AND _TABLE_SUFFIX <= '%s'
 			    UNION ALL
 		    SELECT stats_date, campaign_name, country, spend, action_count, action_type, 'fb.fruit.bubble' AS package_name
 		    FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_BBPF_*` 
 		    WHERE _TABLE_SUFFIX >= '%s'
-		      AND _TABLE_SUFFIX <= '%s';
+		      AND _TABLE_SUFFIX <= '%s'
+            UNION ALL
+		    SELECT stats_date, campaign_name, country, spend, action_count, action_type, 'fb.bubble.shoot.pro' AS package_name
+		    FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_BSP_*` 
+		    WHERE _TABLE_SUFFIX >= '%s'
+		      AND _TABLE_SUFFIX <= '%s'
+            UNION ALL
+		    SELECT stats_date, campaign_name, country, spend, action_count, action_type, 'fb.egg.bubble' AS package_name
+		    FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_ESD_*` 
+		    WHERE _TABLE_SUFFIX >= '%s'
+		      AND _TABLE_SUFFIX <= '%s'
+            UNION ALL
+		    SELECT stats_date, campaign_name, country, spend, action_count, action_type, 'fb.zp' AS package_name
+		    FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_SLT_*` 
+		    WHERE _TABLE_SUFFIX >= '%s'
+		      AND _TABLE_SUFFIX <= '%s'
+           UNION ALL
+		    SELECT stats_date, campaign_name, country, spend, action_count, action_type, 'fb.save.dog' AS package_name
+		    FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_STD_*` 
+		    WHERE _TABLE_SUFFIX >= '%s'
+		      AND _TABLE_SUFFIX <= '%s'
+          ;
 		  """,
 		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_day DAY) AS STRING), '-', ''),
 		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_end_day DAY) AS STRING), '-', ''),
 		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_day DAY) AS STRING), '-', ''),
+		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_end_day DAY) AS STRING), '-', ''),
+        REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_day DAY) AS STRING), '-', ''),
+		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_end_day DAY) AS STRING), '-', ''),
+        REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_day DAY) AS STRING), '-', ''),
+		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_end_day DAY) AS STRING), '-', ''),
+        REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_day DAY) AS STRING), '-', ''),
+		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_end_day DAY) AS STRING), '-', ''),
+        REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_day DAY) AS STRING), '-', ''),
 		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_end_day DAY) AS STRING), '-', ''),
         REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_day DAY) AS STRING), '-', ''),
 		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_end_day DAY) AS STRING), '-', '')
