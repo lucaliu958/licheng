@@ -1006,6 +1006,7 @@ select
 	,first_14day_revenue
 	,total_bili_28
 	,last_total_bili_28
+	,first_28day_revenue
 FROM
 	(
 	SELECT 
@@ -1111,7 +1112,7 @@ SELECT
 	,sum(first_14day_revenue) AS first_14day_revenue
 	,avg(total_bili_28) AS total_bili_28
 	,avg(last_total_bili_28) AS last_total_bili_28
-	,sum(first_14day_revenue) AS first_28day_revenue
+	,sum(first_28day_revenue) AS first_28day_revenue
 FROM b  
 group by stats_date,package_name,app_name,country_code,platform;
 
