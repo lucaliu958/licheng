@@ -737,6 +737,10 @@ with a as (
 			when total_bili_7>0.3 and total_bili_7<=0.4 then 1.48*total_bili_7
 			when total_bili_7>0.4 and total_bili_7<=0.6 then 1.68*total_bili_7
 			when total_bili_7>0.6  then 1.88*total_bili_7 end as total_bili_14
+			,case when total_bili_7<=0.3 then 1.28*total_bili_7*1.18
+			when total_bili_7>0.3 and total_bili_7<=0.4 then 1.48*total_bili_7*1.35
+			when total_bili_7>0.4 and total_bili_7<=0.6 then 1.68*total_bili_7*1.55
+			when total_bili_7>0.6  then 1.88*total_bili_7*1.7 end as total_bili_28
 		FROM
 			(
 				SELECT
@@ -853,8 +857,10 @@ SELECT
 	,lag(total_bili_3) over(partition by package_name,platform,country_code order by stats_date) as last_total_bili_3
 	,lag(total_bili_7) over(partition by package_name,platform,country_code order by stats_date) as last_total_bili_7
 	,lag(total_bili_14) over(partition by package_name,platform,country_code order by stats_date) as last_total_bili_14
+	,lag(total_bili_28) over(partition by package_name,platform,country_code order by stats_date) as last_total_bili_28
 	,new_ad_ratio
 	,total_bili_14
+	,total_bili_28
 	--,new_ad_liebian_uv*new_arpu as first_day_revenue
 	--,new_ad_liebian_uv*new_arpu*(1+total_bili_3) as first_3day_revenue
 	--,new_ad_liebian_uv*new_arpu*(1+total_bili_3) + new_ad_liebian_uv*arpu*(total_bili_7- total_bili_3) as first_7day_revenue
@@ -896,6 +902,7 @@ FROM
 		when new_ad_ratio<1.6 then 1.5
 		else new_ad_ratio-0.1 end as new_ad_ratio
 		,total_bili_14
+		,total_bili_28
 
 	FROM
 		(
@@ -947,6 +954,7 @@ FROM
 			,ratio_7
 			,ratio_8
 			,total_bili_14
+			,total_bili_28
 		FROM `gzdw2024.fbgame_03_bi.dws_fb_common_game_rention_roi_reports`
 		)b 
 		on a.stats_date=b.stats_date
@@ -996,7 +1004,8 @@ select
 	,total_bili_14
 	,last_total_bili_14
 	,first_14day_revenue
-
+	,total_bili_28
+	,last_total_bili_28
 FROM
 	(
 	SELECT 
@@ -1010,6 +1019,9 @@ FROM
 	else install*last_new_ratio*last_new_arpu*(1+last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_arpu*(last_total_bili_7- last_total_bili_3)*last_new_ad_ratio end as first_7day_revenue
 	,case when new_ad_uv is not null then  install*new_arpu*(1+total_bili_3)*new_ad_ratio  + new_ad_liebian_uv*arpu*(total_bili_7- total_bili_3)*new_ad_ratio  + new_ad_liebian_uv*arpu*(total_bili_14- total_bili_7)*new_ad_ratio 
 	else install*last_new_ratio*last_new_arpu*(1+last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_arpu*(last_total_bili_7- last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_arpu*(last_total_bili_14- last_total_bili_7)*last_new_ad_ratio end as first_14day_revenue
+	,case when new_ad_uv is not null then  install*new_arpu*(1+total_bili_3)*new_ad_ratio  + new_ad_liebian_uv*arpu*(total_bili_7- total_bili_3)*new_ad_ratio  + new_ad_liebian_uv*arpu*(total_bili_14- total_bili_7)*new_ad_ratio  + new_ad_liebian_uv*arpu*(total_bili_28- total_bili_14)*new_ad_ratio 
+	else install*last_new_ratio*last_new_arpu*(1+last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_arpu*(last_total_bili_7- last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_arpu*(last_total_bili_14- last_total_bili_7)*last_new_ad_ratio + install*last_new_ratio*last_arpu*(last_total_bili_28- last_total_bili_14)*last_new_ad_ratio end as first_28day_revenue
+  
     FROM a 
 	WHERE 1=1
 	)a
@@ -1054,6 +1066,9 @@ SELECT
 	,total_bili_14
 	,last_total_bili_14
 	,first_14day_revenue
+	,total_bili_28
+	,last_total_bili_28
+	,first_28day_revenue
 FROM b  
 UNION all 
 SELECT
@@ -1094,6 +1109,9 @@ SELECT
 	,avg(total_bili_14) AS total_bili_14
 	,avg(last_total_bili_14) AS last_total_bili_14
 	,sum(first_14day_revenue) AS first_14day_revenue
+	,avg(total_bili_28) AS total_bili_28
+	,avg(last_total_bili_28) AS last_total_bili_28
+	,sum(first_14day_revenue) AS first_28day_revenue
 FROM b  
 group by stats_date,package_name,app_name,country_code,platform;
 
