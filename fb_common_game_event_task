@@ -2815,7 +2815,7 @@ insert `gzdw2024.fbgame_01_basic.dws_common_game_ad_expect_show_report`
 							   ,'fb_ibb_fail_thanks_click','fb_ibb_fail_continue_click','fb_ibb_fail_goto_ads')
 					or (event_name in ('fb_zp_game_play_finish') and win='true')
 					or (event_name in ('fb_dog_game_play_succ_next') and type='is_ads')
-					or (event_name in ('fb_egg_bomb_click') and bombsum='0')
+					or (event_name in ('fb_egg_bomb_click','fb_ibb_bomb_click') and bombsum='0')
 					)
 
 				AND event_date>=date_add(run_date,interval -history_day day)
