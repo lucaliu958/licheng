@@ -25,7 +25,10 @@ begin
 			FROM `gzdw2024.cost_data.fb_game_egg_cost_data`
 			UNION ALL
 			SELECT string_field_0,string_field_1,string_field_3,string_field_6,'fb.bubble.shoot.pro'  as package_name
-			FROM `gzdw2024.cost_data.fb_game_bubblepro_cost_data`;
+			FROM `gzdw2024.cost_data.fb_game_bubblepro_cost_data`
+			UNION ALL
+			SELECT string_field_0,string_field_1,string_field_3,string_field_6,'fb.block.juggle'  as package_name
+			FROM `gzdw2024.cost_data.fb_game_block_cost_data`;
 
 
 			CREATE OR REPLACE VIEW `gzdw2024.cost_data.all_external_data_platform` AS
