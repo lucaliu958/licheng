@@ -68,6 +68,7 @@ insert `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='propselect') propselect
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='browserType') browserType
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='bombsum') bombsum
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='combomax') combomax
 	FROM `recorder-pro-50451.analytics_250268757.events_*` a 
 	left join
 			    (
@@ -1046,11 +1047,12 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_level_finish_distribution_report`
 					,safe_cast(score as int64) as score
 					,safe_cast(steps as int64) as steps
 					,safe_cast(starsum as int64) as starsum
+					,safe_cast(combomax as int64) as combomax
 					,safe_cast(timeuse as int64)/1000/60 as time_min
 				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
 				WHERE event_date>=date_add(run_date,interval -history_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
-				and event_name like '%game_play_finish'
+				and (event_name like '%game_play_finish' or event_name='fb_ibb_game_play_fail')
 				--and package_name in ('fb.fruit.bubble')
 				
 				)a 
@@ -1124,11 +1126,13 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_level_finish_report`
 			,score
 			,steps
 			,starsum
+			,combomax
 			,time_min
 			,PERCENTILE_CONT(score, 0.5) OVER(partition by event_date,package_name,platform,country_code,is_new,level_id) AS score_50
 			,PERCENTILE_CONT(steps, 0.5) OVER(partition by event_date,package_name,platform,country_code,is_new,level_id) AS steps_50
 			,PERCENTILE_CONT(starsum, 0.5) OVER(partition by event_date,package_name,platform,country_code,is_new,level_id) AS starsum_50
 			,PERCENTILE_CONT(time_min, 0.5) OVER(partition by event_date,package_name,platform,country_code,is_new,level_id) AS time_min_50
+			,PERCENTILE_CONT(combomax, 0.5) OVER(partition by event_date,package_name,platform,country_code,is_new,level_id) AS combomax_50
 		FROM
 			(
 			SELECT
@@ -1146,6 +1150,7 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_level_finish_report`
 				,steps
 				,starsum
 				,time_min	
+				,combomax
 			FROM
 				(
 				SELECT
@@ -1161,11 +1166,12 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_level_finish_report`
 					,safe_cast(score as int64) as score
 					,safe_cast(steps as int64) as steps
 					,safe_cast(starsum as int64) as starsum
+					,safe_cast(combomax as int64) as combomax
 					,safe_cast(timeuse as int64)/1000/60 as time_min
 				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
 				WHERE event_date>=date_add(run_date,interval -history_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
-				and event_name like '%game_play_finish'
+				and (event_name like '%game_play_finish' or event_name='fb_ibb_game_play_fail')
 				--and package_name in ('fb.fruit.bubble')
 				
 				)a 
@@ -1207,6 +1213,8 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_level_finish_report`
 			,max(time_min_50) as time_min_50
 			,count(1) as pv 
 			,count(distinct user_id) as uv 
+			,avg(combomax) as avg_combomax	
+			,max(combomax_50) as combomax_50
 		  FROM
 		    a
 		  GROUP BY  event_date,package_name,country_code,platform,is_new,level_id;
@@ -1632,7 +1640,7 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_game_lanuch_finish_pv_report`
 						,is_new
 						,max(case when event_name like '%app_launch' then pv else 0 end) as launch_pv
 						,max(case when event_name like '%game_play_start' then pv else 0 end) as start_pv
-						,max(case when event_name like '%game_play_finish' then pv else 0 end) as finsh_pv
+						,max(case when event_name like '%game_play_finish'  or event_name='fb_ibb_game_play_fail' then pv else 0 end) as finsh_pv
 					FROM
 						(
 						SELECT
@@ -1663,7 +1671,7 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_game_lanuch_finish_pv_report`
 						FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
 						WHERE event_date>=date_add(run_date,interval -history_day day)
 						and event_date<=date_add(run_date,interval -history_end_day day)
-						and REGEXP_CONTAINS(event_name, r'.*(app_launch|game_play_finish|game_play_start)$')
+						and REGEXP_CONTAINS(event_name, r'.*(app_launch|game_play_finish|game_play_start|fb_ibb_game_play_fail)$')
 						--and event_name in ('fb_fruit_app_launch','fb_fruit_game_play_finish','fb_fruit_game_play_start')
 						--and package_name in ('fb.fruit.bubble')
 						group by  event_date,user_id,package_name,event_name
@@ -1746,7 +1754,7 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_game_finish_time_report`
 					,event_date
 					,event_name
 				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  	a
-				WHERE event_name  like '%game_play_finish'
+				WHERE (event_name  like '%game_play_finish' or   event_name='fb_ibb_game_play_fail')
 				and event_date>=date_add(run_date,interval -history_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
 				)a 
@@ -1797,7 +1805,7 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_game_finish_time_report`
 			,PERCENTILE_CONT(timeuse,0.5)  over(partition by package_name,country_code,platform,is_new,event_date) as med_timeuse
 		FROM a  
 		where 1=1 
-		and event_name like '%game_play_finish' 
+		and (event_name like '%game_play_finish'  or event_name='fb_ibb_game_play_fail')
 		and timeuse<60
 		)
 		SELECT
@@ -3326,4 +3334,141 @@ insert `gzdw2024.fbgame_01_basic.dws_egg_level_report`
 				  )a1 
 			   	where 1=1
 			   	GROUP BY  event_date,package_name,country_code,platform,is_new,level_id;
+
+
+-------11.1无限泡通关报告-分布
+delete `gzdw2024.fbgame_01_basic.dws_bubble_pro_level_finish_distribution_report`
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
+
+
+insert `gzdw2024.fbgame_01_basic.dws_bubble_pro_level_finish_distribution_report`
+--	drop table if exists `gzdw2024.fbgame_01_basic.dws_bubble_pro_level_finish_distribution_report`;
+--create table  `gzdw2024.fbgame_01_basic.dws_bubble_pro_level_finish_distribution_report`
+--	PARTITION BY event_date as 
+	with a  
+		as (
+		SELECT
+			event_date
+			,user_id
+			,package_name
+			,platform
+			,country_code
+			,level_id
+			,is_new
+			,score
+			,steps
+			,combomax
+			,time_min
+		FROM
+			(
+			SELECT
+				a.event_date
+				,a.package_name
+				,a.user_id 
+				,event_name
+				,platform
+				,country_code
+				,ARRAY['TOTAL',case when is_new =1 then 'new'
+				when is_new =0 then 'old' 
+				else 'old' end] as is_new
+        		,level_id
+				,CASE 
+				    WHEN score < 10000 THEN 'a_0_10000'
+				    WHEN score >= 10000 AND score < 30000 THEN 'b_10000_30000'
+				    WHEN score >= 30000 AND score < 50000 THEN 'c_30000_50000'
+				    WHEN score >= 50000 AND score < 80000 THEN 'd_50000_80000'
+				    WHEN score >= 80000 AND score < 120000 THEN 'e_80000_120000'
+				    WHEN score >= 120000 THEN 'f_120000'
+				END AS score
+				,CASE 
+				    WHEN steps < 20 THEN 'a_0_20'
+				    WHEN steps >= 20 AND steps < 40 THEN 'b_20_40'
+				    WHEN steps >= 40 AND steps < 60 THEN 'c_40_60'
+				    WHEN steps >= 60 AND steps < 80 THEN 'd_60_80'
+				    WHEN steps >= 80 AND steps < 120 THEN 'e_80_120'
+				    WHEN steps >= 120 THEN 'f_120'
+				END AS steps
+				,CASE 
+				    WHEN   combomax <= 2 THEN 'a_2'
+				    WHEN combomax > 2 AND combomax < 4 THEN 'b_2_4'
+				    WHEN combomax >= 4 AND combomax < 8 THEN 'c_4_8'
+				    WHEN combomax >= 8  AND combomax < 12 THEN 'd_8_12'
+				    WHEN combomax >= 12 THEN 'e_12'
+				END AS combomax
+				,CASE 
+				    WHEN time_min < 0.5 THEN 'a_0_30'
+				    WHEN time_min >= 0.5 AND time_min < 1 THEN 'b_30_60'
+				    WHEN time_min >= 1 AND time_min < 1.5 THEN 'c_60_90'
+				    WHEN time_min >= 1.5 AND time_min < 2 THEN 'd_90_120'
+				    WHEN time_min >= 2 AND time_min < 3 THEN 'e_120_180'
+				    WHEN time_min >= 3 THEN 'f_180'
+				END AS time_min	
+			FROM
+				(
+				SELECT
+					 event_date
+					,user_id
+					,ARRAY['TOTAL',country_code] as country_code
+					,array[case when operating_system ='iOS' then 'iOS'
+					when operating_system ='Android' then 'Android' 
+					else 'web' end,'TOTAL']  as platform						
+					,package_name
+					,event_name
+					,array['TOTAL',CASE when level_id is null then 'other' else level_id end ] as level_id
+					,safe_cast(score as int64) as score
+					,safe_cast(steps as int64) as steps
+					,safe_cast(combomax as int64) as combomax
+					,safe_cast(timeuse as int64)/1000/60 as time_min
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				and  event_name='fb_ibb_game_play_fail'
+				--and package_name in ('fb.fruit.bubble')
+				
+				)a 
+			 left	join 
+				(
+				SELECT
+					package_name
+					,event_date
+					,user_id
+					,max(is_new) as is_new
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				group by event_date,user_id,package_name
+			   )b 
+				on a.user_id=b.user_id
+				and a.package_name=b.package_name
+				and a.event_date=b.event_date
+				,UNNEST(platform) AS platform
+				,UNNEST(country_code) AS country_code
+			)c 
+			,UNNEST(is_new) AS is_new
+			,UNNEST(level_id) as level_id
+		) 
+		 SELECT
+				   event_date
+				    ,package_name
+				    ,platform
+				    ,country_code
+				    ,is_new
+				    ,level_id
+				    ,key_value.key AS event_key        
+				    ,key_value.value AS event_value
+				    ,count(1) as event_num
+				    ,COUNT(DISTINCT user_id) AS user_num
+				  FROM
+				    a,
+				    UNNEST([
+				      STRUCT('score' AS key, score AS value),
+				      STRUCT('steps' AS key, steps AS value),
+				      STRUCT('combomax' AS key, combomax AS value),
+				      STRUCT('time_min' AS key, time_min AS value)
+				    ]) AS key_value
+				  GROUP BY  event_date, event_key, event_value,package_name,country_code,platform,is_new,level_id;
+		
+
+   	
 end;
