@@ -570,6 +570,7 @@ and event_date<=date_add(run_date,interval -history_end_day day);
 			,level_id
 			,cat_id
 			,buytype
+			,type
 		FROM
 			(	
 			SELECT
@@ -589,6 +590,7 @@ and event_date<=date_add(run_date,interval -history_end_day day);
 				,level_id
 				,cat_id
 				,buytype
+				,type
 			FROM
 				(
 				SELECT
@@ -607,6 +609,7 @@ and event_date<=date_add(run_date,interval -history_end_day day);
 					,level_id
 					,cat_id
 					,buytype
+					,type
 				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
 				WHERE event_date>=date_add(run_date,interval -history_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
@@ -629,7 +632,7 @@ and event_date<=date_add(run_date,interval -history_end_day day);
 					,'fb_templ_res_show'
 					,'fb_templ_res_click'
 					,'fb_templ_res_export'
-					,'fb_templ_res_share'
+					,'fb_share_show'
 					,'fb_templ_categ_show'
 					,'fb_templ_categ_click'
 					,'fb_templ_categ_export'
@@ -683,7 +686,8 @@ and event_date<=date_add(run_date,interval -history_end_day day);
 				      STRUCT('win' AS key, win AS value),
 				      STRUCT('level_id' AS key, level_id AS value),
 				      STRUCT('cat_id' AS key, cat_id AS value),
-				      STRUCT('buytype' AS key, cat_id AS value)
+				      STRUCT('buytype' AS key, cat_id AS value),
+  					STRUCT('type' AS key, type AS value)
 				    ]) AS key_value
 				  GROUP BY event_name, event_date, event_key, event_value,package_name,country_code,platform,is_new
 				)
