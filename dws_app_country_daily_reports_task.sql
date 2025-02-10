@@ -66,7 +66,7 @@ FROM
 	union all 
 		SELECT
 		PARSE_DATE('%Y-%m-%d', string_field_0) AS  stats_date
-		,'com.textnumber.phone' as package_name
+		,'com.textNumber.phone' as package_name
 		--,app_name
 		,'TOTAL' AS  country_code
 		,0 as active_uv
