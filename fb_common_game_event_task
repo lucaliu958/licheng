@@ -2815,7 +2815,7 @@ insert `gzdw2024.fbgame_01_basic.dws_common_game_ad_expect_show_report`
 				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`    
 				WHERE 1=1
 				and  (
-					event_name IN ('fb_zp_new_game_play','fb_zp_game_shuffle_clickads','fb_zp_fgame_star_click'
+					event_name IN ('fb_zp_new_game_play','fb_zp_game_shuffle_clickads','fb_zp_fgame_star_click','fb_zp_game_ refillstock_click'
 						           ,'fb_fruit_get_heart_click','fb_fruit_get_coin_click','fb_fruit_shop_coinclick'
 						           ,'fb_fruit_daily_draw_watch_ad_click','fb_fruit_daily_draw_double_ad_click','fb_fruit_sign_clickdouble'
 						           ,'fb_fruit_shop_clickdouble','fb_fruit_game_play_fail_clickcoin','fb_fruit_game_play_fail_continuefree'
