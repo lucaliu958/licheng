@@ -152,4 +152,264 @@ FROM
 	,country_code
 	ORDER BY stats_date,total_revenue desc ;
 
+
+delete `gzdw2024.gz_bi.dws_daily_app_reports`
+where stats_date>=date_add(run_date,interval -history_day day)
+and stats_date<=date_add(run_date,interval -end_day day);
+
+
+
+insert `gzdw2024.gz_bi.dws_daily_app_reports`
+
+
+--drop table if exists  `gzdw2024.gz_bi.dws_daily_app_reports`;
+--create table `gzdw2024.gz_bi.dws_daily_app_reports`
+-- PARTITION BY stats_date as 
+    SELECT
+        stats_date
+        ,package_name
+        ,SUM(revenue) as revenue
+        ,SUM(vip_revenue) as vip_revenue
+        ,SUM(ad_revenue) as ad_revenue
+        ,SUM(new_users) as new_users
+        ,SUM(new_users_organic) as new_users_organic
+        ,SUM(active_users) as active_users
+        ,SUM(cost) as cost 
+    FROM
+        (
+        SELECT 
+            stats_date
+            ,package_name
+            ,total_revenue revenue
+            ,vip_revenue
+            ,ad_revenue
+            ,new_uv as new_users
+            ,0 as new_users_organic
+            ,active_uv as active_users
+            ,total_cost as cost 
+        FROM gzdw2024.gz_bi.dws_app_country_daily_reports
+        WHERE 1=1
+        and (
+        (stats_date>='2024-09-01') 
+        or (  package_name in ('fb.ai.avatar.puzzle',
+        'com.talknow.free.text.me.now.second.phone.number.burner.app',
+        'fb.zp',
+        'fb.otme.fate.quest',
+         'fb.fruit.bubble',
+         'fb.ai.aha',
+         'fb.block.juggle',
+         'fb.bubble.shoot.pro',
+         'fb.save.dog',
+         'fb.egg.bubble',
+         'com.textNumber.phone'))
+        )
+        and country_code='TOTAL'
+        and stats_date>=date_add(run_date,interval -history_day day)
+        and stats_date<=date_add(run_date,interval -end_day day)
+        union all 
+        SELECT 
+            stats_date
+            ,package_name
+            ,0 as  revenue
+            ,0 as vip_revenue
+            ,0 as ad_revenue
+            ,0 as   new_users
+            ,new_uv as new_users_organic
+            ,0 as active_users
+            ,0 as cost 
+        FROM `gzdw2024.scanner_01_basic.dws_user_active_report`
+        WHERE stats_date >='2024-09-01'
+        and country_code='TOTAL'
+        and traffic_source_type='nature'
+         and stats_date>=date_add(run_date,interval -history_day day)
+        and stats_date<=date_add(run_date,interval -end_day day)
+           union all 
+        SELECT 
+            stats_date
+            ,package_name
+            ,0 as  revenue
+            ,0 as vip_revenue
+            ,0 as ad_revenue
+            ,0 as   new_users
+            ,new_uv as new_users_organic
+            ,0 as active_users
+            ,0 as cost 
+        FROM `gzdw2024.downloader_01_basic.dws_user_active_report`
+        WHERE stats_date >='2024-09-01'
+        and country_code='TOTAL'
+        and traffic_source_type='nature'
+         and stats_date>=date_add(run_date,interval -history_day day)
+        and stats_date<=date_add(run_date,interval -end_day day)
+           union all 
+        SELECT 
+            stats_date
+            ,package_name
+            ,0 as  revenue
+            ,0 as vip_revenue
+            ,0 as ad_revenue
+            ,0 as   new_users
+            ,new_uv as new_users_organic
+            ,0 as active_users
+            ,0 as cost 
+        FROM `gzdw2024.recorder_lite_01_basic.dws_user_active_report`
+        WHERE stats_date >='2024-09-01'
+        and country_code='TOTAL'
+        and traffic_source_type='nature'
+         and stats_date>=date_add(run_date,interval -history_day day)
+        and stats_date<=date_add(run_date,interval -end_day day)
+           union all 
+        SELECT 
+            stats_date
+            ,package_name
+            ,0 as  revenue
+            ,0 as vip_revenue
+            ,0 as ad_revenue
+            ,0 as   new_users
+            ,new_uv as new_users_organic
+            ,0 as active_users
+            ,0 as cost 
+        FROM `gzdw2024.recorder_pro_01_basic.dws_user_active_report`
+        WHERE stats_date >='2024-09-01'
+        and country_code='TOTAL'
+        and traffic_source_type='nature'
+         and stats_date>=date_add(run_date,interval -history_day day)
+        and stats_date<=date_add(run_date,interval -end_day day)
+           union all 
+        SELECT 
+            stats_date
+            ,package_name
+            ,0 as  revenue
+            ,0 as vip_revenue
+            ,0 as ad_revenue
+            ,0 as   new_users
+            ,new_uv as new_users_organic
+            ,0 as active_users
+            ,0 as cost 
+        FROM `gzdw2024.vidma_editor_android_01_basic.dws_user_active_report`
+        WHERE stats_date >='2024-09-01'
+        and country_code='TOTAL'
+        and traffic_source_type='nature'
+         and stats_date>=date_add(run_date,interval -history_day day)
+        and stats_date<=date_add(run_date,interval -end_day day)
+              union all 
+        SELECT 
+            stats_date
+            ,package_name
+            ,0 as  revenue
+            ,0 as vip_revenue
+            ,0 as ad_revenue
+            ,0 as   new_users
+            ,new_uv as new_users_organic
+            ,0 as active_users
+            ,0 as cost 
+        FROM `gzdw2024.vidma_editor_ios_01_basic.dws_user_active_report`
+        WHERE stats_date >='2024-09-01'
+        and country_code='TOTAL'
+        and traffic_source_type='nature'
+         and stats_date>=date_add(run_date,interval -history_day day)
+        and stats_date<=date_add(run_date,interval -end_day day)
+               union all 
+        SELECT 
+            event_date stats_date
+            ,package_name
+            ,0 as  revenue
+            ,0 as vip_revenue
+            ,0 as ad_revenue
+            ,0 as   new_users
+            ,new_uv - new_ad_uv as new_users_organic
+            ,0 as active_users
+            ,0 as cost 
+        FROM `gzdw2024.fbgame_01_basic.dws_common_game_user_active_report`
+        WHERE event_date >='2024-09-01'
+        and country_code='TOTAL'
+        and platform='TOTAL'
+         and event_date>=date_add(run_date,interval -history_day day)
+        and event_date<=date_add(run_date,interval -end_day day)
+        /*
+        union all 
+        -----老产品：2024年9月1日之前：
+            select  
+            cast(stats_date as date) stats_date
+            ,package_name
+            ,sum(revenue) revenue
+            ,sum(revenue_vip) vip_revenue
+            ,sum(revenue_ad) ad_revenue
+            ,0 as   new_users
+            ,0 as new_users_organic
+            ,0 as active_users
+            ,0 as cost 
+            from `gzdata.revenue.prefect_daily_revenue_*`
+            where _TABLE_SUFFIX between '20240101' and  '20240831'
+            group by stats_date
+            ,package_name
+
+            ----2024年7-8月数据 缺失数据补充
+            union all 
+            SELECT 
+                stats_date
+                ,package_name
+                ,sum(revenue_usd) revenue
+                ,sum(revenue_usd) as vip_revenue
+                ,0 as ad_revenue
+                ,0 as   new_users
+                ,0 as new_users_organic
+                ,0 as active_users
+                ,0 as cost
+            FROM `gzdw2024.appstoreconnect.p_sales_vidma`
+            WHERE begin_date between '2024-07-17' and  '2024-08-31'
+            group by package_name,stats_date
+            union all 
+            select 
+                PARSE_DATE('%Y%m%d', stats_date) stats_date
+                ,package_name
+                ,0 as  revenue
+                ,0 as vip_revenue
+                ,0 as ad_revenue
+                ,new_users
+                ,new_users_organic
+                ,active_users
+                ,0 as cost
+            from `gzdata.firebase.prefect_total_metrics_20*`
+            where _TABLE_SUFFIX>='240101'
+            and country='TOTAL'
+            and _TABLE_SUFFIX<='240831'
+            union all 
+            select 
+            event_date
+            ,package_name
+            ,0 as  revenue
+            ,0 as vip_revenue
+            ,0 as ad_revenue
+            ,0 as   new_users
+            ,0 as new_users_organic
+            ,0 as active_users
+            ,sum(cost) cost
+            from hzdw2024.delivery.dws_delivery_cost_di
+            where event_date>='2024-01-01'
+            and event_date<='2024-08-31'
+            and package_name in (SELECT 
+                        package_name 
+                    FROM `gzdw2024.gz_dim.app_info` 
+                    group by package_name)
+            group by event_date,package_name
+            union all 
+            SELECT 
+            stats_date
+            ,package_name
+            ,revenue
+            ,vip_revenue
+            ,ad_revenue
+            ,new_users
+            ,new_users_organic
+            ,active_users
+            ,cost
+            FROM `gzdw2024.gz_bi.dws_downloader_daily_app_reports`
+            where stats_date>='2024-01-01'
+            and stats_date<='2024-08-31'
+            */
+        )a 
+group by stats_date,package_name;
+
+
+
 end;
