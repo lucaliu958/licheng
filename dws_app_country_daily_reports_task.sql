@@ -104,6 +104,7 @@ FROM
 		,0 as conversions
 	FROM gzdw2024.ad_platform_data.dws_ad_country_daily_reports
 	WHERE stats_date >= DATE_SUB(run_date, INTERVAL history_day DAY)
+	and stats_date <= DATE_SUB(run_date, INTERVAL end_day DAY)
   union all
 	---asa投放成本
 	SELECT
