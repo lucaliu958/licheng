@@ -3,6 +3,7 @@ begin
 
 delete `gzdw2024.gz_bi.dws_app_country_daily_reports`
 where stats_date>=date_add(run_date,interval -history_day day)
+	and stats_date<=date_add(run_date,interval -end_day day)
   and package_name not like 'fb%';
 
 
@@ -43,6 +44,7 @@ FROM
 		,0 as conversions
 	FROM `gzdw2024.gz_bi.dws_app_daily_reports` 
 	WHERE stats_date >= DATE_SUB(run_date, INTERVAL history_day DAY)
+	and stats_date<=date_add(run_date,interval -end_day day)
    and package_name not in ('fb.ai.avatar.puzzle', 'fb.ai.avatar')
 	--and app_name is not null
 	union all 
@@ -63,6 +65,7 @@ FROM
 		,0 as conversions
 	FROM gzdw2024.revenue.dws_app_country_vip_income 
 	WHERE stats_date >= DATE_SUB(run_date, INTERVAL history_day DAY)
+	and stats_date<=date_add(run_date,interval -end_day day)
 	union all 
 		SELECT
 		PARSE_DATE('%Y-%m-%d', string_field_0) AS  stats_date
@@ -81,6 +84,7 @@ FROM
 	FROM  `gzdw2024.appstoreconnect.p_sales_textnumber` 
 	where string_field_0!='stats_date'
 	and PARSE_DATE('%Y-%m-%d', string_field_0) >= date_add(run_date,interval -history_day day)
+	and PARSE_DATE('%Y-%m-%d', string_field_0) <= date_add(run_date,interval -end_day day)
       group by stats_date,country_code
 	union all 
 	---广告收入
@@ -117,7 +121,8 @@ FROM
 		,0 as new_retain_uv
 		,0 as conversions
 	FROM gzdw2024.cost_data.dws_asa_cost_daily
-	WHERE stats_date >= DATE_SUB(run_date, INTERVAL history_day DAY)	
+	WHERE stats_date >= DATE_SUB(run_date, INTERVAL history_day DAY)
+	and stats_date<=date_add(run_date,interval -end_day day)
     union all
 	-----ga投放
 	SELECT
@@ -136,6 +141,7 @@ FROM
 		,conversions
 	FROM gzdw2024.cost_data.dws_ga_cost_daily
 	WHERE stats_date >= DATE_SUB(run_date, INTERVAL history_day DAY)
+	and stats_date<=date_add(run_date,interval -end_day day)
 	AND campaign_name='TOTAL'
 	)a
 	  left join
