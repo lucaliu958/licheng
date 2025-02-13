@@ -33,7 +33,10 @@ begin
 
 			CREATE OR REPLACE VIEW `gzdw2024.cost_data.all_external_data_platform` AS
 			SELECT string_field_0,string_field_1,string_field_3,string_field_6 ,'fb.save.dog'  as package_name
-			FROM `gzdw2024.cost_data.fb_game_platform_dog_cost_data`;
+			FROM `gzdw2024.cost_data.fb_game_platform_dog_cost_data`
+			union all 
+			SELECT string_field_0,string_field_1,string_field_3,string_field_6 ,'fb.save.dog'  as package_name
+			FROM `gzdw2024.cost_data.fb_game_platform_slt_cost_data`;
 
 
 
