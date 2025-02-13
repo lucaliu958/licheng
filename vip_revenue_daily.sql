@@ -131,7 +131,34 @@ FROM
 		group by package_name
 		)c 
 		on a.Product_ID=c.package_name
-	)d; 
+	)d
+		union all 
+	SELECT 
+		substring(cast(SAFE.PARSE_DATE('%Y/%m/%d', string_field_1) as string),1,7) as   stats_mon 
+		,string_field_5 as Product_ID 
+		,null as Order_Number
+		,SAFE.PARSE_DATE('%Y/%m/%d', string_field_1) Order_Charged_Date
+		,string_field_8 as Product_Title
+		,null as Product_Type
+		,null as Country_of_Buyer
+		,string_field_6 as Currency_of_Sale
+		,null as Financial_Status
+		,null as Item_Price
+		,null as Charged_Amount
+		,null as Taxes_Collected	
+		,string_field_9 as SKU_ID
+		,0 as google_fee_rate
+		,1 as rate
+		,null as Charged_Amount_usd
+		,null as Taxes_Collected_usd
+		--,safe_divide(Item_Price,rate) as Item_Price_usd
+		,null as Revenue_Without_VAT
+		,null as Google_Fee
+		,safe_cast(string_field_7 as float64) as Revenue
+	FROM `gzdw2024.revenue.guangzhou_gp_sales_adjust_data`
+	WHERE SAFE.PARSE_DATE('%Y/%m/%d', string_field_1) is not null 
+	and SAFE.PARSE_DATE('%Y/%m/%d', string_field_1)>=date_add(run_date,interval -history_day day)
+	and SAFE.PARSE_DATE('%Y/%m/%d', string_field_1)<=date_add(run_date,interval -end_day day);
 
 -----------gp订阅收入所有产品
 delete gzdw2024.revenue.dws_app_country_vip_income
