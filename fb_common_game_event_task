@@ -173,7 +173,7 @@ FROM
 		user_id
 		,min(event_date) as event_date_min
 		,package_name
-	FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`
+	FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_di`
 	WHERE event_date>=date_add(run_date,interval -(history_retain_day +150) day)
 	and event_date<=date_add(run_date,interval -history_end_day day)
 	group by user_id,package_name
