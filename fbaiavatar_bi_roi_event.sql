@@ -834,7 +834,24 @@ and stats_date>='2024-12-09';
 		and PARSE_DATE('%Y-%m-%d', string_field_0) >= date_add(run_date,interval -history_day day)
 		and PARSE_DATE('%Y-%m-%d', string_field_0) <= date_add(run_date,interval -history_end_day day)
 		and  PARSE_DATE('%Y-%m-%d', string_field_0)>='2024-12-09'
-		group by PARSE_DATE('%Y-%m-%d', string_field_0),upper(string_field_1);
+		group by PARSE_DATE('%Y-%m-%d', string_field_0),upper(string_field_1)
+			union all 
+			SELECT  
+				PARSE_DATE('%Y-%m-%d', string_field_0) AS stats_date
+				,'fb.zp' as package_name  
+				,case when lower(string_field_1) like '%android%' then 'Android'
+				when lower(string_field_1) like '%iphone%' then 'iOS' 
+				when lower(string_field_1) like '%ios%' then 'iOS' 
+				else 'web' end AS platform
+				,'TOTAL' AS country_code
+				,sum(safe_CAST(REPLACE(REPLACE(string_field_3, '$', ''), ',', '') AS FLOAT64)) AS cost
+				,sum(safe_CAST(REPLACE(REPLACE(string_field_6, '$', ''), ',', '') AS FLOAT64)) AS install
+			FROM `gzdw2024.cost_data.fb_game_platform_slt_cost_data` 
+			where length(string_field_0)>6
+			and PARSE_DATE('%Y-%m-%d', string_field_0) >= date_add(run_date,interval -history_day day)
+			and PARSE_DATE('%Y-%m-%d', string_field_0) <= date_add(run_date,interval -history_end_day day)
+			and  PARSE_DATE('%Y-%m-%d', string_field_0)>='2024-11-19'
+			group by PARSE_DATE('%Y-%m-%d', string_field_0),platform,package_name,country_code;
 
 
 
