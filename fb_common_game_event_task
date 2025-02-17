@@ -2416,9 +2416,9 @@ insert `gzdw2024.fbgame_01_basic.dws_common_game_user_ad_report`
 					,event_name
 					,placement
 					,case when (lower(placement)  like '%banner%' or lower(type) like '%banner%')  then 'banner'
-					when (lower(placement) like '%reward%interstitial%' or lower(type) like '%reward%interstitial%') then 'rewarded_interstitial'
+					when (lower(placement) like '%reward%interstitial%' or lower(type) like '%reward%interstitial%' or event_name like '%reward_interstitial_skip%') then 'rewarded_interstitial'
 					when (lower(placement) like '%interstitial%' or lower(type)like '%interstitial%' )  then 'interstitial'
-					when lower(placement) like '%reward%video%' then 'rewarded_video'
+					when (lower(placement) like '%reward%video%' or lower(type) like '%reward%video%') then 'rewarded_video'
 					--	when lower(placement) like '%hint%' then 'interstitial'
 					else 'other' end as ad_type
 				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di` 
