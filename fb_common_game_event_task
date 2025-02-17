@@ -641,7 +641,7 @@ and event_date<=date_add(run_date,interval -history_end_day day);
 					,'fb_fruit_shop_buyprop'
 					,'fb_fruit_app_launch'
 					,'fb_app_launch'
-
+	,'fb_mess_export'
 						)
 				or REGEXP_CONTAINS(event_name, r'.*(app_launch|game_play_finish|game_play_start|fb_ibb_game_play_fail)$'))
 				)a 
