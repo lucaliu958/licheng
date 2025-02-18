@@ -729,7 +729,10 @@ INSERT
 		,UNNEST(country) as country
 		,UNNEST(traffic_source_name) as traffic_source_name
 		group by stats_date,country,traffic_source_name,package_name;
--------history_day.dws_event_profile_di_reports
+
+
+
+-------12.dws_event_profile_di_reports
 delete gzdw2024.vidma_editor_android_02_event.dws_event_profile_di_reports
 where event_date>=date_add(run_date,interval -history_day day)
 ;
@@ -760,7 +763,7 @@ FROM
 		,event_num	
 		,user_num	
 		,user_retain_num	
-		,last_app_version	
+		,ARRAY[last_app_version	,'TOTAL'] AS last_app_version
 		,package_name	
 		,country	
 		,traffic_source_type	
@@ -780,23 +783,25 @@ FROM
     FROM `gzdw2024.gz_dim.country_info` 
 		group by upper(country_name)
     )c 
-    on upper(a.country)=c.country_name;
+    on upper(a.country)=c.country_name
+    ,UNNEST(last_app_version) as last_app_version;
 
 
--------history_day.dws_event_active_reports
+-------13.dws_event_active_reports
 delete gzdw2024.vidma_editor_android_02_event.dws_event_active_reports
 where event_date>=date_add(run_date,interval -history_day day)
 ;
 
 insert gzdw2024.vidma_editor_android_02_event.dws_event_active_reports
-    --drop table if EXISTS  `gzdw2024.vidma_editor_android_02_event.dws_event_active_reports`;
-    --create table `gzdw2024.vidma_editor_android_02_event.dws_event_active_reports`
+  --  drop table if EXISTS  `gzdw2024.vidma_editor_android_02_event.dws_event_active_reports`;
+   -- create table `gzdw2024.vidma_editor_android_02_event.dws_event_active_reports`
 	--PARTITION BY event_date as 
 SELECT 
 	event_date	
 	,a.package_name
 	,event_name	
 	,c.country_code
+	,a.last_app_version
 	,event_num	
 	,user_num	
 	,event_num_new
@@ -810,16 +815,30 @@ FROM
 		,package_name
 		,event_name	
 		,country
+		,last_app_version
 		,sum(event_num	) as event_num
 		,sum(user_num) as user_num	
 		,sum(case when is_new=1 then  event_num else 0 end	) as event_num_new
 		,sum(case when is_new=1 then  user_num else 0 end	) as user_num_new
-	FROM `gzdw2024.vidma_editor_android_02_event.dws_event_profile_di` 
-	WHERE event_date >=date_add(run_date,interval -history_day day)
+	FROM
+			(	SELECT 
+			event_date	
+			,package_name
+			,event_name	
+			,country
+			,array[last_app_version,'TOTAL'] as last_app_version
+			,event_num
+			,user_num
+			,is_new
+		FROM `gzdw2024.vidma_editor_android_02_event.dws_event_profile_di` 
+		WHERE event_date >=date_add(run_date,interval -history_day day)
+		)a 
+			,unnest(last_app_version) as last_app_version
 	group by event_date	
 		,package_name
 		,event_name	
 		,country
+		,last_app_version
 	)a 
 	left join
     (
@@ -832,19 +851,64 @@ FROM
     on upper(a.country)=c.country_name
     LEFT join
     (
-	SELECT
-		stats_date
-		,package_name
-		,country_code
-		,active_uv
-		,new_uv  
-	FROM `gzdw2024.vidma_editor_android_01_basic.dws_user_active_report` 
-	WHERE stats_date >=date_add(run_date,interval -history_day day)
-	and traffic_source_type='TOTAL'
+		SELECT
+			event_date as stats_date
+			,package_name
+			,last_app_version
+			,case when country_code='SYRIA' then 'SY'
+			  when country_code='TÜRKIYE' then 'TR'
+			  when country_code='MYANMAR (BURMA)' then 'MM'
+			  when country_code='PALESTINE' then 'PS'
+			  when country_code='AUSTRALIA' then 'AU'
+			  when country_code='CONGO - KINSHASA' then 'CD'
+			  else country_code end as country_code
+			,count(distinct user_pseudo_id) as active_uv 
+			,count(distinct case when is_new=1 then user_pseudo_id else null end) as new_uv 
+		FROM 
+		   (
+		   SELECT 
+		      event_date
+		      ,array[ifnull(country_code,country),'TOTAL'] as country_code
+		      ,user_pseudo_id 
+		      ,a.package_name
+					,array[last_app_version,'TOTAL'] as last_app_version
+		      ,is_new
+		      ,is_retain
+		     
+		      FROM  
+		      (
+		      SELECT 
+		         package_name
+		         ,event_date
+		         ,upper(country) as country
+		         ,user_pseudo_id
+		         ,max(is_new) as is_new
+		         ,max(is_retain) as is_retain
+		         ,max(last_app_version) as last_app_version
+		         ,max(traffic_source_type) as traffic_source_type
+		      FROM `gzdw2024.vidma_editor_android_01_basic.dwd_user_active_di` 
+		      WHERE event_date >=date_add(run_date,interval -history_day day)
+		      group by package_name,country,user_pseudo_id,event_date
+		      )a 
+		      left join
+		      (
+		      SELECT 
+		         upper(country_name_2) as country_name_2
+		         ,country_name_3 as country_code
+		      FROM `hzdw2024.hz_dim.dim_country`
+		      )b 
+		      on a.country=b.country_name_2
+		     )c
+		   ,UNNEST(country_code) as country_code
+		   ,UNNEST(last_app_version) as last_app_version
+		    group by country_code,event_date,package_name,last_app_version
 	)d 
 	on c.country_code=d.country_code
 	and a.event_date=d.stats_date
+	and a.last_app_version=d.last_app_version
 	and a.package_name=d.package_name;
+
+
 
 
 
