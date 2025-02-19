@@ -26,6 +26,7 @@ insert `gzdw2024.fbgame_real_01_basic.dwd_common_game_user_event_di`
 		when app_id ='430206880027412' then 'fb.save.dog' 
 		when app_id ='1280174103111730' then 'fb.egg.bubble' 
 		when app_id ='553262573823399' then 'fb.bubble.shoot.pro'
+	when app_id ='1622215398415051' then 'fb.quiz'
 		else 'other'  end  as package_name
 		
 	    ,event_timestamp_micros
