@@ -2822,7 +2822,7 @@ insert `gzdw2024.fbgame_01_basic.dws_common_game_ad_expect_show_report`
 						           ,'fb_fruit_shop_clickdouble','fb_fruit_game_play_fail_clickcoin','fb_fruit_game_play_fail_continuefree'
 						           ,'fb_fruit_game_prop_clickad','fb_fruit_get_morelives_clickcoin','fb_fruit_get_morelives_freelives'
 						           ,'fb_fruit_game_play_finish','fb_fruit_game_play_fail','fb_fruit_game_play_start_adclick'
-							   ,'fb_fruit_game_prop_clickad','fb_fruit_get_morelives_clickcoin','fb_fruit_get_morelives_freelives'
+							   ,'fb_fruit_game_prop_clickad','fb_fruit_get_morelives_clickcoin','fb_fruit_get_morelives_freelives','fb_fruit_click_propad'
 						           ,'fb_dog_game_market_bomb_get','fb_dog_game_brush_get_click','fb_dog_game_skip_click','fb_dog_game_hint_click','fb_dog_game_play_finish'
 							   ,'fb_egg_change_eggs_click','fb_egg_double_bomb_click','fb_egg_break_click','fb_egg_over_click','fb_egg_again_revive_click'
 							   ,'fb_egg_break_clickbutton','fb_egg_game_play_finish','fb_egg_game_play_fail'
