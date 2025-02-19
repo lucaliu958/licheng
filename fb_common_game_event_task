@@ -22,6 +22,7 @@ insert `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`
 		when stream_id ='10154828291' then 'fb.save.dog' 
 		when stream_id ='9963723224' then 'fb.egg.bubble' 
 		when stream_id ='9926653508' then 'fb.bubble.shoot.pro'
+		when stream_id ='10061054944' then 'fb.quiz'
 		else 'other'  end  as package_name
 		,PARSE_DATE('%Y%m%d',event_date) event_date
     	,stream_id
@@ -80,7 +81,7 @@ insert `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`
 			    )c 
 			    on upper(a.geo.country)=c.country_name
 	WHERE 1=1
-	 and  stream_id in('9692329810','9817620337','9900250753','9985702455','10014848977','10154828291','9963723224','9926653508')
+	 and  stream_id in('9692329810','9817620337','9900250753','9985702455','10014848977','10154828291','9963723224','9926653508','10061054944')
 	and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 	and  _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
 	 ;
