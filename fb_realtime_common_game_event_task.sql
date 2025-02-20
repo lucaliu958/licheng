@@ -2536,5 +2536,202 @@ SELECT 'roi_day_real' as cat
 
 
 
+-------分时数据
+-------1.dwd_common_game_hour_user_active_di
+delete `gzdw2024.fbgame_real_01_basic.dwd_common_game_hour_user_active_di`
+where event_date>=date_add(run_date,interval -history_day day )
+and event_date<=date_add(run_date,interval -history_end_day day );
+
+
+insert `gzdw2024.fbgame_real_01_basic.dwd_common_game_hour_user_active_di`
+	--drop table if exists `gzdw2024.fbgame_real_01_basic.dwd_common_game_hour_user_active_di`;
+--create table `gzdw2024.fbgame_real_01_basic.dwd_common_game_hour_user_active_di`
+--	PARTITION BY event_date as 
+SELECT 
+	event_date
+	,format_timestamp("%Y-%m-%d %H:00:00", timestamp_seconds( cast ((event_timestamp_millis/1000) as int64)),'America/Los_Angeles') as event_day_hour
+	,event_hour
+	,user_id
+	,package_name
+	,MIN_BY(country_code, event_timestamp_millis) AS country_code
+	,max(fromUser) as fromUser
+	,MIN_BY(platform, event_timestamp_millis) AS platform
+FROM `gzdw2024.fbgame_real_01_basic.dwd_common_game_user_event_di`
+WHERE 1=1
+and event_date>=date_add(run_date,interval -history_day day )
+and event_date<=date_add(run_date,interval -history_end_day day )
+group by event_date
+	,user_id
+	,package_name,format_timestamp("%Y-%m-%d %H:00:00", timestamp_seconds( cast ((event_timestamp_millis/1000) as int64)),'America/Los_Angeles')
+	,event_hour;
+
+
+-------2.dwd_common_game_hour_user_active_di
+delete `gzdw2024.fbgame_real_01_basic.dwd_common_game_hour_user_active_profile_di`
+where event_date>=date_add(run_date,interval -history_day day )
+and event_date<=date_add(run_date,interval -history_end_day day );
+
+
+insert `gzdw2024.fbgame_real_01_basic.dwd_common_game_hour_user_active_profile_di`
+	--drop table if exists `gzdw2024.fbgame_real_01_basic.dwd_common_game_hour_user_active_profile_di`;
+
+--create table `gzdw2024.fbgame_real_01_basic.dwd_common_game_hour_user_active_profile_di`
+--	PARTITION BY event_date as 
+SELECT
+	a.user_id
+	,a.event_date	
+	,a.event_day_hour
+	,max(is_launch) as is_launch
+	,max(case when a.event_day_hour=event_day_hour_min  then 1 else 0 end ) as is_new
+	,max(is_ad) as is_ad
+	,max(is_liebian) as is_liebian
+	,a.package_name
+	,a.country_code
+	,a.platform
+FROM
+	(
+	SELECT
+		user_id
+		,event_date
+		,package_name
+		,event_hour
+		, event_day_hour
+		,max(country_code) as country_code
+		,max(platform) as platform
+	FROM `gzdw2024.fbgame_real_01_basic.dwd_common_game_hour_user_active_di`
+	WHERE event_date>=date_add(run_date,interval -history_day day )
+	and event_date<=date_add(run_date,interval -history_end_day day )
+	group by user_id,package_name,event_date,event_hour,event_day_hour
+	)a 
+	join
+	(
+	 SELECT 
+	 	user_id
+	 	,package_name
+	 	,event_date
+	 	,max(case when event_name  like '%app_launch%'  then 1 else 0 end) as is_launch
+	 	,max(case when event_name  like '%app_launch%' and isFirst='true' then 1 else 0 end) as is_new
+	 	,max(case when event_name  like '%app_launch%' and fromon='ad' then 1 else 0 end) as is_ad
+	 	,max(case  when event_name like '%app_launch%' and fromon in ('shareable_link','feed') then 1 else 0 end) as is_liebian
+	 FROM `gzdw2024.fbgame_real_01_basic.dwd_common_game_user_event_di` 
+	 where 1=1
+	 and event_date>=date_add(run_date,interval -history_day day )
+	 and event_date<=date_add(run_date,interval -history_end_day day )
+	 group by user_id,event_date,package_name
+	)b 
+	on a.user_id=b.user_id
+	and a.event_date=b.event_date
+	and a.package_name=b.package_name
+	left join 
+	(
+	SELECT
+		package_name
+		,user_id
+		,max(event_day_hour_min) as event_day_hour_min
+	FROM
+		(
+		SELECT
+			user_id
+			,cast(min(TIMESTAMP(event_date))as string) as event_day_hour_min
+			,package_name
+		FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_di`
+		WHERE event_date>=date_add(run_date,interval -(history_day +150) day)
+		and event_date<=date_add(run_date,interval -history_end_day day )
+		group by user_id,package_name
+		union all 
+		SELECT
+			user_id
+			,min(event_day_hour) as event_day_hour_min
+			,package_name
+		FROM `gzdw2024.fbgame_real_01_basic.dwd_common_game_hour_user_active_di`
+		WHERE event_date>=date_add(run_date,interval -(history_day +150) day)
+		and event_date<=date_add(run_date,interval -history_end_day day )
+		group by user_id,package_name
+		)a 
+		group by user_id,package_name
+	)c 
+	on a.user_id=c.user_id
+	and a.package_name=c.package_name
+	group by a.user_id,a.event_date,a.package_name,a.country_code,a.platform,a.event_day_hour;
+
+
+----------3.活跃、新增、广告新增、裂变新增
+delete `gzdw2024.fbgame_real_01_basic.dws_common_game_hour_user_active_report`
+where event_date>=date_add(run_date,interval -history_day day )
+and event_date<=date_add(run_date,interval -history_end_day day );
+
+insert `gzdw2024.fbgame_real_01_basic.dws_common_game_hour_user_active_report`
+	--create table `gzdw2024.fbgame_real_01_basic.dws_common_game_hour_user_active_report`
+	--PARTITION BY event_date as 
+		SELECT
+			a.event_date
+			,a.event_day_hour
+			,a.package_name	
+			,country_code
+			,platform
+			,count(distinct case when is_launch=1 then a.user_id else null end) as active_uv 
+			,count(distinct case when is_launch=1 and is_new=1 then a.user_id else null end) as new_uv
+			,count(distinct case when is_launch=1 and is_new=1 and is_ad=1 then a.user_id else null end) as new_ad_uv
+			,count(distinct case when is_launch=1 and is_new=1 and is_ad=0 and  is_liebian=1  then a.user_id else null end) as new_liebian_uv 
+			FROM
+			(			
+			SELECT
+				event_date
+				,user_id
+				,is_launch
+				,is_new
+				,is_ad
+				,is_liebian
+				,array[country_code,'TOTAL'] as country_code
+				,array[platform,'TOTAL'] as platform
+				,package_name
+				,event_day_hour
+			FROM `gzdw2024.fbgame_real_01_basic.dwd_common_game_hour_user_active_profile_di`
+			WHERE event_date>=date_add(run_date,interval -history_day day )
+			and event_date<=date_add(run_date,interval -history_end_day day )	
+		    )a 
+
+			,UNNEST(country_code) as country_code
+			,UNNEST(platform) as platform
+			where event_day_hour<=FORMAT_TIMESTAMP('%Y-%m-%d %H:%M:%S', CURRENT_TIMESTAMP(), 'America/Los_Angeles')
+			group by a.event_date,country_code,platform,package_name,event_day_hour;
+
+
+
+----------3.活跃、新增、广告新增、裂变新增
+
+	drop table if exists `gzdw2024.fbgame_real_01_basic.dws_common_game_hour_comparison_active_report`;
+	create table `gzdw2024.fbgame_real_01_basic.dws_common_game_hour_comparison_active_report`
+    as 
+
+		SELECT
+			substring(event_day_hour,12,2) as event_hour
+			,package_name	
+			,country_code
+			,platform
+			,CASE WHEN   event_date = date_add(CURRENT_DATE('America/Los_Angeles'),interval 0 day) THEN 'T_0'
+				WHEN   event_date = date_add(CURRENT_DATE('America/Los_Angeles'),interval -1 day) THEN 'T_1'
+				WHEN   event_date = date_add(CURRENT_DATE('America/Los_Angeles'),interval -2 day) THEN 'T_2'
+				else null end as tag 
+			,max(active_uv) as active_uv
+			,max(new_uv) as new_uv
+		FROM `gzdw2024.fbgame_real_01_basic.dws_common_game_hour_user_active_report`
+		where event_date >= date_add(CURRENT_DATE('America/Los_Angeles'),interval -2 day)
+		and event_date <= date_add(CURRENT_DATE('America/Los_Angeles'),interval -history_end_day day)
+		group by event_hour,package_name,country_code,platform,tag;
+
+
+
+delete `gzdw2024.fbgame_real_01_basic.dws_upadate_total`
+where cat='event_hour_real';
+
+insert `gzdw2024.fbgame_real_01_basic.dws_upadate_total`
+--create table `gzdw2024.fbgame_real_01_basic.dws_upadate_total`	as 
+SELECT 'event_hour_real' as cat 
+,SUBSTRING(CAST(DATETIME(CURRENT_TIMESTAMP(), "Asia/Shanghai") AS STRING),1,19) AS update_time;
+
+
+
+
 
 end;
