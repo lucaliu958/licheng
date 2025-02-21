@@ -262,6 +262,7 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_user_active_report`
 			FROM `gzdw2024.fbgame_real_01_basic.dwd_common_game_user_active_profile_di`
 			WHERE event_date>=date_add(run_date,interval -history_retain_day day )
 			and event_date<=date_add(run_date,interval -history_end_day day )	
+			and event_date <= date_add(CURRENT_DATE('America/Los_Angeles'),interval -history_end_day day)
 		    )a 
 			left join
 			(
@@ -365,6 +366,7 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_event_active_report`
 				FROM `gzdw2024.fbgame_real_01_basic.dwd_common_game_user_event_di`  
 				WHERE event_date>=date_add(run_date,interval -history_day day )
 				and event_date<=date_add(run_date,interval -history_end_day day )
+				and event_date <= date_add(CURRENT_DATE('America/Los_Angeles'),interval -history_end_day day)
 				)a 
 			 left	join 
 				(
@@ -624,6 +626,7 @@ and event_date<=date_add(run_date,interval -history_end_day day );
 				FROM `gzdw2024.fbgame_real_01_basic.dwd_common_game_user_event_di`  
 				WHERE event_date>=date_add(run_date,interval -history_day day )
 				and event_date<=date_add(run_date,interval -history_end_day day )
+				and event_date <= date_add(CURRENT_DATE('America/Los_Angeles'),interval -history_end_day day)
 				and (event_name in (
 					'otme_app_launch'
 					,'otme_share_click'
@@ -960,6 +963,7 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_user_ad_report`
 				FROM `gzdw2024.fbgame_real_01_basic.dwd_common_game_user_event_di` 
 				WHERE event_date>=date_add(run_date,interval -history_day day )
 				and event_date<=date_add(run_date,interval -history_end_day day )
+				and event_date <= date_add(CURRENT_DATE('America/Los_Angeles'),interval -history_end_day day)
 				and REGEXP_CONTAINS(event_name, r'.*(ad_load_c|ad_load_fail_c|ad_load_success_c|ad_impression_c|ad_expect_impression_c|ad_impression_fail_c|reward_interstitial_skip)$')
 				)a 
 			    left	join 
@@ -1124,6 +1128,7 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_user_ad_fail_report`
 				FROM `gzdw2024.fbgame_real_01_basic.dwd_common_game_user_event_di` 
 				WHERE event_date>=date_add(run_date,interval -history_day day )
 				and event_date<=date_add(run_date,interval -history_end_day day )
+				and event_date <= date_add(CURRENT_DATE('America/Los_Angeles'),interval -history_end_day day)
 				and REGEXP_CONTAINS(event_name, r'.*(ad_load_fail_c|ad_impression_fail_c)$')
 				
 				)a
@@ -1207,7 +1212,7 @@ FROM
 	FROM	`gzdw2024.fbgame_real_01_basic.dws_common_game_user_active_report`
 	WHERE event_date>=date_add(run_date,interval -history_day day )
 	and event_date<=date_add(run_date,interval -history_end_day day )
-
+	and event_date <= date_add(CURRENT_DATE('America/Los_Angeles'),interval -history_end_day day)
 		)c1 
 	on c0.event_date=c1.event_date
 	and c0.platform=c1.platform
@@ -1363,6 +1368,7 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_ad_expect_show_report`
 
 				AND event_date>=date_add(run_date,interval -history_day day )
 				and event_date<=date_add(run_date,interval -history_end_day day )
+				and event_date <= date_add(CURRENT_DATE('America/Los_Angeles'),interval -history_end_day day)
 				)a 
 				,UNNEST(country_code) as country_code
 				,UNNEST(platform) as platform
