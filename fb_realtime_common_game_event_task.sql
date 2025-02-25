@@ -64,7 +64,7 @@ insert `gzdw2024.fbgame_real_01_basic.dwd_common_game_user_event_di`
 		,(SELECT value FROM UNNEST(event_params) WHERE name='coinsum') coinsum
 		,(SELECT value FROM UNNEST(event_params) WHERE name='starsum') starsum
 		,(SELECT value FROM UNNEST(event_params) WHERE name='livesum') livesum
-		,(SELECT value FROM UNNEST(event_params) WHERE name='coinsum') proptype
+		,(SELECT value FROM UNNEST(event_params) WHERE name='proptype') proptype
 		,(SELECT value FROM UNNEST(event_params) WHERE name='propsum') propsum
 		,(SELECT value FROM UNNEST(event_params) WHERE name='buytype') buytype
 		,(SELECT value FROM UNNEST(event_params) WHERE name='entrance') entrance
@@ -73,10 +73,13 @@ insert `gzdw2024.fbgame_real_01_basic.dwd_common_game_user_event_di`
 		,(SELECT value FROM UNNEST(event_params) WHERE name='proplist') proplist
 		,(SELECT value FROM UNNEST(event_params) WHERE name='propselect') propselect
 		,(SELECT value FROM UNNEST(event_params) WHERE name='browserType') browserType
-		,(SELECT value FROM UNNEST(event_params) WHERE name='bombsum') bombsum
+		,(SELECT value FROM UNNEST(event_params) WHERE name='bombsum') bombsumcoinsum
 		,(SELECT value FROM UNNEST(event_params) WHERE name='combomax') combomax
 		,(SELECT value FROM UNNEST(event_params) WHERE name='item') item
 		,(SELECT value FROM UNNEST(event_params) WHERE name='amount') amount
+		,(SELECT value FROM UNNEST(event_params) WHERE name='this_from') this_from
+		,(SELECT value FROM UNNEST(event_params) WHERE name='gold') gold
+		,(SELECT value FROM UNNEST(event_params) WHERE name='currency') currency
 	FROM `fb-ai-avatar-puzzle.fbinstant.app_event` 
 	WHERE 1=1
 	 and  date(TIMESTAMP_TRUNC(event_timestamp_micros, DAY)) >= date_add(run_date,interval -(history_day+1) day)
