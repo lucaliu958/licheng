@@ -300,6 +300,7 @@ insert `gzdw2024.fbgame_01_basic.dws_common_game_user_active_report`
 
 
 
+
 ------4.各事件活跃次数与人数
 
 delete `gzdw2024.fbgame_01_basic.dws_common_game_event_active_report`
@@ -359,6 +360,27 @@ insert `gzdw2024.fbgame_01_basic.dws_common_game_event_active_report`
 				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
 				WHERE event_date>=date_add(run_date,interval -history_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
+				union all 
+				SELECT
+					 event_date
+					,user_id
+					,ARRAY['TOTAL',country_code] as country_code
+					,array[case when operating_system ='iOS' then 'iOS'
+					when operating_system ='Android' then 'Android' 
+					else 'web' end,'TOTAL']  as platform					
+					,package_name
+					,case when proptype='rock' and event_name='fb_egg_prop_click' then 'fb_egg_prop_click_rock'
+					      when proptype='bomb' and event_name='fb_egg_prop_click' then 'fb_egg_prop_click_bomb'
+					      when proptype='color' and event_name='fb_egg_prop_click' then 'fb_egg_prop_click_color'
+					      when proptype='lighting' and event_name='fb_egg_prop_click' then 'fb_egg_prop_click_lighting'
+					      else  event_name end as event_name
+					
+			
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				and event_name in ('fb_egg_prop_click')
+				and propsum='0'
 				)a 
 			 left	join 
 				(
@@ -405,6 +427,7 @@ insert `gzdw2024.fbgame_01_basic.dws_common_game_event_active_report`
 			and c0.platform=c1.platform
 			and c0.country_code=c1.country_code
 			and c0.package_name=c1.package_name;
+
 
 
 ------4.1乙游事件
@@ -971,6 +994,7 @@ insert `gzdw2024.fbgame_01_basic.dws_common_fruit_events_time_di`
 
 
 -------6.1泡泡龙通关报告-分布
+-------6.1泡泡龙通关报告-分布
 delete `gzdw2024.fbgame_01_basic.dws_bubble_level_finish_distribution_report`
 where event_date>=date_add(run_date,interval -history_day day)
 and event_date<=date_add(run_date,interval -history_end_day day);
@@ -994,6 +1018,7 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_level_finish_distribution_report`
 			,steps
 			,starsum
 			,time_min
+			,combomax
 		FROM
 			(
 			SELECT
@@ -1038,6 +1063,13 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_level_finish_distribution_report`
 				    WHEN time_min >= 2 AND time_min < 3 THEN 'e_120_180'
 				    WHEN time_min >= 3 THEN 'f_180'
 				END AS time_min	
+					,CASE 
+				    WHEN   combomax <= 2 THEN 'a_2'
+				    WHEN combomax > 2 AND combomax < 4 THEN 'b_2_4'
+				    WHEN combomax >= 4 AND combomax < 8 THEN 'c_4_8'
+				    WHEN combomax >= 8  AND combomax < 12 THEN 'd_8_12'
+				    WHEN combomax >= 12 THEN 'e_12'
+				END AS combomax
 			FROM
 				(
 				SELECT
@@ -1100,7 +1132,8 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_level_finish_distribution_report`
 				      STRUCT('score' AS key, score AS value),
 				      STRUCT('steps' AS key, steps AS value),
 				      STRUCT('starsum' AS key, starsum AS value),
-				      STRUCT('time_min' AS key, time_min AS value)
+				      STRUCT('time_min' AS key, time_min AS value),
+				       STRUCT('combomax' AS key, combomax AS value)
 				    ]) AS key_value
 				  GROUP BY  event_date, event_key, event_value,package_name,country_code,platform,is_new,level_id;
 		
@@ -3265,14 +3298,20 @@ insert `gzdw2024.fbgame_01_basic.dws_egg_level_report`
 					when operating_system ='Android' then 'Android' 
 					else 'web' end,'TOTAL']  as platform						
 					,package_name
-					,event_name
+					,case when proptype='rocket' and event_name='fb_egg_comboprop_use' then 'fb_egg_comboprop_use_rocket'
+					      when proptype='bomb' and event_name='fb_egg_comboprop_use' then 'fb_egg_comboprop_use_bomb'
+					      when proptype='color' and event_name='fb_egg_comboprop_use' then 'fb_egg_comboprop_use_color'
+					      when proptype='lightning' and event_name='fb_egg_comboprop_use' then 'fb_egg_comboprop_use_lightning'
+					      else  event_name end as event_name
+					,proptype
 					,array['TOTAL',CASE when level_id is null then 'other' else level_id end ] as level_id
 				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
 				WHERE event_date>=date_add(run_date,interval -history_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
 				and event_name in ('fb_egg_game_play_start','fb_egg_game_play_finish','fb_egg_game_play_fail'
 					,'fb_egg_change_eggs_click','fb_egg_bomb_click','fb_egg_break_click'
-					,'fb_egg_double_bomb_click','fb_egg_over_click','fb_egg_again_revive_click')
+					,'fb_egg_double_bomb_click','fb_egg_over_click','fb_egg_again_revive_click'
+					,'fb_egg_comboprop_use')
 				--and package_name in ('fb.fruit.bubble')
 				
 				)a 
@@ -3322,6 +3361,14 @@ insert `gzdw2024.fbgame_01_basic.dws_egg_level_report`
 			   	,max(case when event_name='fb_egg_over_click' then uv else 0 end ) as over_click_uv
 			   	,max(case when event_name='fb_egg_again_revive_click' then pv else 0 end ) as revive_click_pv
 			   	,max(case when event_name='fb_egg_again_revive_click' then uv else 0 end ) as revive_click_uv
+		   		,max(case when event_name='fb_egg_comboprop_use_rocket' then pv else 0 end ) as rocket_use_pv
+			   	,max(case when event_name='fb_egg_comboprop_use_rocket' then uv else 0 end ) as rocket_use_uv
+			   	,max(case when event_name='fb_egg_comboprop_use_bomb' then pv else 0 end ) as bomb_use_pv
+			   	,max(case when event_name='fb_egg_comboprop_use_bomb' then uv else 0 end ) as bomb_use_uv
+			   	,max(case when event_name='fb_egg_comboprop_use_color' then pv else 0 end ) as color_use_pv
+			   	,max(case when event_name='fb_egg_comboprop_use_color' then uv else 0 end ) as color_use_uv
+			   	,max(case when event_name='fb_egg_comboprop_use_lightning' then pv else 0 end ) as lightning_use_pv
+			   	,max(case when event_name='fb_egg_comboprop_use_lightning' then uv else 0 end ) as lightning_use_uv
 			   FROM
 			   	(
 		 		 SELECT
