@@ -85,6 +85,8 @@ begin
 				,case when lower(string_field_1) like '%android%' then 'Android'
 				when lower(string_field_1) like '%iphone%' then 'iOS' 
 				when lower(string_field_1) like '%ios%' then 'iOS' 
+				when lower(string_field_1) like '%ipad%' then 'iOS' 
+				when lower(string_field_1) like '%ipod%' then 'iOS' 
 				else 'web' end AS platform
 				,'TOTAL' AS country_code
 				,sum(safe_CAST(REPLACE(REPLACE(string_field_3, '$', ''), ',', '') AS FLOAT64)) AS cost
@@ -305,6 +307,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_common_game_ad_revenue_daily_reports`
 				,max(clicks)  as clicks
 			FROM
 				(
+				/*
 				SELECT 
 					parse_date('%Y%m%d',_table_suffix) as stats_date
 					,case when app_name='Solitaire' then 'fb.zp' 
@@ -331,7 +334,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_common_game_ad_revenue_daily_reports`
 				--and app_name='Solitaire'
 				--and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
 				group by stats_date,package_name
-				UNION ALL 
+				UNION ALL */
 				SELECT 
 					parse_date('%Y%m%d',_table_suffix) as stats_date
 					,case when app_name='Solitaire' then 'fb.zp' 
