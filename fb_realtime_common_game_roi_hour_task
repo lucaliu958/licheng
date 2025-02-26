@@ -999,7 +999,7 @@ SELECT 'roi_hour_real' as cat
 							,clicks
 						FROM a 
 						left join `gzdw2024.gz_dim.app_info_googlesheet` c
-						on a.package_name=a.package_name
+						on a.package_name=c.package_name
 						union all 
 						SELECT
 							stats_date
