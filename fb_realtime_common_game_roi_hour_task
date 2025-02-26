@@ -275,7 +275,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 									when campaign_name like '%BKJ%' then 'fb.block.juggle'
 									ELSE 'other' end as package_name
-									,'unknown' as account_name
+									,account_name
 								,campaign_name
 								,hour
 								,MAX(safe_cast(spend as float64)) as cost 
@@ -301,7 +301,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 									when campaign_name like '%BKJ%' then 'fb.block.juggle'
 									ELSE 'other' end as package_name
-									,'unknown' as account_name
+									,account_name
 								,campaign_name
 								,hour
 								,0 as cost
@@ -425,7 +425,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 											when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 											when campaign_name like '%BKJ%' then 'fb.block.juggle'
 											ELSE 'other' end as package_name
-											,'unknown' as account_name
+											,account_name
 										,campaign_name
 										,country as country_code
 										,format_timestamp("%Y-%m-%d %H:00:00", TIMESTAMP(update_time) - INTERVAL 0 HOUR,'America/Los_Angeles') as event_day_hour 
@@ -438,7 +438,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 										and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 										and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
 										and _TABLE_SUFFIX not like '%hour%'
-									group by campaign_name ,stats_date,package_name,event_day_hour,country
+									group by campaign_name ,stats_date,package_name,event_day_hour,country	,account_name
 									union all 
 									SELECT 
 										date(stats_date) as stats_date
@@ -452,7 +452,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 											when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 											when campaign_name like '%BKJ%' then 'fb.block.juggle'
 											ELSE 'other' end as package_name
-											,'unknown' as account_name
+											,account_name
 										,campaign_name
 										,country as country_code
 										,format_timestamp("%Y-%m-%d %H:00:00", TIMESTAMP(update_time) - INTERVAL 0 HOUR,'America/Los_Angeles') as event_day_hour 
@@ -466,7 +466,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 									and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 									and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
 									and _TABLE_SUFFIX not like '%hour%'
-									group by campaign_name ,stats_date,package_name,event_day_hour,country
+									group by campaign_name ,stats_date,package_name,event_day_hour,country	,account_name
 									)a 
 									group by stats_date
 								  	,event_day_hour
