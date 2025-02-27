@@ -164,7 +164,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_revenue_hour_data`
 				,'TOTAL' as country_code
 				,'TOTAL' as ad_type
 				,'TOTAL' as placement
-				,sum(revenue) AS revenue
+				,sum(case when app_name='OHO' and  revenue<0.01 then impressions*effective_cpm/1000 else revenue end ) AS revenue
 				,sum(requests) as requests
 				,sum(filled_requests) as filled_requests
 				,sum(impressions) as impressions
