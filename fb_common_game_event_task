@@ -189,6 +189,7 @@ FROM
 	group by a.user_id,a.event_date,a.package_name,a.country_code,a.operating_system;
 
 ----------3.活跃、新增、广告新增、裂变新增
+----------3.活跃、新增、广告新增、裂变新增
 
 
 delete `gzdw2024.fbgame_01_basic.dws_common_game_user_active_report`
@@ -238,7 +239,7 @@ insert `gzdw2024.fbgame_01_basic.dws_common_game_user_active_report`
 			,count(distinct case when is_launch=1 and is_new=1 and is_ad=1 and date_diff(c.event_date_min,a.event_date,day)<=0  then c.user_id else null end) as source_liebian_uv_ad_0_day 
 			,count(distinct case when is_launch=1 and is_new=1 and is_ad=1 and date_diff(c.event_date_min,a.event_date,day)<=1  then c.user_id else null end) as source_liebian_uv_ad_1_day
 			,count(distinct case when is_launch=1 and is_new=1 and is_ad=1 and  date_diff(c.event_date_min,a.event_date,day)<=2  then c.user_id else null end) as source_liebian_uv_ad_2_day 
-			,
+			 ,app_name
 		FROM
 			(			
 			SELECT
@@ -252,8 +253,11 @@ insert `gzdw2024.fbgame_01_basic.dws_common_game_user_active_report`
 				,array[case when operating_system ='iOS' then 'iOS'
 				when operating_system ='Android' then 'Android' 
 				else 'web' end,'TOTAL']  as platform
-				,package_name
-			FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+				,a.package_name
+         ,app_name
+			FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di` a 
+      left join  `gzdw2024.gz_dim.app_info` b 
+	on a.package_name=b.package_name
 			WHERE event_date>=date_add(run_date,interval -history_retain_day day)
 			and event_date<=date_add(run_date,interval -history_end_day day)	
 		    )a 
@@ -295,11 +299,7 @@ insert `gzdw2024.fbgame_01_basic.dws_common_game_user_active_report`
 			and a.package_name=c.package_name
 			,UNNEST(country_code) as country_code
 			,UNNEST(platform) as platform
-			group by a.event_date,country_code,platform,package_name;
-
-
-
-
+			group by a.event_date,country_code,platform,package_name ,app_name;
 
 ------4.各事件活跃次数与人数
 
