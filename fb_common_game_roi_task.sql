@@ -100,62 +100,7 @@ begin
 
 
 			--------api成本数据
-		  EXECUTE IMMEDIATE FORMAT("""
-		    CREATE OR REPLACE VIEW `gzdw2024.cost_data.all_api_data` AS
-		    SELECT stats_date, campaign_name, country, spend, action_count, action_type, 'fb.ai.avatar.puzzle' AS package_name
-		    FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_*` 
-		    WHERE _TABLE_SUFFIX >= '%s'
-		      AND _TABLE_SUFFIX <= '%s'
-          	    UNION ALL
-		    SELECT stats_date, campaign_name, country, spend, action_count, action_type, 'fb.ai.aha' AS package_name
-		    FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_AHA_*` 
-		    WHERE _TABLE_SUFFIX >= '%s'
-		      AND _TABLE_SUFFIX <= '%s'
-			    UNION ALL
-		    SELECT stats_date, campaign_name, country, spend, action_count, action_type, 'fb.fruit.bubble' AS package_name
-		    FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_BBPF_*` 
-		    WHERE _TABLE_SUFFIX >= '%s'
-		      AND _TABLE_SUFFIX <= '%s'
-            UNION ALL
-		    SELECT stats_date, campaign_name, country, spend, action_count, action_type, 'fb.bubble.shoot.pro' AS package_name
-		    FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_BSP_*` 
-		    WHERE _TABLE_SUFFIX >= '%s'
-		      AND _TABLE_SUFFIX <= '%s'
-            UNION ALL
-		    SELECT stats_date, campaign_name, country, spend, action_count, action_type, 'fb.egg.bubble' AS package_name
-		    FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_ESD_*` 
-		    WHERE _TABLE_SUFFIX >= '%s'
-		      AND _TABLE_SUFFIX <= '%s'
-            UNION ALL
-		    SELECT stats_date, campaign_name, country, spend, action_count, action_type, 'fb.zp' AS package_name
-		    FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_SLT_*` 
-		    WHERE _TABLE_SUFFIX >= '%s'
-		      AND _TABLE_SUFFIX <= '%s'
-           UNION ALL
-		    SELECT stats_date, campaign_name, country, spend, action_count, action_type, 'fb.save.dog' AS package_name
-		    FROM `fb-ai-avatar-puzzle.analytics_439907691.delivery_fb_country_STD_*` 
-		    WHERE _TABLE_SUFFIX >= '%s'
-		      AND _TABLE_SUFFIX <= '%s'
-          ;
-		  """,
-		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_day DAY) AS STRING), '-', ''),
-		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_end_day DAY) AS STRING), '-', ''),
-		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_day DAY) AS STRING), '-', ''),
-		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_end_day DAY) AS STRING), '-', ''),
-        REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_day DAY) AS STRING), '-', ''),
-		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_end_day DAY) AS STRING), '-', ''),
-        REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_day DAY) AS STRING), '-', ''),
-		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_end_day DAY) AS STRING), '-', ''),
-        REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_day DAY) AS STRING), '-', ''),
-		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_end_day DAY) AS STRING), '-', ''),
-        REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_day DAY) AS STRING), '-', ''),
-		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_end_day DAY) AS STRING), '-', ''),
-        REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_day DAY) AS STRING), '-', ''),
-		    REPLACE(CAST(DATE_ADD(run_date, INTERVAL -history_end_day DAY) AS STRING), '-', '')
-		  );
-
-
-			delete `gzdw2024.fbgame_03_bi.dws_fb_common_game_cost_daily_reports_api`
+	delete `gzdw2024.fbgame_03_bi.dws_fb_common_game_cost_daily_reports_api`
 			where stats_date>=date_add(run_date,interval -history_day day)
 			and  stats_date<=date_add(run_date,interval -history_end_day day)
 			and stats_date>='2024-11-19';
@@ -196,22 +141,43 @@ begin
 						   (
 							SELECT 
 								date(stats_date) as stats_date
-								,package_name
+								,case when campaign_name like '%AHA%' then 'fb.ai.aha'
+									when campaign_name like '%BBPF%' then 'fb.fruit.bubble'
+									when campaign_name like '%ESD%' then 'fb.egg.bubble'
+									when campaign_name like '%BSP%' then 'fb.bubble.shoot.pro'
+									when campaign_name like '%OHO%' then 'fb.ai.avatar.puzzle'
+									when campaign_name like '%SLT%' then 'fb.zp'
+									when campaign_name like '%STD%' then 'fb.save.dog'
+									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
+									when campaign_name like '%BKJ%' then 'fb.block.juggle'
+									ELSE 'other' end as package_name
 								,campaign_name
 								,country
 								,MAX(safe_cast(spend as float64)) as cost 
 								,0 as install
-							FROM `gzdw2024.cost_data.all_api_data` 
+							FROM `fb-ai-avatar-puzzle.analytics_439907691.fb_insights_country_day_*` 
+							WHERE _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
+							and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
+							and _TABLE_SUFFIX not like '%hour%'
 							group by campaign_name,country ,stats_date,package_name
 							union all 
 							SELECT 
 								date(stats_date) as stats_date
-								,package_name
+								,case when campaign_name like '%AHA%' then 'fb.ai.aha'
+									when campaign_name like '%BBPF%' then 'fb.fruit.bubble'
+									when campaign_name like '%ESD%' then 'fb.egg.bubble'
+									when campaign_name like '%BSP%' then 'fb.bubble.shoot.pro'
+									when campaign_name like '%OHO%' then 'fb.ai.avatar.puzzle'
+									when campaign_name like '%SLT%' then 'fb.zp'
+									when campaign_name like '%STD%' then 'fb.save.dog'
+									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
+									when campaign_name like '%BKJ%' then 'fb.block.juggle'
+									ELSE 'other' end as package_name
 								,campaign_name
 								,country
 								,0 as cost
 								,MAX(safe_cast(action_count as float64)) as install 
-							FROM `gzdw2024.cost_data.all_api_data` 
+							FROM `fb-ai-avatar-puzzle.analytics_439907691.fb_insights_country_day_*` 
 							WHERE action_type='mobile_app_install'
 						
 							group by campaign_name,country ,stats_date,package_name
@@ -226,6 +192,7 @@ begin
 					,platform
 					,country_code
 					,package_name;
+
 
 
 
