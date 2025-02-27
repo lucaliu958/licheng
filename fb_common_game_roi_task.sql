@@ -179,7 +179,9 @@ begin
 								,MAX(safe_cast(action_count as float64)) as install 
 							FROM `fb-ai-avatar-puzzle.analytics_439907691.fb_insights_country_day_*` 
 							WHERE action_type='mobile_app_install'
-						
+						AND  _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
+							and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
+							and _TABLE_SUFFIX not like '%hour%'
 							group by campaign_name,country ,stats_date,package_name
 						  )a 
 						   group by stats_date,campaign_name,country,platform,package_name
