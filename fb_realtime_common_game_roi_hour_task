@@ -678,20 +678,22 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 
 
 ----------3.收入，成本，roi，ecpm
-
-	drop table if exists `gzdw2024.fbgame_realtime_03_bi.dws_common_game_hour_comparison_roi_report`;
+drop table if exists `gzdw2024.fbgame_realtime_03_bi.dws_common_game_hour_comparison_roi_report`;
 	create table `gzdw2024.fbgame_realtime_03_bi.dws_common_game_hour_comparison_roi_report`
     as 
-
+    SELECT
+    	* 
+    FROM
+    	(
 		SELECT
 			substring(event_day_hour,12,2) as event_hour
 			,package_name	
 			,app_name
 			,country_code
 			,platform
-			,CASE WHEN   stats_date = date_add(CURRENT_DATE('America/Los_Angeles'),interval 0 day) THEN 'T_0'
-				WHEN   stats_date = date_add(CURRENT_DATE('America/Los_Angeles'),interval -1 day) THEN 'T_1'
-				WHEN   stats_date = date_add(CURRENT_DATE('America/Los_Angeles'),interval -2 day) THEN 'T_2'
+			,CASE WHEN   stats_date = date_add(DATE(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2 HOUR), 'America/Los_Angeles'),interval 0 day) THEN 'T_0'
+				WHEN   stats_date = date_add(DATE(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2 HOUR), 'America/Los_Angeles'),interval -1 day) THEN 'T_1'
+				WHEN   stats_date = date_add(DATE(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2 HOUR), 'America/Los_Angeles'),interval -2 day) THEN 'T_2'
 				else null end as tag 
 			,max(cost) as  cost
 			,max(install) as install
@@ -703,10 +705,76 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 			,max(impressions ) as impressions
 			,max(clicks) as clicks
 		FROM `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_roi_hour_data`
-		where stats_date >= date_add(CURRENT_DATE('America/Los_Angeles'),interval -2 day)
-		and stats_date <= date_add(CURRENT_DATE('America/Los_Angeles'),interval -history_end_day day)
-		group by event_hour,package_name,country_code,platform,tag,app_name;
-
+		where stats_date >= date_add(CURRENT_DATE('America/Los_Angeles'),interval -3 day)
+		and stats_date <= date_add(CURRENT_DATE('America/Los_Angeles'),interval -0 day)
+		group by event_hour,package_name,country_code,platform,tag,app_name
+		union all 
+		SELECT
+			a.event_hour
+	    	,package_name	
+			,app_name
+			,country_code
+			,platform
+			,'today_total'as tag 
+			,cost
+			,install
+			,cost_impressions
+			,cost_clicks
+			,revenue
+			,requests
+			,filled_requests
+			,impressions
+			,clicks
+		FROM
+			(
+		SELECT
+			substring(event_day_hour,12,2) as event_hour
+		FROM `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_roi_hour_data`
+		where stats_date >= date_add(CURRENT_DATE('America/Los_Angeles'),interval -3 day)
+		and stats_date <= date_add(CURRENT_DATE('America/Los_Angeles'),interval -0 day)
+		group by event_hour
+		)a 
+		left join
+		(
+		SELECT
+			package_name	
+			,app_name
+			,country_code
+			,platform
+			
+			,sum(cost) as  cost
+			,sum(install) as install
+			,sum(cost_impressions) as cost_impressions
+			,sum(cost_clicks) as cost_clicks
+			,sum(revenue ) as revenue
+			,sum(requests ) as requests
+			,sum(filled_requests ) as filled_requests
+			,sum(impressions ) as impressions
+			,sum(clicks) as clicks
+		FROM `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_roi_hour_data`
+		where 1=1
+		and  stats_date = date_add(DATE(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2 HOUR), 'America/Los_Angeles'),interval 0 day)
+		and event_day_hour<=(	SELECT
+									max(event_day_hour)
+								FROM
+									(
+									SELECT
+										event_day_hour
+									
+										,sum(revenue ) as revenue
+									FROM `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_roi_hour_data`
+									where 1=1
+									and  stats_date = date_add(DATE(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2 HOUR), 'America/Los_Angeles'),interval 0 day)
+									group by event_day_hour
+									)a 
+									where revenue>10
+		
+								)
+		group by package_name,country_code,platform,app_name
+		)b 
+		on 1=1
+	)c 
+    where tag is not null ;
 
 
 delete `gzdw2024.fbgame_real_01_basic.dws_upadate_total`
