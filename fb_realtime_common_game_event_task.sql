@@ -2746,6 +2746,193 @@ SELECT 'event_hour_real' as cat
 
 
 
+--------6.3.fb后台广告统计表
+
+delete `gzdw2024.fbgame_real_01_basic.dws_common_game_user_hour_fb_ad_report`
+where stats_date>=date_add(run_date,interval -history_day day )
+and stats_date<=date_add(run_date,interval -history_end_day day );
+
+insert `gzdw2024.fbgame_real_01_basic.dws_common_game_user_hour_fb_ad_report`
+--	create table  `gzdw2024.fbgame_real_01_basic.dws_common_game_user_hour_fb_ad_report`
+	--	PARTITION BY stats_date as 
+		SELECT
+			event_date as stats_date
+			,c1.event_day_hour
+			,c1.package_name
+			,c1.platform
+			,c1.country_code
+			,ad_type
+			,requests
+			,filled_requests
+			,impressions
+			,revenue
+			,clicks
+			,active_uv
+		FROM
+			(
+				SELECT 
+					stats_date
+					,event_day_hour 
+					,package_name
+					,platform
+					,country_code
+					,ad_type
+					,requests
+					,filled_requests
+					,impressions
+					,revenue
+					,clicks
+				FROM `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_revenue_hour_data` 
+				where stats_date>=date_add(run_date,interval -history_day day )
+				and stats_date<=date_add(run_date,interval -history_end_day day )
+				and placement='TOTAL'				
+			)c0
+			right join
+			(
+			SELECT
+				package_name
+				,event_date
+				,event_day_hour
+				,platform
+				,country_code
+				,active_uv
+				,new_uv
+			FROM	`gzdw2024.fbgame_real_01_basic.dws_common_game_hour_user_active_report`
+			WHERE event_date>=date_add(run_date,interval -history_day day )
+			and event_date<=date_add(run_date,interval -history_end_day day )
+
+				)c1 
+			on c0.stats_date=c1.event_date
+			and c0.event_day_hour=c1.event_day_hour
+			and c0.platform=c1.platform
+			and c0.country_code=c1.country_code
+			and c0.package_name=c1.package_name;
+
+
+
+
+--------6.5.期望展示统计表
+
+delete `gzdw2024.fbgame_real_01_basic.dws_common_game_hour_ad_expect_show_report`
+where stats_date>=date_add(run_date,interval -history_day day )
+and stats_date<=date_add(run_date,interval -history_end_day day );
+
+insert `gzdw2024.fbgame_real_01_basic.dws_common_game_hour_ad_expect_show_report`
+--	create table  `gzdw2024.fbgame_real_01_basic.dws_common_game_hour_ad_expect_show_report`
+	--	PARTITION BY stats_date as 
+		SELECT
+			a.stats_date
+			,a.event_day_hour
+			,a.package_name
+			,a.platform
+			,a.country_code
+			,pv 
+			,impressions
+			,expect_pv
+		FROM
+			(
+			SELECT
+				stats_date
+				,event_day_hour
+				,package_name
+				,platform
+				,country_code
+				,count(1) as pv 
+			FROM
+				(
+				SELECT
+					 event_date as stats_date
+					,format_timestamp("%Y-%m-%d %H:00:00", timestamp_seconds( cast ((event_timestamp_millis/1000) as int64)),'America/Los_Angeles') as event_day_hour
+					,user_id
+					,ARRAY['TOTAL',upper(country_code)] as country_code
+					,ARRAY['TOTAL',platform] as platform				
+					,package_name
+					,event_name
+				FROM `gzdw2024.fbgame_real_01_basic.dwd_common_game_user_event_di`    
+				WHERE 1=1
+				and  (
+					event_name IN ('fb_zp_new_game_play','fb_zp_game_shuffle_clickads','fb_zp_fgame_star_click','fb_zp_game_refillstock_click','fb_zp_game_homeshuffle_clickads'
+						           ,'fb_fruit_get_heart_click','fb_fruit_get_coin_click','fb_fruit_shop_coinclick'
+						           ,'fb_fruit_daily_draw_watch_ad_click','fb_fruit_daily_draw_double_ad_click','fb_fruit_sign_clickdouble'
+						           ,'fb_fruit_shop_clickdouble','fb_fruit_game_play_fail_clickcoin','fb_fruit_game_play_fail_continuefree'
+						           ,'fb_fruit_game_prop_clickad','fb_fruit_get_morelives_clickcoin','fb_fruit_get_morelives_freelives'
+						           ,'fb_fruit_game_play_finish','fb_fruit_game_play_fail','fb_fruit_game_play_start_adclick'
+							   ,'fb_fruit_game_prop_clickad','fb_fruit_get_morelives_clickcoin','fb_fruit_get_morelives_freelives','fb_fruit_click_propad'
+						           ,'fb_dog_game_market_bomb_get','fb_dog_game_brush_get_click','fb_dog_game_skip_click','fb_dog_game_hint_click','fb_dog_game_play_finish'
+							   ,'fb_egg_change_eggs_click','fb_egg_double_bomb_click','fb_egg_break_click','fb_egg_over_click','fb_egg_again_revive_click'
+							   ,'fb_egg_break_clickbutton','fb_egg_game_play_finish','fb_egg_game_play_fail'
+							   ,'fb_ibb_fail_thanks_click','fb_ibb_fail_continue_click','fb_ibb_fail_goto_ads','fb_ibb_scoregift_click')
+					or (event_name in ('fb_zp_game_play_finish') and win='true')
+					or (event_name in ('fb_dog_game_play_succ_next') and type='is_ads')
+					or (event_name in ('fb_egg_bomb_click','fb_ibb_bomb_click') and bombsum='0')
+					or (event_name in ('fb_egg_prop_click') and propsum='0')
+					)
+
+				AND event_date>=date_add(run_date,interval -history_day day )
+				and event_date<=date_add(run_date,interval -history_end_day day )
+				and event_date <= date_add(CURRENT_DATE('America/Los_Angeles'),interval -history_end_day day)
+				)a 
+				,UNNEST(country_code) as country_code
+				,UNNEST(platform) as platform
+				group by a.stats_date,package_name,platform,country_code,event_day_hour
+			)a 
+			left join
+			(
+				SELECT
+				 stats_date
+				 ,event_day_hour
+				,package_name
+				,platform
+				,country_code
+				,sum(impressions ) as impressions 
+			FROM `gzdw2024.fbgame_real_01_basic.dws_common_game_user_hour_fb_ad_report`
+			WHERE (ad_type like '%interstitial%' or  ad_type like '%video%')
+			AND stats_date>=date_add(run_date,interval -history_day day )
+			and stats_date<=date_add(run_date,interval -history_end_day day )
+			group by stats_date,package_name,platform,country_code,event_day_hour
+			)b 
+			on a.stats_date=b.stats_date
+			and a.package_name=b.package_name
+			and a.platform=b.platform
+			and a.country_code=b.country_code
+			left join
+			(
+			SELECT
+				stats_date
+				,event_day_hour
+				,package_name
+				,platform
+				,country_code
+				,count(1) as expect_pv 
+			FROM
+				(
+				SELECT
+					 event_date as stats_date
+					,format_timestamp("%Y-%m-%d %H:00:00", timestamp_seconds( cast ((event_timestamp_millis/1000) as int64)),'America/Los_Angeles') as event_day_hour
+					,user_id
+					,ARRAY['TOTAL',upper(country_code)] as country_code
+					,ARRAY['TOTAL',platform] as platform				
+					,package_name
+					,event_name
+				FROM `gzdw2024.fbgame_real_01_basic.dwd_common_game_user_event_di`    
+				WHERE 1=1
+				and REGEXP_CONTAINS(event_name, r'.*(ad_expect_impression_c)$')	
+				AND event_date>=date_add(run_date,interval -history_day day )
+				and event_date<=date_add(run_date,interval -history_end_day day )
+				and event_date <= date_add(CURRENT_DATE('America/Los_Angeles'),interval -history_end_day day)
+				)a 
+				,UNNEST(country_code) as country_code
+				,UNNEST(platform) as platform
+				group by a.stats_date,package_name,platform,country_code,event_day_hour
+			)d 
+			on a.stats_date=d.stats_date
+			AND a.event_day_hour=d.event_day_hour
+			and a.package_name=d.package_name
+			and a.platform=d.platform
+			and a.country_code=d.country_code;
+			--where a.platform='TOTAL'
+			--AND a.country_code='TOTAL';
+
 
 
 end;
