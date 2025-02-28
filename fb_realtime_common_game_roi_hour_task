@@ -213,7 +213,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_revenue_hour_data`
 			SELECT
 				stats_date
 				,event_day_hour
-				,package_name
+				,'fb.total' as package_name
 				,'FBG_TOTAL' AS app_name
 				,platform
 				,country_code
@@ -570,7 +570,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 			SELECT
 				stats_date
 				,event_day_hour
-				,package_name
+				,'fb.total' as package_name
 				,'FBG_TOTAL' AS app_name
 				,platform
 				,account_name
@@ -912,7 +912,7 @@ SELECT 'roi_hour_real' as cat
 				union all 
 				SELECT
 					stats_date
-					,package_name
+					,'fb.total' as package_name
 					,'FBG_TOTAL' AS app_name
 					,platform
 					,country_code
@@ -1071,7 +1071,7 @@ SELECT 'roi_hour_real' as cat
 						union all 
 						SELECT
 							stats_date
-							,package_name
+							,'fb.total' as package_name
 							,'FBG_TOTAL' AS app_name
 							,platform
 							,country_code
