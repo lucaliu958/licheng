@@ -555,17 +555,19 @@ insert  `gzdw2024.text_03_bi.dws_subcribe_detail_report`
 		(
 		SELECT 
 		package_name 
-		,revenue_usd
-    	,stats_date
+		 ,units * developer_proceeds / b.rate  revenue_usd
+    	,a.stats_date
 		,ARRAY[country_code,'TOTAL'] as country_code
 		,period
 		,subscription
 		,units
 		,title
-		FROM `gzdw2024.appstoreconnect.p_sales_atlasv` 
-		WHERE stats_date >= date_add(run_date,interval -history_day day)
-			    and stats_date <= date_add(run_date,interval -(history_end_day+1) day)
-			and (revenue_usd>0 or revenue_usd <0 )
+		FROM `gzdw2024.appstoreconnect.p_sales_atlasv`  a
+	   left join `gzdw2024.gz_dim.exchange_rate_days` b on cast(a.stats_date as date) = cast(b.stats_date as date) and a.currency_of_proceeds=b.currency
+    WHERE a.stats_date>='2025-02-13'
+		and a.stats_date >= date_add(run_date,interval -history_day day)
+			    and a.stats_date <= date_add(run_date,interval -(history_end_day+1) day)
+			and (units * developer_proceeds>0 or units * developer_proceeds <0 )
 		)a 
 		join 
 		(
