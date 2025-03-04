@@ -51,6 +51,24 @@ begin
 		    --drop table if exists `gzdw2024.fbgame_03_bi.dws_fb_common_game_cost_daily_reports_google_sheet`;
 			--create table `gzdw2024.fbgame_03_bi.dws_fb_common_game_cost_daily_reports_google_sheet`
 			--PARTITION BY stats_date as 
+			  SELECT PARSE_DATE('%Y-%m-%d', string_field_0) AS stats_date
+				, string_field_1 package_name
+				,'TOTAL' AS platform
+				,'TOTAL' AS country_code
+				,sum(0)  as requests
+					,sum(0)  as filled_requests
+					,sum(0)  as impressions
+				,sum(safe_CAST(REPLACE(REPLACE(string_field_3, '$', ''), ',', '') AS FLOAT64)) AS revenue
+					,sum(0)  as clicks
+				FROM `gzdw2024.revenue.fb_total_revenue_20250304` 
+				where length(string_field_0)>6
+				and string_field_0!='stats_date'
+				and PARSE_DATE('%Y-%m-%d', string_field_0) >= date_add(run_date,interval -history_day day)
+							and PARSE_DATE('%Y-%m-%d', string_field_0) <= date_add(run_date,interval -history_end_day day)
+				      and  PARSE_DATE('%Y-%m-%d', string_field_0)>='2025-03-03'
+							group by PARSE_DATE('%Y-%m-%d', string_field_0),package_name
+
+				union all 
 			SELECT  
 				PARSE_DATE('%Y-%m-%d', string_field_0) AS stats_date
 				,package_name
