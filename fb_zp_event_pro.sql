@@ -775,6 +775,9 @@ insert `gzdw2024.fb_zp_game.dws_event_active_report`
 	,'fb_zp_game_friendsbtn'
 	,'fb_zp_game_friends_show'
 	,'fb_zp_game_friends_play'
+	,'fb_zp_game_friendslist_show'
+	,'fb_zp_game_friendslist_invite'
+	,'fb_zp_game_friendslist_post'
 						)
 				)a 
 				 left	join 
