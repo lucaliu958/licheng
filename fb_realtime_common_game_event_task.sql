@@ -250,7 +250,7 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_user_active_report`
 			,count(distinct case when is_launch=1 and is_new=1 and is_ad=1 and date_diff(c.event_date_min,a.event_date,day)<=0  then c.user_id else null end) as source_liebian_uv_ad_0_day 
 			,count(distinct case when is_launch=1 and is_new=1 and is_ad=1 and date_diff(c.event_date_min,a.event_date,day)<=1  then c.user_id else null end) as source_liebian_uv_ad_1_day
 			,count(distinct case when is_launch=1 and is_new=1 and is_ad=1 and  date_diff(c.event_date_min,a.event_date,day)<=2  then c.user_id else null end) as source_liebian_uv_ad_2_day 
-			,
+			,app_name
 		FROM
 			(			
 			SELECT
@@ -261,9 +261,12 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_user_active_report`
 				,is_ad
 				,is_liebian
 				,array[country_code,'TOTAL'] as country_code
-				,array[platform,'TOTAL'] as platform
-				,package_name
-			FROM `gzdw2024.fbgame_real_01_basic.dwd_common_game_user_active_profile_di`
+				,array[a.platform,'TOTAL'] as platform
+				,a.package_name
+				,app_name
+			FROM `gzdw2024.fbgame_real_01_basic.dwd_common_game_user_active_profile_di` a 
+			      left join  `gzdw2024.gz_dim.app_info` b 
+				on a.package_name=b.package_name
 			WHERE event_date>=date_add(run_date,interval -history_retain_day day )
 			and event_date<=date_add(run_date,interval -history_end_day day )	
 			and event_date <= date_add(CURRENT_DATE('America/Los_Angeles'),interval -history_end_day day)
@@ -306,7 +309,7 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_user_active_report`
 			and a.package_name=c.package_name
 			,UNNEST(country_code) as country_code
 			,UNNEST(platform) as platform
-			group by a.event_date,country_code,platform,package_name;
+			group by a.event_date,country_code,platform,package_name,app_name;
 
 
 
@@ -335,6 +338,7 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_event_active_report`
 		,uv 
 		,case when is_new='TOTAL' then  active_uv  when is_new='new' then  new_uv
 	when is_new='old' then active_uv -  new_uv end as active_uv
+	,app_name
 	FROM
 		(
 		SELECT
@@ -408,6 +412,7 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_event_active_report`
 				,country_code
 				,active_uv
 				,new_uv
+	,app_name
 			FROM	`gzdw2024.fbgame_real_01_basic.dws_common_game_user_active_report`
 			WHERE event_date>=date_add(run_date,interval -history_day day )
 			and event_date<=date_add(run_date,interval -history_end_day day )
@@ -721,6 +726,7 @@ and event_date<=date_add(run_date,interval -history_end_day day );
 					,event_num
 					,user_num
 					,active_uv
+					,app_name
 				FROM
 					(
 					SELECT
@@ -747,6 +753,7 @@ and event_date<=date_add(run_date,interval -history_end_day day );
 							,is_new
 							,event_name
 							,active_uv
+		,app_name
 						FROM	`gzdw2024.fbgame_real_01_basic.dws_common_game_event_active_report`
 						WHERE stats_date>=date_add(run_date,interval -history_day day )
 						and stats_date<=date_add(run_date,interval -history_end_day day )
