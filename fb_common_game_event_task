@@ -76,6 +76,7 @@ insert `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='gold') gold
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='currency') currency
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='uuid') uuid
+,device.mobile_os_hardware_model
 	FROM `recorder-pro-50451.analytics_250268757.events_*` a 
 	left join
 			    (
@@ -363,7 +364,7 @@ insert `gzdw2024.fbgame_01_basic.dws_common_game_event_active_report`
 				WHERE event_date>=date_add(run_date,interval -history_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
 				union all 
-				SELECT
+					SELECT
 					 event_date
 					,user_id
 					,ARRAY['TOTAL',country_code] as country_code
@@ -371,18 +372,18 @@ insert `gzdw2024.fbgame_01_basic.dws_common_game_event_active_report`
 					when operating_system ='Android' then 'Android' 
 					else 'web' end,'TOTAL']  as platform					
 					,package_name
-					,case when proptype='rock' and event_name='fb_egg_prop_click' then 'fb_egg_prop_click_rock'
-					      when proptype='bomb' and event_name='fb_egg_prop_click' then 'fb_egg_prop_click_bomb'
-					      when proptype='color' and event_name='fb_egg_prop_click' then 'fb_egg_prop_click_color'
-					      when proptype='lighting' and event_name='fb_egg_prop_click' then 'fb_egg_prop_click_lighting'
-					      else  event_name end as event_name
-					
-			
+					,case when proptype='rock' and propsum='0' and event_name='fb_egg_prop_click' then 'fb_egg_prop_click_rock'
+					      when proptype='bomb' and propsum='0'  and event_name='fb_egg_prop_click' then 'fb_egg_prop_click_bomb'
+					      when proptype='color' and propsum='0'  and event_name='fb_egg_prop_click' then 'fb_egg_prop_click_color'
+					      when proptype='lighting' and propsum='0'  and event_name='fb_egg_prop_click' then 'fb_egg_prop_click_lighting'
+					      when event_name in ('fb_ibb_bomb_click','fb_ibb_fire_click','fb_ibb_light_click') and (propsum='0' or bombsum='0') then concat(event_name,'_0')
+					      when event_name in ('fb_ibb_bomb_click','fb_ibb_fire_click','fb_ibb_light_click') and (propsum!='0' or bombsum!='0') then concat(event_name,'_1')
+					      else  concat(event_name,'_other')  end as event_name
 				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
 				WHERE event_date>=date_add(run_date,interval -history_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
-				and event_name in ('fb_egg_prop_click')
-				and propsum='0'
+				and event_name in ('fb_egg_prop_click','fb_ibb_bomb_click','fb_ibb_fire_click','fb_ibb_light_click')
+				
 				)a 
 			 left	join 
 				(
@@ -2912,7 +2913,7 @@ insert `gzdw2024.fbgame_01_basic.dws_common_game_ad_expect_show_report`
 					or (event_name in ('fb_zp_game_play_finish') and win='true')
 					or (event_name in ('fb_dog_game_play_succ_next') and type='is_ads')
 					or (event_name in ('fb_egg_bomb_click','fb_ibb_bomb_click') and bombsum='0')
-					or (event_name in ('fb_egg_prop_click') and propsum='0')
+					or (event_name in ('fb_egg_prop_click','fb_ibb_fire_click','fb_ibb_light_click') and propsum='0')
 					)
 
 				AND event_date>=date_add(run_date,interval -history_day day)
