@@ -339,6 +339,7 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_event_active_report`
 		,case when is_new='TOTAL' then  active_uv  when is_new='new' then  new_uv
 	when is_new='old' then active_uv -  new_uv end as active_uv
 	,app_name
+	,game_uv
 	FROM
 		(
 		SELECT
@@ -350,6 +351,7 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_event_active_report`
 			,is_new
 			,count(1) as pv 
 			,count(distinct user_id) as uv 
+			,count(distinct gameID) as game_uv 
 		FROM
 			(
 			SELECT
@@ -362,6 +364,7 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_event_active_report`
 				,ARRAY['TOTAL',case when is_new =1 then 'new'
 				when is_new =0 then 'old' 
 				else 'old' end] as is_new	
+				,gameID
 			FROM
 				(
 				SELECT
@@ -371,9 +374,30 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_event_active_report`
 					,array[platform,'TOTAL']  as platform					
 					,package_name
 					,event_name
+					,gameID
 				FROM `gzdw2024.fbgame_real_01_basic.dwd_common_game_user_event_di`  
 				WHERE event_date>=date_add(run_date,interval -history_day day )
 				and event_date<=date_add(run_date,interval -history_end_day day )
+				and event_date <= date_add(CURRENT_DATE('America/Los_Angeles'),interval -history_end_day day)
+				union all
+				SELECT
+					 event_date
+					,user_id
+					,ARRAY['TOTAL',country_code] as country_code
+					,array[platform,'TOTAL']  as platform					
+					,package_name
+					,case when proptype='rock' and propsum='0' and event_name='fb_egg_prop_click' then 'fb_egg_prop_click_rock'
+					      when proptype='bomb' and propsum='0'  and event_name='fb_egg_prop_click' then 'fb_egg_prop_click_bomb'
+					      when proptype='color' and propsum='0'  and event_name='fb_egg_prop_click' then 'fb_egg_prop_click_color'
+					      when proptype='lighting' and propsum='0'  and event_name='fb_egg_prop_click' then 'fb_egg_prop_click_lighting'
+					      when event_name in ('fb_ibb_bomb_click','fb_ibb_fire_click','fb_ibb_light_click') and (propsum='0' or bombsum='0') then concat(event_name,'_0')
+					      when event_name in ('fb_ibb_bomb_click','fb_ibb_fire_click','fb_ibb_light_click') and (propsum!='0' or bombsum!='0') then concat(event_name,'_1')
+					      else  concat(event_name,'_other')  end as event_name
+									,gameID
+				FROM `gzdw2024.fbgame_real_01_basic.dwd_common_game_user_event_di`  
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
+				and event_name in ('fb_egg_prop_click','fb_ibb_bomb_click','fb_ibb_fire_click','fb_ibb_light_click')
 				and event_date <= date_add(CURRENT_DATE('America/Los_Angeles'),interval -history_end_day day)
 				)a 
 			 left	join 
