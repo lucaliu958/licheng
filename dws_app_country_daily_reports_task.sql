@@ -251,7 +251,7 @@ FROM
 
 
 delete `gzdw2024.gz_bi.dws_daily_app_reports`
-where stats_date>=date_add(run_date,interval -history_day day)
+where stats_date>=date_add(run_date,interval -(history_day+20) day)
 and stats_date<=date_add(run_date,interval -end_day day);
 
 
@@ -301,7 +301,7 @@ insert `gzdw2024.gz_bi.dws_daily_app_reports`
          'com.textNumber.phone'))
         )
         and country_code='TOTAL'
-        and stats_date>=date_add(run_date,interval -history_day day)
+        and stats_date>=date_add(run_date,interval -(history_day+20) day)
         and stats_date<=date_add(run_date,interval -end_day day)
         union all 
         SELECT 
@@ -318,7 +318,7 @@ insert `gzdw2024.gz_bi.dws_daily_app_reports`
         WHERE stats_date >='2024-09-01'
         and country_code='TOTAL'
         and traffic_source_type='nature'
-         and stats_date>=date_add(run_date,interval -history_day day)
+         and stats_date>=date_add(run_date,interval -(history_day+20) day)
         and stats_date<=date_add(run_date,interval -end_day day)
            union all 
         SELECT 
@@ -335,7 +335,7 @@ insert `gzdw2024.gz_bi.dws_daily_app_reports`
         WHERE stats_date >='2024-09-01'
         and country_code='TOTAL'
         and traffic_source_type='nature'
-         and stats_date>=date_add(run_date,interval -history_day day)
+         and stats_date>=date_add(run_date,interval -(history_day+20) day)
         and stats_date<=date_add(run_date,interval -end_day day)
            union all 
         SELECT 
@@ -352,7 +352,7 @@ insert `gzdw2024.gz_bi.dws_daily_app_reports`
         WHERE stats_date >='2024-09-01'
         and country_code='TOTAL'
         and traffic_source_type='nature'
-         and stats_date>=date_add(run_date,interval -history_day day)
+         and stats_date>=date_add(run_date,interval -(history_day+20) day)
         and stats_date<=date_add(run_date,interval -end_day day)
            union all 
         SELECT 
@@ -369,7 +369,7 @@ insert `gzdw2024.gz_bi.dws_daily_app_reports`
         WHERE stats_date >='2024-09-01'
         and country_code='TOTAL'
         and traffic_source_type='nature'
-         and stats_date>=date_add(run_date,interval -history_day day)
+         and stats_date>=date_add(run_date,interval -(history_day+20) day)
         and stats_date<=date_add(run_date,interval -end_day day)
            union all 
         SELECT 
@@ -386,7 +386,7 @@ insert `gzdw2024.gz_bi.dws_daily_app_reports`
         WHERE stats_date >='2024-09-01'
         and country_code='TOTAL'
         and traffic_source_type='nature'
-         and stats_date>=date_add(run_date,interval -history_day day)
+         and stats_date>=date_add(run_date,interval -(history_day+20) day)
         and stats_date<=date_add(run_date,interval -end_day day)
               union all 
         SELECT 
@@ -403,7 +403,7 @@ insert `gzdw2024.gz_bi.dws_daily_app_reports`
         WHERE stats_date >='2024-09-01'
         and country_code='TOTAL'
         and traffic_source_type='nature'
-         and stats_date>=date_add(run_date,interval -history_day day)
+         and stats_date>=date_add(run_date,interval -(history_day+20) day)
         and stats_date<=date_add(run_date,interval -end_day day)
                union all 
         SELECT 
@@ -420,7 +420,7 @@ insert `gzdw2024.gz_bi.dws_daily_app_reports`
         WHERE event_date >='2024-09-01'
         and country_code='TOTAL'
         and platform='TOTAL'
-         and event_date>=date_add(run_date,interval -history_day day)
+         and event_date>=date_add(run_date,interval -(history_day+20) day)
         and event_date<=date_add(run_date,interval -end_day day)
         /*
         union all 
