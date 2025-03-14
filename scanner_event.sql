@@ -2,6 +2,13 @@ CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.scanner_event`(run_date DATE, histo
 begin
 
 
+	 EXECUTE IMMEDIATE FORMAT
+ ("""
+    ALTER TABLE `scanner-master-android.analytics_196427335.events_%s`
+    SET OPTIONS (expiration_timestamp = NULL)
+  """, replace(cast(date_add(run_date,interval -1 day) as string),'-','') );
+
+
 -------1.dwd_user_event_di
 delete gzdw2024.scanner_02_event.dwd_user_event_di
 where event_date>=date_add(run_date,interval -history_day day)
