@@ -693,7 +693,8 @@ and  event_date<=date_add(run_date,interval -history_end_day day);
 		where tag=1
 		group by event_date,event_name,app_version,package_name;
 
-	----积分消耗
+
+----积分消耗
 	delete `gzdw2024.text_03_bi.dws_credit_cost_report`
 	where event_date>=date_add(run_date,interval -history_day day)
 	and  event_date<=date_add(run_date,interval -history_end_day day);
@@ -703,29 +704,34 @@ and  event_date<=date_add(run_date,interval -history_end_day day);
 	--PARTITION BY event_date as
 	SELECT  
 		event_date
-		,package_name
+		,package_name	
 		,event_name
 		,country_code
 		,sum(event_params_value*event_num) as credit_cost	
+		,app_name
 	FROM
 		(
 		SELECT  
 			event_date
+			,a.package_name
+			,app_name
 			,event_name
 			,ifnull(country_code,a.country) as country_code
 			,event_params_key
 			,safe_cast(event_params_value as int64) as event_params_value
 			,event_num
-      		,package_name
+      		
 			--,sum(event_num) over()
 		FROM `gzdw2024.scanner_02_event.dws_event_param_profile_di`a 
 		left join `gzdw2024.gz_dim.country_info` b
 		on upper(a.country)=upper(b.country_name)
+		left join `gzdw2024.gz_dim.app_info` c
+		on upper(a.package_name)=upper(c.package_name) 
 		WHERE 1=1
 		--and event_date='2024-12-10'
 		and event_date >= date_add(run_date,interval -history_day day)
 			    and event_date <= date_add(run_date,interval -history_end_day day)
-		and package_name in ('second.phone.number.text.free.call.app','com.talknow.free.text.me.now.second.phone.number.burner.app','com.textNumber.phone')
+		--and package_name in ('second.phone.number.text.free.call.app','com.talknow.free.text.me.now.second.phone.number.burner.app','com.textNumber.phone')
 		and event_name in (
 							'sn_11_serve_spam_check_credit'
 							,'sn_11_serve_caller_name_credit'
@@ -738,6 +744,104 @@ and  event_date<=date_add(run_date,interval -history_end_day day);
 							,'sn_11_serve_call_paid')
 		and event_params_key in('credit')
 		)a 
-		group by 	event_date,event_name,country_code,package_name;
+		group by 	event_date,event_name,country_code,package_name,app_name;
+
+
+----积分下发报告
+	delete `gzdw2024.text_03_bi.dws_credit_distribute_report`
+	where event_date>=date_add(run_date,interval -history_day day)
+	and  event_date<=date_add(run_date,interval -history_end_day day);
+
+	insert `gzdw2024.text_03_bi.dws_credit_distribute_report`
+	--create table   `gzdw2024.text_03_bi.dws_credit_distribute_report`
+	--PARTITION BY event_date as
+	SELECT  
+		event_date
+		,package_name
+		,app_name
+		,country_code
+		,app_version
+		,productId
+		,sum(case when inTrials='1' then credit else 0 end) as credit_dis_trial
+		,sum( credit ) as credit_dis_total
+	FROM
+		(
+		SELECT  
+			event_date
+			,a.package_name
+			,app_name
+			,event_name
+			,app_version
+			,ifnull(country_code,a.country) as country_code
+			,inTrials
+			,safe_cast(credit as int64) as credit
+			,productId
+			--,sum(event_num) over()
+		FROM `gzdw2024.scanner_02_event.dwd_user_event_time_di`a 
+		left join `gzdw2024.gz_dim.country_info` b
+		on upper(a.country)=upper(b.country_name)
+		left join `gzdw2024.gz_dim.app_info` c
+		on upper(a.package_name)=upper(c.package_name) 
+		WHERE 1=1
+		--and event_date='2024-12-10'
+		and event_date >= date_add(run_date,interval -history_day day)
+			    and event_date <= date_add(run_date,interval -history_end_day day)
+		--and package_name in ('second.phone.number.text.free.call.app','com.talknow.free.text.me.now.second.phone.number.burner.app','com.textNumber.phone')
+		and event_name in (
+							'sn_11_serve_credit_release'
+							)
+		
+		)a 
+		group by 	event_date,country_code,package_name,app_version,productId,app_name;
+
+
+----积分下发明细
+	delete `gzdw2024.text_03_bi.dws_credit_distribute_user_report`
+	where event_date>=date_add(run_date,interval -history_day day)
+	and  event_date<=date_add(run_date,interval -history_end_day day);
+
+	insert `gzdw2024.text_03_bi.dws_credit_distribute_user_report`
+	--create table   `gzdw2024.text_03_bi.dws_credit_distribute_user_report`
+	--PARTITION BY event_date as
+	SELECT  
+		event_date
+		,package_name
+		,app_name
+		,country_code
+		,userId
+		,sum(case when inTrials='1' then credit else 0 end) as credit_dis_trial
+		,sum( credit ) as credit_dis_total
+	FROM
+		(
+		SELECT  
+			event_date
+			,a.package_name
+			,app_name
+			,event_name
+			,app_version
+			,userId
+			,ifnull(country_code,a.country) as country_code
+			,inTrials
+			,safe_cast(credit as int64) as credit
+			,productId
+			--,sum(event_num) over()
+		FROM `gzdw2024.scanner_02_event.dwd_user_event_time_di`a 
+		left join `gzdw2024.gz_dim.country_info` b
+		on upper(a.country)=upper(b.country_name) 
+		left join `gzdw2024.gz_dim.app_info` c
+		on upper(a.package_name)=upper(c.package_name) 
+		WHERE 1=1
+		--and event_date='2024-12-10'
+		and event_date >= date_add(run_date,interval -history_day day)
+			    and event_date <= date_add(run_date,interval -history_end_day day)
+		--and package_name in ('second.phone.number.text.free.call.app','com.talknow.free.text.me.now.second.phone.number.burner.app','com.textNumber.phone')
+		and event_name in (
+							'sn_11_serve_credit_release'
+							)
+		
+		)a 
+		group by 	event_date,userId,country_code,package_name,app_name;
+
+
 
 	end;
