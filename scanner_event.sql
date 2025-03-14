@@ -523,12 +523,13 @@ SELECT
    FROM UNNEST(user_properties) WHERE key='vip_type') as vip_type
     ,(SELECT value.string_value 
    FROM UNNEST(user_properties) WHERE key='custom_uid') as custom_uid
+	,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='userId') userId
   FROM
     `scanner-master-android.analytics_196427335.events_*`
   WHERE
     _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 group by user_pseudo_id,event_date,user_id,package_name
-,is_vip,vip_type,custom_uid;
+,is_vip,vip_type,custom_uid,userId;
 
 
 -------9.日活与留存统计
@@ -770,7 +771,12 @@ and  event_date<=date_add(run_date,interval -history_end_day day);
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='credit') credit
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(user_properties) WHERE key='exp_flow') exp_flow
 		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(user_properties) WHERE key='exp_guide_1') exp_guide
-		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(user_properties) WHERE key='source') source
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='source') source
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='userId') userId
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='inTrials') inTrials
+		,(SELECT COALESCE(cast(value.int_value as string),cast(value.string_value as string),cast(value.float_value as string),cast(value.double_value as string)) FROM UNNEST(event_params) WHERE key='productId') productId
+		 ,user_id
+	         ,(SELECT value.string_value FROM UNNEST(user_properties) WHERE key='custom_uid') as custom_uid
 	FROM `scanner-master-android.analytics_196427335.events_*`
 	WHERE 1=1
 	and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
