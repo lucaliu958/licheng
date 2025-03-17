@@ -764,6 +764,7 @@ and  event_date<=date_add(run_date,interval -history_end_day day);
 		,productId
 		,sum(case when inTrials='1' then credit else 0 end) as credit_dis_trial
 		,sum( credit ) as credit_dis_total
+		,sum(case when inTrials='1'  and credit>100 then credit else 0 end) as credit_trial_100
 	FROM
 		(
 		SELECT  
@@ -811,6 +812,7 @@ and  event_date<=date_add(run_date,interval -history_end_day day);
 		,userId
 		,sum(case when inTrials='1' then credit else 0 end) as credit_dis_trial
 		,sum( credit ) as credit_dis_total
+		,sum(case when inTrials='1'  and credit>100 then credit else 0 end) as credit_trial_100
 	FROM
 		(
 		SELECT  
