@@ -1518,7 +1518,10 @@ SELECT 'event_day_real' as cat
 			FROM `gzdw2024.cost_data.fb_game_platform_dog_cost_data`
 			union all 
 			SELECT string_field_0,string_field_1,string_field_3,string_field_6 ,'fb.zp'  as package_name
-			FROM `gzdw2024.cost_data.fb_game_platform_slt_cost_data`;
+			FROM `gzdw2024.cost_data.fb_game_platform_slt_cost_data`
+			union all 
+			SELECT string_field_0,string_field_1,string_field_3,string_field_6 ,'fb.egg.bubble'  as package_name
+			FROM `gzdw2024.cost_data.fb_game_platform_egg_cost_data`;
 
 
 
@@ -1611,7 +1614,8 @@ SELECT 'event_day_real' as cat
 						SELECT 
 							stats_date
 							,package_name
-							,case when lower(campaign_name) like '%ios%' then 'iOS' else 'Android' end as platform
+							,case when lower(campaign_name) like '%ios%' then 'iOS' 
+							when lower(campaign_name) like '%web%' then 'web' else 'Android' end as platform
 							,campaign_name
 							,country
 						  	,sum(cost) as cost 
@@ -1722,6 +1726,7 @@ SELECT 'event_day_real' as cat
 				WHERE 1=1
 				and stats_date>=date_add(run_date,interval -history_day day)
 				and  stats_date<=date_add(run_date,interval -history_end_day day)
+				and not (platform!='TOTAL' AND country_code='TOTAL')
 				group by stats_date
 					,package_name
 					,platform
