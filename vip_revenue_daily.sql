@@ -193,8 +193,27 @@ insert    gzdw2024.revenue.dws_app_country_vip_income
 			)a 
 		,UNNEST(country_code) as country_code
 		group by stats_date,package_name,upper(country_code);
+/*
+-----------gp订阅收入所有产品
+delete gzdw2024.revenue.dws_app_country_vip_income
+WHERE stats_date >=date_add(run_date,interval -history_day day)
+and stats_date<=date_add(run_date,interval -end_day day) 
+and package_name in (SELECT		package_name 
+		FROM `gzdw2024.gz_dim.app_info` 
+		where platform='android'
+		group by package_name
+		);
 
-
+insert    gzdw2024.revenue.dws_app_country_vip_income 
+	SELECT
+		stats_date
+		,package_name
+		,upper(country_code) as country_code
+		,vip_revenue as charged_money
+		,0 as refund_money  
+		,vip_revenue as vip_revenue
+	FROM  `gzdw2024.googleplay.gp`;
+*/
 -----applestore订阅收入atlasv
 delete gzdw2024.revenue.dws_app_country_vip_income
 where stats_date>=date_add(run_date,interval -history_day day)
