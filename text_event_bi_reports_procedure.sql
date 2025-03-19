@@ -1,4 +1,3 @@
-
 CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.text_event_bi_reports_procedure`(run_date DATE, history_day INT64, history_end_day INT64)
 begin
 
