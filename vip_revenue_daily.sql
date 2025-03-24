@@ -81,23 +81,38 @@ FROM
 		  END AS google_fee_rate
 		FROM
 			(
-			SELECT
+				SELECT
 				*
 			FROM `gzdata.googleplay.p_sales_vidma` 
-			WHERE Order_Charged_Date >=date_add(run_date,interval -history_day day)
-			and Order_Charged_Date<=date_add(run_date,interval -end_day day)
+			WHERE 1=1
+			and Order_Charged_Date='2025-03-14'
+			--and Order_Charged_Date >=date_add(run_date,interval -history_day day)
+			--and Order_Charged_Date<=date_add(run_date,interval -end_day day)
 			union all 
 			SELECT
-				*
-			FROM `hzdw2024.googleplay.p_sales_downloader` 
-			WHERE Order_Charged_Date >=date_add(run_date,interval -history_day day)
-			and Order_Charged_Date<=date_add(run_date,interval -end_day day)
-			union all 
-			SELECT
-				*
-			FROM `hzdw2024.googleplay.p_sales_new_downloader`  
-			WHERE Order_Charged_Date >=date_add(run_date,interval -history_day day)
-			and Order_Charged_Date<=date_add(run_date,interval -end_day day)
+				Order_Number
+				,Order_Charged_Date
+				,Order_Charged_Timestamp
+				,Financial_Status
+				,Device_Model
+				,Product_Title
+				,Product_ID
+				,Product_Type
+				,SKU_ID
+				,Currency_of_Sale
+				,Item_Price
+				,Taxes_Collected
+				,Charged_Amount
+				,City_of_Buyer
+				,State_of_Buyer
+				,Postal_Code_of_Buyer
+				,Country_of_Buyer
+			FROM `hzdw2024.ads.ads_google_play_sales` 
+			WHERE 1=1
+			and Order_Charged_Date='2025-03-14'
+			--and Order_Charged_Date >=date_add(run_date,interval -history_day day)
+			--and Order_Charged_Date<=date_add(run_date,interval -end_day day)
+		
 			)
 		)a 
 		left join 
