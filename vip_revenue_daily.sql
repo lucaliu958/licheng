@@ -81,13 +81,13 @@ FROM
 		  END AS google_fee_rate
 		FROM
 			(
-				SELECT
+			SELECT
 				*
 			FROM `gzdata.googleplay.p_sales_vidma` 
 			WHERE 1=1
-			and Order_Charged_Date='2025-03-14'
-			--and Order_Charged_Date >=date_add(run_date,interval -history_day day)
-			--and Order_Charged_Date<=date_add(run_date,interval -end_day day)
+			--and Order_Charged_Date='2025-03-14'
+			and Order_Charged_Date >=date_add(run_date,interval -history_day day)
+			and Order_Charged_Date<=date_add(run_date,interval -end_day day)
 			union all 
 			SELECT
 				Order_Number
@@ -109,9 +109,9 @@ FROM
 				,Country_of_Buyer
 			FROM `hzdw2024.ads.ads_google_play_sales` 
 			WHERE 1=1
-			and Order_Charged_Date='2025-03-14'
-			--and Order_Charged_Date >=date_add(run_date,interval -history_day day)
-			--and Order_Charged_Date<=date_add(run_date,interval -end_day day)
+			--and Order_Charged_Date='2025-03-14'
+			and Order_Charged_Date >=date_add(run_date,interval -history_day day)
+			and Order_Charged_Date<=date_add(run_date,interval -end_day day)
 		
 			)
 		)a 
