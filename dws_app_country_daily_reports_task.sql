@@ -232,7 +232,26 @@ FROM
 	and PARSE_DATE('%Y-%m-%d', string_field_0) >= date_add(run_date,interval -(history_day+100) day)
 	and PARSE_DATE('%Y-%m-%d', string_field_0) <= date_add(run_date,interval -end_day day)
       group by stats_date,country_code
-	
+	union all 
+	---广告收入
+	SELECT
+		stats_date
+		,package_name
+		--,app_name
+		,country_code
+		,0 as active_uv
+		,0 as new_uv
+		,0 as ratio
+		,0 as vip_revenue
+		,ad_revenue
+		,0 as asa_cost
+		,0 as ga_cost
+		,0 as new_retain_uv
+		,0 as conversions
+	FROM gzdw2024.ad_platform_data.dws_ad_country_daily_reports
+	WHERE stats_date >= DATE_SUB(run_date, INTERVAL (history_day+100) DAY)
+	and stats_date <= DATE_SUB(run_date, INTERVAL end_day DAY)
+	and package_name  in ('com.textNumber.phone')
 	)a
 	  left join
     (
