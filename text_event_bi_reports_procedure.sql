@@ -692,7 +692,7 @@ and  event_date<=date_add(run_date,interval -history_end_day day);
 		on upper(a.package_name)=upper(c.package_name) 
 			where  event_date >=date_add(run_date,interval -history_day day)
 			and event_date <=date_add(run_date,interval -history_end_day day)
-			and a.package_name in ('second.phone.number.text.free.call.app','com.talknow.free.text.me.now.second.phone.number.burner.app','com.textNumber.phone')
+			and a.package_name in ('second.phone.number.text.free.call.app')
 			and event_name in ('sn_5_call_dial_request','sn_dev_call_dial_outbound_sdk_call','sn_5_call_dial_outbound_succ'
 			,'sn_5_call_dial_outbound_ring','sn_dev_call_dial_outbound_did_answer','sn_5_call_dial_end','sn_5_serve_voice_answer_begin','sn_5_serve_voice_answer_fail'
 			,'sn_5_serve_voice_answer_succ','sn_dev_call_dial_inbound_click_answer','sn_dev_call_dial_inbound_did_answer','sn_dev_call_dial_inbound_connect_sdk'
@@ -700,6 +700,37 @@ and  event_date<=date_add(run_date,interval -history_end_day day);
 			and ((safe_CAST(SPLIT(app_version, '.')[SAFE_OFFSET(0)] AS INT)>=3 and safe_CAST(SPLIT(app_version, '.')[SAFE_OFFSET(1)] AS INT)>=8  )
 			      or app_version='undefined'
 			      or (safe_CAST(SPLIT(app_version, '.')[SAFE_OFFSET(0)] AS INT)>=4 ))
+		union all 
+		SELECT
+				event_date
+				--,event_name
+				,user_pseudo_id
+				,ifnull(country_code,a.country) as country_code
+				,app_version
+				,event_timestamp
+				,uuid
+				,mode
+				,provider
+				,case when event_name='sn_5_call_dial_end' and mode='outbound' then 'sn_5_call_dial_end_out'
+				when event_name='sn_5_call_dial_end' and mode='inbound' then 'sn_5_call_dial_end_in'
+				else event_name end as event_name
+				,row_number() over(partition by user_pseudo_id,event_name,uuid) as rn 
+				,lag(event_name)  over(partition by user_pseudo_id order by event_timestamp) as last_event_name 
+		    		,a.package_name
+      				 ,app_name
+			FROM  `gzdw2024.scanner_02_event.dwd_user_event_time_di`       a
+			left join `gzdw2024.gz_dim.country_info` b
+			on upper(a.country)=upper(b.country_name)
+		left join `gzdw2024.gz_dim.app_info` c
+		on upper(a.package_name)=upper(c.package_name) 
+			where  event_date >=date_add(run_date,interval -history_day day)
+			and event_date <=date_add(run_date,interval -history_end_day day)
+			and a.package_name in ('com.talknow.free.text.me.now.second.phone.number.burner.app','com.textNumber.phone')
+			and event_name in ('sn_5_call_dial_request','sn_dev_call_dial_outbound_sdk_call','sn_5_call_dial_outbound_succ'
+			,'sn_5_call_dial_outbound_ring','sn_dev_call_dial_outbound_did_answer','sn_5_call_dial_end','sn_5_serve_voice_answer_begin','sn_5_serve_voice_answer_fail'
+			,'sn_5_serve_voice_answer_succ','sn_dev_call_dial_inbound_click_answer','sn_dev_call_dial_inbound_did_answer','sn_dev_call_dial_inbound_connect_sdk'
+			,'sn_5_call_dial_inbound_succ')
+			
 			)a 
 		
 		)b 
