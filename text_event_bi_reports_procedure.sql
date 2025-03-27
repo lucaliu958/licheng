@@ -26,6 +26,7 @@ insert `gzdw2024.text_03_bi.dws_event_report`
 		,sum(event_num) as event_num
 		,sum(user_num) as user_num
 		,package_name
+		,app_name
 	FROM
 		(
 		SELECT  
@@ -36,13 +37,16 @@ insert `gzdw2024.text_03_bi.dws_event_report`
 			,case when is_new=1 then 'new' else 'old' end as is_new
 			,event_num
 			,user_num
-			,package_name
+			,a.package_name
+			,app_name
 		FROM `gzdw2024.scanner_02_event.dws_event_profile_di`  a 
 		left join `gzdw2024.gz_dim.country_info` b
 		on upper(a.country)=upper(b.country_name)
+		left join `gzdw2024.gz_dim.app_info` c
+		on upper(a.package_name)=upper(c.package_name) 
 		WHERE event_date >= date_add(run_date,interval -history_day day)
 			    and event_date <= date_add(run_date,interval -history_end_day day)
-		and package_name in ('second.phone.number.text.free.call.app','com.talknow.free.text.me.now.second.phone.number.burner.app','com.textNumber.phone')
+		and a.package_name in ('second.phone.number.text.free.call.app','com.talknow.free.text.me.now.second.phone.number.burner.app','com.textNumber.phone')
 		and event_name in ('first_open','sn_0_app_launch','sn_1_signin_show','sn_1_signin_succ','sn_1_signin_fail'
 							,'sn_vip_all_show','sn_vip_all_click','sn_vip_all_succ','sn_vip_all_fail'
 							,'sn_vip_guide_show','sn_vip_guide_click','sn_vip_guide_succ','sn_5_call_dial_tap'
@@ -146,7 +150,7 @@ insert `gzdw2024.text_03_bi.dws_event_report`
 							"sn_vip_credit_out_pop_click",
 							"sn_vip_credit_out_pop_cancel")
 		)a 
-		group by 	event_date,country_code,last_app_version,event_name,is_new,package_name;
+		group by 	event_date,country_code,last_app_version,event_name,is_new,package_name,app_name;
 
 
 ----失败原因分布
@@ -167,6 +171,7 @@ insert `gzdw2024.text_03_bi.dws_event_params_report`
 	,sum(b.event_num) as event_num
 	,b.package_name
 	,max(c.event_num) as event_total_num
+	,app_name
 FROM
 	(
 	SELECT  
@@ -178,6 +183,7 @@ FROM
 		,event_params_value
 		,sum(event_num) as event_num
 	,package_name
+	,app_name
 	FROM
 		(
 		SELECT  
@@ -187,14 +193,17 @@ FROM
 			,event_params_key
 			,event_params_value
 			,event_num
-      	,package_name
+      			,a.package_name
+			,app_name
 			--,sum(event_num) over()
 		FROM `gzdw2024.scanner_02_event.dws_event_param_profile_di`a 
 		left join `gzdw2024.gz_dim.country_info` b
 		on upper(a.country)=upper(b.country_name)
+		left join `gzdw2024.gz_dim.app_info` c
+		on upper(a.package_name)=upper(c.package_name) 
 		WHERE event_date >=date_add(run_date,interval -history_day day)
 			and event_date <=date_add(run_date,interval -history_end_day day)
-		and package_name in ('second.phone.number.text.free.call.app','com.talknow.free.text.me.now.second.phone.number.burner.app','com.textNumber.phone')
+		and a.package_name in ('second.phone.number.text.free.call.app','com.talknow.free.text.me.now.second.phone.number.burner.app','com.textNumber.phone')
 		and event_name in ('first_open','sn_0_app_launch','sn_1_signin_show','sn_1_signin_succ','sn_1_signin_fail'
 							,'sn_vip_all_show','sn_vip_all_click','sn_vip_all_succ','sn_vip_all_fail'
 							,'sn_vip_guide_show','sn_vip_guide_click','sn_vip_guide_succ','sn_5_call_dial_tap'
@@ -367,7 +376,7 @@ FROM
 		and event_params_key in('error_code','reason','star','mode','provider','ga_session_id'
 			,'net_description','status','credit','entrance','code','vip_type','from')
 		)a 
-		group by 	event_date,event_name,event_params_value,country_code,event_params_key,package_name
+		group by 	event_date,event_name,event_params_value,country_code,event_params_key,package_name,app_name
 	)b 
 	left join
 	(
@@ -397,7 +406,7 @@ FROM
 	,b.country_code
 	,b.event_params_key
 	,b.event_params_value
-	,b.package_name;
+	,b.package_name,app_name;
 
 
 ------通话时长
@@ -640,6 +649,7 @@ and  event_date<=date_add(run_date,interval -history_end_day day);
 		,count(1) as event_num 
 		,count(distinct user_pseudo_id) as user_num 
 		,package_name
+		,app_name
 	FROM
 		(
 		SELECT
@@ -654,7 +664,8 @@ and  event_date<=date_add(run_date,interval -history_end_day day);
 			when event_name='sn_5_call_dial_end_in' and last_event_name ='sn_dev_call_dial_inbound_did_answer' then 1
 			when event_name ='sn_dev_call_dial_inbound_did_answer' and rn=1 then 1  
 			else 0 end as tag 
-		,package_name
+			,package_name
+			,app_name
 		FROM
 			(
 			SELECT
@@ -672,13 +683,16 @@ and  event_date<=date_add(run_date,interval -history_end_day day);
 				else event_name end as event_name
 				,row_number() over(partition by user_pseudo_id,event_name,uuid) as rn 
 				,lag(event_name)  over(partition by user_pseudo_id order by event_timestamp) as last_event_name 
-		,package_name
+		    ,a.package_name
+       ,app_name
 			FROM  `gzdw2024.scanner_02_event.dwd_user_event_time_di`       a
 			left join `gzdw2024.gz_dim.country_info` b
 			on upper(a.country)=upper(b.country_name)
+		left join `gzdw2024.gz_dim.app_info` c
+		on upper(a.package_name)=upper(c.package_name) 
 			where  event_date >=date_add(run_date,interval -history_day day)
 			and event_date <=date_add(run_date,interval -history_end_day day)
-			and package_name in ('second.phone.number.text.free.call.app','com.talknow.free.text.me.now.second.phone.number.burner.app','com.textNumber.phone')
+			and a.package_name in ('second.phone.number.text.free.call.app','com.talknow.free.text.me.now.second.phone.number.burner.app','com.textNumber.phone')
 			and event_name in ('sn_5_call_dial_request','sn_dev_call_dial_outbound_sdk_call','sn_5_call_dial_outbound_succ'
 			,'sn_5_call_dial_outbound_ring','sn_dev_call_dial_outbound_did_answer','sn_5_call_dial_end','sn_5_serve_voice_answer_begin','sn_5_serve_voice_answer_fail'
 			,'sn_5_serve_voice_answer_succ','sn_dev_call_dial_inbound_click_answer','sn_dev_call_dial_inbound_did_answer','sn_dev_call_dial_inbound_connect_sdk'
@@ -690,7 +704,7 @@ and  event_date<=date_add(run_date,interval -history_end_day day);
 		
 		)b 
 		where tag=1
-		group by event_date,event_name,app_version,package_name;
+		group by event_date,event_name,app_version,package_name,app_name;
 
 
 ----积分消耗
