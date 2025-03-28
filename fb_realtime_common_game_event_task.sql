@@ -1079,7 +1079,7 @@ SELECT
 	,case when is_new='TOTAL' then  active_uv
 	when is_new='new' then  new_uv
 	when is_new='old' then active_uv -  new_uv end as active_uv
-	
+	,app_name
 FROM
 	(
 	SELECT
@@ -1095,6 +1095,7 @@ FROM
 		,country_code
 		,active_uv
 		,new_uv
+		,app_name
 	FROM	`gzdw2024.fbgame_real_01_basic.dws_common_game_user_active_report`
 	WHERE event_date>=date_add(run_date,interval -history_day day )
 	and event_date<=date_add(run_date,interval -history_end_day day )
@@ -1277,6 +1278,7 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_user_fb_ad_report`
 			,revenue
 			,clicks
 			,active_uv
+			,app_name
 		FROM
 			(
 			SELECT
@@ -1343,7 +1345,9 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_user_fb_ad_report`
 			on c0.stats_date=c1.event_date
 			and c0.platform=c1.platform
 			and c0.country_code=c1.country_code
-			and c0.package_name=c1.package_name;
+			and c0.package_name=c1.package_name
+	    left join  `gzdw2024.gz_dim.app_info` b 
+				on c0.package_name=b.package_name;
 
 
 
@@ -1365,6 +1369,7 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_ad_expect_show_report`
 			,impressions
 			,impression_pv
 			,expect_pv
+			,app_name
 		FROM
 			(
 			SELECT
@@ -1468,7 +1473,9 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_ad_expect_show_report`
 			on a.stats_date=d.stats_date
 			and a.package_name=d.package_name
 			and a.platform=d.platform
-			and a.country_code=d.country_code;
+			and a.country_code=d.country_code
+	    left join  `gzdw2024.gz_dim.app_info` b5 
+				on a.package_name=b5.package_name;
 			--where a.platform='TOTAL'
 			--AND a.country_code='TOTAL';
 
