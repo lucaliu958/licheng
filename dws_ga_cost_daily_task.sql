@@ -1,3 +1,4 @@
+
 CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.dws_ga_cost_daily_task`(run_date DATE, history_day INT64, end_day INT64)
 begin
 delete `gzdw2024.cost_data.dws_ga_cost_daily`
@@ -82,63 +83,123 @@ WITH
     max(campaign_name) as campaign_name
   FROM
     hzdw2024.all.p_ads_Campaign_7890088142
+	group by campaign_id
+	  UNION ALL
+  SELECT
+    campaign_id,
+    max(campaign_name) as campaign_name
+  FROM
+    gzdw2024.all.p_ads_Campaign_4283559862
 	group by campaign_id ),
 
  cost_data AS(
   SELECT
-    *
+   campaign_id,
+   geographic_view_country_criterion_id
+	,metrics_cost_micros
+	,metrics_conversions
+	,_DATA_DATE
   FROM
     hzdw2024.all.ads_GeoStats_4891374411 ---
   UNION ALL
   SELECT
-    *
+    campaign_id,
+   geographic_view_country_criterion_id
+	,metrics_cost_micros
+	,metrics_conversions
+	,_DATA_DATE
   FROM
     hzdw2024.all.ads_GeoStats_1449238239 ---
   UNION ALL
   SELECT
-    *
+    campaign_id,
+   geographic_view_country_criterion_id
+	,metrics_cost_micros
+	,metrics_conversions
+	,_DATA_DATE
   FROM
     hzdw2024.all.ads_GeoStats_5964298848 ---
   UNION ALL
   SELECT
-    *
+    campaign_id,
+   geographic_view_country_criterion_id
+	,metrics_cost_micros
+	,metrics_conversions
+	,_DATA_DATE
   FROM
     hzdw2024.all.ads_GeoStats_8500620333 ---
   UNION ALL
   SELECT
-    *
+    campaign_id,
+   geographic_view_country_criterion_id
+	,metrics_cost_micros
+	,metrics_conversions
+	,_DATA_DATE
   FROM
     hzdw2024.all.ads_GeoStats_6006331386 ---
   UNION ALL
   SELECT
-    *
+    campaign_id,
+   geographic_view_country_criterion_id
+	,metrics_cost_micros
+	,metrics_conversions
+	,_DATA_DATE
   FROM
     hzdw2024.all.ads_GeoStats_8515949135
   UNION ALL
   SELECT
-    *
+    campaign_id,
+   geographic_view_country_criterion_id
+	,metrics_cost_micros
+	,metrics_conversions
+	,_DATA_DATE
   FROM
     hzdw2024.all.ads_GeoStats_7647547266 ---
   UNION ALL
   SELECT
-    *
+    campaign_id,
+   geographic_view_country_criterion_id
+	,metrics_cost_micros
+	,metrics_conversions
+	,_DATA_DATE
   FROM
     hzdw2024.all.ads_GeoStats_9023445943 ---
   UNION ALL
   SELECT
-    *
+    campaign_id,
+   geographic_view_country_criterion_id
+	,metrics_cost_micros
+	,metrics_conversions
+	,_DATA_DATE
   FROM
     hzdw2024.all.ads_GeoStats_7114161798
   UNION ALL
   SELECT
-    *
+    campaign_id,
+   geographic_view_country_criterion_id
+	,metrics_cost_micros
+	,metrics_conversions
+	,_DATA_DATE
   FROM
     hzdw2024.all.ads_GeoStats_5497157644
     UNION ALL
   SELECT
-    *
+    campaign_id,
+   geographic_view_country_criterion_id
+	,metrics_cost_micros
+	,metrics_conversions
+	,_DATA_DATE
   FROM
-    hzdw2024.all.ads_GeoStats_7890088142 ),
+    hzdw2024.all.ads_GeoStats_7890088142
+	  UNION ALL
+  SELECT
+    campaign_id,
+   geographic_view_country_criterion_id
+	,metrics_cost_micros
+	,metrics_conversions
+	,_DATA_DATE
+  FROM
+    gzdw2024.all.ads_GeoStats_4283559862),
   guangzhou_cost_info AS (
   SELECT
     a.campaign_id,
@@ -166,10 +227,11 @@ WITH
       WHEN LOWER(campaign_name) LIKE '%ga-vidma editor%' THEN 'vidma.video.editor.videomaker' --Vidma Editor_android
       WHEN LOWER(campaign_name) LIKE '%ga-st-pro%' THEN "com.internet.speedtest.check.wifi.meter" --stpro
       WHEN LOWER(campaign_name) LIKE '%all3%' THEN 'video.downloader.videodownloader.tube' --all3 --WHEN LOWER(campaign_name) LIKE '%all%' THEN 'free.video.downloader.converter.music' --all1
+      WHEN LOWER(campaign_name) LIKE '%talknow-gp%' THEN 'com.talknow.free.text.me.now.second.phone.number.burner.app' --talknowandroid
       ELSE "Other"
   END
     AS package_name,
-   cast(geographic_view_country_criterion_id as string) as country_criterion_id
+  cast(geographic_view_country_criterion_id as string) as country_criterion_id
 	,cast(a.campaign_id as string) as campaign_id
 	,metrics_cost_micros
 	,metrics_conversions
