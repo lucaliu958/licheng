@@ -56,6 +56,18 @@ INSERT
 			and stats_date<=date_add(run_date,interval -history_end_day day)
 			AND traffic_source_name='TOTAL'
 			-- AND package_name in ("vidma.video.editor.videomaker")
+			union all 
+			SELECT
+				stats_date
+				,package_name
+				,upper(country) as country
+				,install_ga
+				,trial_counts
+			FROM	gzdw2024.scanner_02_event.dws_delivery_report 
+			WHERE stats_date>=date_add(run_date,interval -history_day day)
+			and stats_date<=date_add(run_date,interval -history_end_day day)
+			AND traffic_source_name='TOTAL'
+			-- AND package_name in ("vidma.video.editor.videomaker")
 			)a 
 			left join
 			(
