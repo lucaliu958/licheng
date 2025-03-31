@@ -283,9 +283,13 @@ FROM
 	 )a 
 	left join
 	(
-	SELECT stats_date,exchange_rate 
-	FROM `scanner-master-android.scanner_ios_dw.exchange_rete` 
-	where 1=1
+	SELECT 
+		cast(stats_date as date) as stats_date
+		,SAFE_DIVIDE(1,rate ) AS exchange_rate
+		FROM `gzdw2024.gz_dim.exchange_rate_days` 
+		where 1=1
+		--and cast(stats_date as date)>='2025-03-30'
+		and currency='HKD'
 	)d 
 	on a.stats_date=d.stats_date
 	left join
