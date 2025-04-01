@@ -1230,6 +1230,7 @@ SELECT
 	,impression_fail_uv
 	,case when is_new='TOTAL' then  active_uv  when is_new='new' then  new_uv
 	when is_new='old' then active_uv -  new_uv end as active_uv
+	,app_name
 FROM
 	(
 	SELECT
@@ -1245,6 +1246,7 @@ FROM
 		,country_code
 		,active_uv
 		,new_uv
+		,app_name
 	FROM	`gzdw2024.fbgame_real_01_basic.dws_common_game_user_active_report`
 	WHERE event_date>=date_add(run_date,interval -history_day day )
 	and event_date<=date_add(run_date,interval -history_end_day day )
