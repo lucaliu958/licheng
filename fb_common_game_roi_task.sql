@@ -856,6 +856,8 @@ SELECT
 	,new_ratio
 	,lag(new_ratio) over(partition by package_name,platform,country_code order by stats_date) as last_new_ratio
 	,lag(new_arpu) over(partition by package_name,platform,country_code order by stats_date) as last_new_arpu
+	,old_arpu
+	,lag(old_arpu) over(partition by package_name,platform,country_code order by stats_date) as last_old_arpu
 	,lag(arpu) over(partition by package_name,platform,country_code order by stats_date) as last_arpu
 	,lag(new_ad_ratio) over(partition by package_name,platform,country_code order by stats_date) as last_new_ad_ratio
 	,lag(total_bili_3) over(partition by package_name,platform,country_code order by stats_date) as last_total_bili_3
@@ -893,10 +895,10 @@ FROM
 		,total_bili_7
     	,arpu
 		,case when new_bili>=0.8 then arpu*1.03 
-		when new_bili>=0.7 and new_bili<0.8 then arpu*1.13
-		when new_bili>=0.5 and new_bili<0.7 then arpu*1.23 
-		when new_bili>=0.3 and new_bili<0.5 then arpu*1.4 
-		when  new_bili<0.3 then arpu*1.5 else arpu end as new_arpu
+		when new_bili>=0.7 and new_bili<0.8 then arpu*1.07
+		when new_bili>=0.5 and new_bili<0.7 then arpu*1.13 
+		when new_bili>=0.3 and new_bili<0.5 then arpu*1.2
+		when  new_bili<0.3 then arpu*1.3 else arpu end as new_arpu
 		,safe_divide(new_ad_liebian_uv,install) as new_ratio
 		,case when new_ad_ratio<1.1 then 1.05
 		when new_ad_ratio<1.2 then 1.1
@@ -907,6 +909,11 @@ FROM
 		else new_ad_ratio-0.1 end as new_ad_ratio
 		,total_bili_14
 		,total_bili_28
+	,case when new_bili>=0.8 then arpu*0.8
+		when new_bili>=0.7 and new_bili<0.8 then arpu*0.83
+		when new_bili>=0.5 and new_bili<0.7 then arpu*0.87
+		when new_bili>=0.3 and new_bili<0.5 then arpu*0.92
+		when  new_bili<0.3 then arpu*0.97 else arpu end as old_arpu
 
 	FROM
 		(
@@ -1011,6 +1018,8 @@ select
 	,total_bili_28
 	,last_total_bili_28
 	,first_28day_revenue
+	,old_arpu
+	,last_old_arpu
 FROM
 	(
 	SELECT 
@@ -1020,12 +1029,12 @@ FROM
 	,case when new_ad_uv is not null then  install*new_arpu*(1+total_bili_3)*new_ad_ratio 
 	else install*last_new_ratio*last_new_arpu*(1+ last_total_bili_3)*last_new_ad_ratio end as first_3day_revenue
 
-	,case when new_ad_uv is not null then  install*new_arpu*(1+total_bili_3)*new_ad_ratio  + new_ad_liebian_uv*arpu*(total_bili_7- total_bili_3)*new_ad_ratio 
-	else install*last_new_ratio*last_new_arpu*(1+last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_arpu*(last_total_bili_7- last_total_bili_3)*last_new_ad_ratio end as first_7day_revenue
-	,case when new_ad_uv is not null then  install*new_arpu*(1+total_bili_3)*new_ad_ratio  + new_ad_liebian_uv*arpu*(total_bili_7- total_bili_3)*new_ad_ratio  + new_ad_liebian_uv*arpu*(total_bili_14- total_bili_7)*new_ad_ratio 
-	else install*last_new_ratio*last_new_arpu*(1+last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_arpu*(last_total_bili_7- last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_arpu*(last_total_bili_14- last_total_bili_7)*last_new_ad_ratio end as first_14day_revenue
-	,case when new_ad_uv is not null then  install*new_arpu*(1+total_bili_3)*new_ad_ratio  + new_ad_liebian_uv*arpu*(total_bili_7- total_bili_3)*new_ad_ratio  + new_ad_liebian_uv*arpu*(total_bili_14- total_bili_7)*new_ad_ratio  + new_ad_liebian_uv*arpu*(total_bili_28- total_bili_14)*new_ad_ratio 
-	else install*last_new_ratio*last_new_arpu*(1+last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_arpu*(last_total_bili_7- last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_arpu*(last_total_bili_14- last_total_bili_7)*last_new_ad_ratio + install*last_new_ratio*last_arpu*(last_total_bili_28- last_total_bili_14)*last_new_ad_ratio end as first_28day_revenue
+	,case when new_ad_uv is not null then  install*new_arpu*(1+total_bili_3)*new_ad_ratio  + new_ad_liebian_uv*old_arpu*(total_bili_7- total_bili_3)*new_ad_ratio 
+	else install*last_new_ratio*last_new_arpu*(1+last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_old_arpu*(last_total_bili_7- last_total_bili_3)*last_new_ad_ratio end as first_7day_revenue
+	,case when new_ad_uv is not null then  install*new_arpu*(1+total_bili_3)*new_ad_ratio  + new_ad_liebian_uv*old_arpu*(total_bili_7- total_bili_3)*new_ad_ratio  + new_ad_liebian_uv*old_arpu*(total_bili_14- total_bili_7)*new_ad_ratio 
+	else install*last_new_ratio*last_new_arpu*(1+last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_old_arpu*(last_total_bili_7- last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_old_arpu*(last_total_bili_14- last_total_bili_7)*last_new_ad_ratio end as first_14day_revenue
+	,case when new_ad_uv is not null then  install*new_arpu*(1+total_bili_3)*new_ad_ratio  + new_ad_liebian_uv*old_arpu*(total_bili_7- total_bili_3)*new_ad_ratio  + new_ad_liebian_uv*old_arpu*(total_bili_14- total_bili_7)*new_ad_ratio  + new_ad_liebian_uv*last_old_arpu*(total_bili_28- total_bili_14)*new_ad_ratio 
+	else install*last_new_ratio*last_new_arpu*(1+last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_old_arpu*(last_total_bili_7- last_total_bili_3)*last_new_ad_ratio + install*last_new_ratio*last_old_arpu*(last_total_bili_14- last_total_bili_7)*last_new_ad_ratio + install*last_new_ratio*last_old_arpu*(last_total_bili_28- last_total_bili_14)*last_new_ad_ratio end as first_28day_revenue
   
     FROM a 
 	WHERE 1=1
