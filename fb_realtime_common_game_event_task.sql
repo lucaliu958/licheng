@@ -1,3 +1,5 @@
+
+
 CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.fb_realtime_common_game_event_task`(run_date DATE, history_day INT64, history_retain_day INT64, history_end_day INT64)
 begin
 
@@ -591,6 +593,23 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_bubble_pro_event_active_report`
 	and package_name='fb.bubble.shoot.pro';
 
 
+------4.9 quiz事件
+delete `gzdw2024.fbgame_real_01_basic.dws_common_quiz_event_active_report`
+where stats_date>=date_add(run_date,interval -history_day day )
+and stats_date<=date_add(run_date,interval -history_end_day day );
+
+insert `gzdw2024.fbgame_real_01_basic.dws_common_quiz_event_active_report`
+--drop table if exists  `gzdw2024.fbgame_real_01_basic.dws_common_quiz_event_active_report`;
+--	create table  `gzdw2024.fbgame_real_01_basic.dws_common_quiz_event_active_report`
+--	PARTITION BY stats_date as 
+	SELECT
+		* 
+	FROM `gzdw2024.fbgame_real_01_basic.dws_common_game_event_active_report`
+	WHERE 1=1
+	and stats_date>=date_add(run_date,interval -history_day day )
+	and stats_date<=date_add(run_date,interval -history_end_day day )
+	and package_name='fb.quiz';
+
 
 ----------------5.事件参数明细
 
@@ -937,6 +956,24 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_bubble_pro_events_detail`
 	and event_date<=date_add(run_date,interval -history_end_day day )
 	and package_name='fb.bubble.shoot.pro';
 
+
+
+	------5.8 quiz事件明细
+delete `gzdw2024.fbgame_real_01_basic.dws_common_quiz_events_detail`
+where event_date>=date_add(run_date,interval -history_day day )
+and event_date<=date_add(run_date,interval -history_end_day day );
+
+insert `gzdw2024.fbgame_real_01_basic.dws_common_quiz_events_detail`
+--drop table if exists  `gzdw2024.fbgame_real_01_basic.dws_common_quiz_events_detail`;
+	--create table  `gzdw2024.fbgame_real_01_basic.dws_common_quiz_events_detail`
+	--PARTITION BY event_date as 
+	SELECT
+		* 
+	FROM `gzdw2024.fbgame_real_01_basic.dws_common_game_events_detail`
+	WHERE 1=1
+	and event_date>=date_add(run_date,interval -history_day day )
+	and event_date<=date_add(run_date,interval -history_end_day day )
+	and package_name='fb.quiz';
 
 
 
@@ -3009,3 +3046,6 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_hour_ad_expect_show_report
 
 
 end;
+
+
+
