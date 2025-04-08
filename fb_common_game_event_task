@@ -1,4 +1,5 @@
 
+
 CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.fb_common_game_event_task`(run_date DATE, history_day INT64, history_retain_day INT64, history_end_day INT64)
 begin
 
@@ -378,11 +379,14 @@ insert `gzdw2024.fbgame_01_basic.dws_common_game_event_active_report`
 					      when proptype='lighting' and propsum='0'  and event_name='fb_egg_prop_click' then 'fb_egg_prop_click_lighting'
 					      when event_name in ('fb_ibb_bomb_click','fb_ibb_fire_click','fb_ibb_light_click') and (propsum='0' or bombsum='0') then concat(event_name,'_0')
 					      when event_name in ('fb_ibb_bomb_click','fb_ibb_fire_click','fb_ibb_light_click') and (propsum!='0' or bombsum!='0') then concat(event_name,'_1')
+					      when event_name='fb_quiz_game_answer' and win=e_code then 'fb_quiz_game_answer_right'
+					       when event_name='fb_quiz_game_answer' and e_code is null  then 'fb_quiz_game_answer_no'
+					       	when event_name='fb_quiz_game_answer' and e_code is not  null and win!=e_code then 'fb_quiz_game_answer_wrong'
 					      else  concat(event_name,'_other')  end as event_name
 				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
 				WHERE event_date>=date_add(run_date,interval -history_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
-				and event_name in ('fb_egg_prop_click','fb_ibb_bomb_click','fb_ibb_fire_click','fb_ibb_light_click')
+				and event_name in ('fb_egg_prop_click','fb_ibb_bomb_click','fb_ibb_fire_click','fb_ibb_light_click','fb_quiz_game_answer')
 				
 				)a 
 			 left	join 
@@ -2917,8 +2921,7 @@ insert `gzdw2024.fbgame_01_basic.dws_common_game_ad_expect_show_report`
 							   ,'fb_egg_change_eggs_click','fb_egg_double_bomb_click','fb_egg_break_click','fb_egg_over_click','fb_egg_again_revive_click'
 							   ,'fb_egg_break_clickbutton','fb_egg_game_play_finish','fb_egg_game_play_fail'
   							   ,'fb_egg_game_chestdouble_click','fb_egg_sign_clickdouble','fb_egg_lucky_spin_watch_ad_click','fb_egg_lucky_spin_double_clickad'
-							   ,'fb_ibb_fail_thanks_click','fb_ibb_fail_continue_click','fb_ibb_fail_goto_ads','fb_ibb_scoregift_click'
-							   ,'fb_quiz_second_chance_cilck')
+							   ,'fb_ibb_fail_thanks_click','fb_ibb_fail_continue_click','fb_ibb_fail_goto_ads','fb_ibb_scoregift_click')
 					or (event_name in ('fb_zp_game_play_finish') and win='true')
 					or (event_name in ('fb_dog_game_play_succ_next') and type='is_ads')
 					or (event_name in ('fb_egg_bomb_click','fb_ibb_bomb_click') and bombsum='0')
@@ -3582,4 +3585,535 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_pro_level_finish_distribution_report
 		
 
    	
+
+------12.1玩家分数与金牌统计-分布
+delete `gzdw2024.fbgame_01_basic.dws_quiz_player_resource_distribution_report`
+where event_date>=date_add('2025-04-08',interval -10 day)
+and event_date<=date_add('2025-04-08',interval -1 day);
+
+
+insert `gzdw2024.fbgame_01_basic.dws_quiz_player_resource_distribution_report`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dws_quiz_player_resource_distribution_report`;
+--	create table  `gzdw2024.fbgame_01_basic.dws_quiz_player_resource_distribution_report`
+--	PARTITION BY event_date as 
+	with a  
+		as (
+		SELECT
+			event_date
+			,user_id
+			,package_name
+			,platform
+			,country_code
+			,score
+			,gold
+			,is_new
+		FROM
+			(
+			SELECT
+				a.event_date
+				,a.user_id
+				,a.package_name
+				,platform
+				,country_code	
+				,case when score<5 then 'a_0_4'
+					when score>=5 and score<10 then 'b_5_9'
+					when score>=10 and score<15 then 'c_10_14'
+					when score>=15 and score<20 then 'd_15_19'
+					when score>=20 and score<30 then 'e_20_29'
+					when score>=30  then 'f_30' end as score
+				,case when gold<5 then 'a_0_5'
+					when gold>=5 and gold<10 then 'b_5_10'
+					when gold>=10 and gold<15 then 'c_10_15'
+					when gold>=15 and gold<20 then 'd_15_20'
+					when gold>=20 and gold<30 then 'e_20_30'
+					when gold>=30  then 'f_30' end as gold
+				,ARRAY['TOTAL',case when is_new =1 then 'new'
+					when is_new =0 then 'old' 
+					else 'old' end] as is_new
+
+			FROM
+				(
+				SELECT
+					 event_date
+					,user_id					
+					,package_name	
+					,ARRAY['TOTAL',country_code] as country_code
+					,array[case when operating_system ='iOS' then 'iOS'
+					when operating_system ='Android' then 'Android' 
+					else 'web' end,'TOTAL']  as platform	
+					,safe_cast(score as int64) as score
+					,safe_cast(gold as int64) as gold
+					,row_number() over(partition by user_id,event_date,package_name order by event_timestamp desc ) as rn 
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
+				WHERE event_date>=date_add('2025-04-08',interval -10 day)
+				and event_date<=date_add('2025-04-08',interval -1 day)
+				and event_name in ('fb_quiz_game_play_exit') 
+				)a 
+				 left	join 
+				(
+				SELECT
+					package_name
+					,event_date
+					,user_id
+					,max(is_new) as is_new
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+				WHERE event_date>=date_add('2025-04-08',interval -10 day)
+				and event_date<=date_add('2025-04-08',interval -1 day)
+				group by event_date,user_id,package_name
+			   )b 
+				on a.user_id=b.user_id
+				and a.package_name=b.package_name
+				and a.event_date=b.event_date
+				where rn=1
+			)c
+			,UNNEST(country_code) as country_code
+			,UNNEST(platform) as platform
+			,UNNEST(is_new) as is_new
+		) 
+		 SELECT
+				   event_date
+				    ,package_name
+				    ,platform
+				    ,country_code
+				    ,is_new
+				    ,key_value.key AS event_key        
+				    ,key_value.value AS event_value
+				    ,count(1) as event_num
+				    ,COUNT(DISTINCT user_id) AS user_num
+				  FROM
+				    a,
+				    UNNEST([
+				      STRUCT('score' AS key, score AS value),
+				      STRUCT('gold' AS key, gold AS value)
+				    
+				    ]) AS key_value
+				  GROUP BY  event_date, event_key, event_value,package_name,country_code,platform,is_new;
+
+				     
+
+-------12.2玩家分数与金牌统计-中位数与平均
+delete `gzdw2024.fbgame_01_basic.dws_quiz_player_resource_avg_med_report`
+where event_date>=date_add('2025-04-08',interval -10 day)
+and event_date<=date_add('2025-04-08',interval -1 day);
+
+
+insert `gzdw2024.fbgame_01_basic.dws_quiz_player_resource_avg_med_report`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dws_quiz_player_resource_avg_med_report`;
+--	create table  `gzdw2024.fbgame_01_basic.dws_quiz_player_resource_avg_med_report`
+--	PARTITION BY event_date as 
+	with a  
+		as (
+		SELECT
+			event_date
+			,user_id
+			,package_name
+			,platform
+			,country_code
+			,score
+			,gold
+			,is_new
+			,PERCENTILE_CONT(score, 0.5) OVER(partition by event_date,package_name,platform,country_code,is_new) AS score_50
+			,PERCENTILE_CONT(gold, 0.5) OVER(partition by event_date,package_name,platform,country_code,is_new) AS gold_50
+		FROM
+			(
+			SELECT
+				a.event_date
+				,a.user_id
+				,a.package_name
+				,platform
+				,country_code	
+				,score
+				,gold
+				,ARRAY['TOTAL',case when is_new =1 then 'new'
+					when is_new =0 then 'old' 
+					else 'old' end] as is_new				
+			FROM
+				(
+				SELECT
+					 event_date
+					,user_id					
+					,package_name	
+					,ARRAY['TOTAL',country_code] as country_code
+					,array[case when operating_system ='iOS' then 'iOS'
+					when operating_system ='Android' then 'Android' 
+					else 'web' end,'TOTAL']  as platform	
+					,safe_cast(score as int64) as score
+					,safe_cast(gold as int64) as gold
+					,event_timestamp
+					,row_number() over(partition by user_id,event_date,package_name order by event_timestamp desc ) as rn 
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
+				WHERE event_date>=date_add('2025-04-08',interval -10 day)
+				and event_date<=date_add('2025-04-08',interval -1 day)
+				and event_name in ('fb_quiz_game_play_exit') 
+				)a 
+				 left	join 
+				(
+				SELECT
+					package_name
+					,event_date
+					,user_id
+					,max(is_new) as is_new
+				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+				WHERE event_date>=date_add('2025-04-08',interval -10 day)
+				and event_date<=date_add('2025-04-08',interval -1 day)
+				group by event_date,user_id,package_name
+			   )b 
+				on a.user_id=b.user_id
+				and a.package_name=b.package_name
+				and a.event_date=b.event_date
+				where rn=1
+			)c
+			,UNNEST(country_code) as country_code
+			,UNNEST(platform) as platform
+			,UNNEST(is_new) as is_new
+		) 
+		 SELECT
+		   event_date
+		    ,package_name
+		    ,platform
+		    ,country_code
+		    ,is_new
+		   	,avg(score) as avg_score
+			,avg(gold) as avg_gold
+			,max(score_50) as score_50
+			,max(gold_50) as gold_50
+			,count(1) as pv 
+			,count(distinct user_id) as uv 
+		  FROM
+		    a
+		  GROUP BY  event_date,package_name,country_code,platform,is_new;
+
+
+
+
+
+------12.3玩家答题数与答对数统计-分布
+delete `gzdw2024.fbgame_01_basic.dws_quiz_answer_distribution_report`
+where event_date>=date_add('2025-04-08',interval -10 day)
+and event_date<=date_add('2025-04-08',interval -1 day);
+
+
+insert `gzdw2024.fbgame_01_basic.dws_quiz_answer_distribution_report`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dws_quiz_answer_distribution_report`;
+--	create table  `gzdw2024.fbgame_01_basic.dws_quiz_answer_distribution_report`
+--	PARTITION BY event_date as 
+	with a  
+		as (
+		SELECT
+			event_date
+			,user_id
+			,package_name
+			,platform
+			,country_code
+			,is_new
+			,case when answer_pv<=3 then 'a_0_3'
+				when answer_pv>=4 and answer_pv<7 then 'b_4_6'
+				when answer_pv>=7 and answer_pv<10 then 'c_6_9'
+				when answer_pv>=10 and answer_pv<15 then 'd_10_14'
+				when answer_pv>=15 and answer_pv<20 then 'e_15_19'
+				when answer_pv>=20  then 'f_20' end as answer_pv
+			,case when answer_right_pv<=3 then 'a_0_3'
+			when answer_right_pv>=4 and answer_right_pv<7 then 'b_4_6'
+			when answer_right_pv>=7 and answer_right_pv<10 then 'c_6_9'
+			when answer_right_pv>=10 and answer_right_pv<15 then 'd_10_14'
+			when answer_right_pv>=15 and answer_right_pv<20 then 'e_15_19'
+			when answer_right_pv>=20  then 'f_20' end as answer_right_pv
+			,case when answer_right_ratio<=0.2 then 'a_0_20'
+			when answer_right_ratio>=0.2 and answer_right_ratio<0.4 then 'b_20_40'
+			when answer_right_ratio>=0.4 and answer_right_ratio<0.6 then 'c_40_60'
+			when answer_right_ratio>=0.6 and answer_right_ratio<0.8 then 'd_60_80'
+			when answer_right_ratio>=0.8  then 'e_80'
+			 end as answer_right_ratio
+		FROM
+			(
+			SELECT
+				event_date
+				,user_id
+				,package_name
+				,platform
+				,country_code
+				,is_new
+				,count(1) as answer_pv 
+				,sum(is_right) answer_right_pv
+				,count(1) -sum(is_right) answer_false_pv
+				,safe_divide(sum(is_right),count(1)) as answer_right_ratio
+			FROM
+				(
+				SELECT
+					a.event_date
+					,a.user_id
+					,a.package_name
+					,platform
+					,country_code	
+					,is_right
+					,ARRAY['TOTAL',case when is_new =1 then 'new'
+						when is_new =0 then 'old' 
+						else 'old' end] as is_new
+
+				FROM
+					(
+					SELECT
+						 event_date
+						,user_id					
+						,package_name	
+						,ARRAY['TOTAL',country_code] as country_code
+						,array[case when operating_system ='iOS' then 'iOS'
+						when operating_system ='Android' then 'Android' 
+						else 'web' end,'TOTAL']  as platform	
+						,win 
+						,e_code
+						,case when win=e_code then 1 else 0 end as is_right
+					FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
+					WHERE event_date>=date_add('2025-04-08',interval -10 day)
+					and event_date<=date_add('2025-04-08',interval -1 day)
+					and event_name in ('fb_quiz_game_answer') 
+					)a 
+					 left	join 
+					(
+					SELECT
+						package_name
+						,event_date
+						,user_id
+						,max(is_new) as is_new
+					FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+					WHERE event_date>=date_add('2025-04-08',interval -10 day)
+					and event_date<=date_add('2025-04-08',interval -1 day)
+					group by event_date,user_id,package_name
+				   )b 
+					on a.user_id=b.user_id
+					and a.package_name=b.package_name
+					and a.event_date=b.event_date
+					
+				)c
+				,UNNEST(country_code) as country_code
+				,UNNEST(platform) as platform
+				,UNNEST(is_new) as is_new
+				group by event_date,user_id,package_name,platform,country_code,is_new
+			)c1 
+		)
+		 SELECT
+				   event_date
+				    ,package_name
+				    ,platform
+				    ,country_code
+				    ,is_new
+				    ,key_value.key AS event_key        
+				    ,key_value.value AS event_value
+				    ,count(1) as event_num
+				    ,COUNT(DISTINCT user_id) AS user_num
+				  FROM
+				    a,
+				    UNNEST([
+				      STRUCT('answer_pv' AS key, answer_pv AS value),
+				      STRUCT('answer_right_pv' AS key, answer_right_pv AS value),
+			          STRUCT('answer_right_ratio' AS key, answer_right_ratio AS value)
+				    
+				    ]) AS key_value
+				  GROUP BY  event_date, event_key, event_value,package_name,country_code,platform,is_new;
+
+				     
+
+-------12.4玩家答题统计-中位数与平均
+delete `gzdw2024.fbgame_01_basic.dws_quiz_answer_avg_med_report`
+where event_date>=date_add('2025-04-08',interval -10 day)
+and event_date<=date_add('2025-04-08',interval -1 day);
+
+
+insert `gzdw2024.fbgame_01_basic.dws_quiz_answer_avg_med_report`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dws_quiz_answer_avg_med_report`;
+--	create table  `gzdw2024.fbgame_01_basic.dws_quiz_answer_avg_med_report`
+--	PARTITION BY event_date as 
+	with a  
+	as (
+		SELECT
+			event_date
+			,user_id
+			,package_name
+			,platform
+			,country_code
+			,is_new
+			,answer_pv 
+			,answer_right_pv
+			,answer_false_pv
+			,answer_right_ratio
+			,PERCENTILE_CONT(answer_pv, 0.5) OVER(partition by event_date,package_name,platform,country_code,is_new) AS answer_pv_50
+			,PERCENTILE_CONT(answer_right_pv, 0.5) OVER(partition by event_date,package_name,platform,country_code,is_new) AS answer_right_pv_50
+			,PERCENTILE_CONT(answer_false_pv, 0.5) OVER(partition by event_date,package_name,platform,country_code,is_new) AS answer_false_pv_50
+			,PERCENTILE_CONT(answer_right_ratio, 0.5) OVER(partition by event_date,package_name,platform,country_code,is_new) AS answer_right_ratio_50
+		FROM
+			(
+			SELECT
+				event_date
+				,user_id
+				,package_name
+				,platform
+				,country_code
+				,is_new
+				,count(1) as answer_pv 
+				,sum(is_right) answer_right_pv
+				,count(1) -sum(is_right) answer_false_pv
+				,safe_divide(sum(is_right),count(1)) as answer_right_ratio
+			FROM
+				(
+				SELECT
+					a.event_date
+					,a.user_id
+					,a.package_name
+					,platform
+					,country_code	
+					,is_right
+					,ARRAY['TOTAL',case when is_new =1 then 'new'
+						when is_new =0 then 'old' 
+						else 'old' end] as is_new				
+				FROM
+					(
+					SELECT
+						 event_date
+						,user_id					
+						,package_name	
+						,ARRAY['TOTAL',country_code] as country_code
+						,array[case when operating_system ='iOS' then 'iOS'
+						when operating_system ='Android' then 'Android' 
+						else 'web' end,'TOTAL']  as platform	
+						,win 
+						,e_code
+						,case when win=e_code then 1 else 0 end as is_right
+						,event_timestamp
+					FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
+					WHERE event_date>=date_add('2025-04-08',interval -10 day)
+					and event_date<=date_add('2025-04-08',interval -1 day)
+					and event_name in ('fb_quiz_game_answer') 
+					)a 
+					 left	join 
+					(
+					SELECT
+						package_name
+						,event_date
+						,user_id
+						,max(is_new) as is_new
+					FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+					WHERE event_date>=date_add('2025-04-08',interval -10 day)
+					and event_date<=date_add('2025-04-08',interval -1 day)
+					group by event_date,user_id,package_name
+				    )b 
+					on a.user_id=b.user_id
+					and a.package_name=b.package_name
+					and a.event_date=b.event_date
+					)b1
+					,UNNEST(country_code) as country_code
+					,UNNEST(platform) as platform
+					,UNNEST(is_new) as is_new
+					group by event_date,user_id,package_name,platform,country_code,is_new
+				)c
+				
+			) 
+			 SELECT
+			   event_date
+			    ,package_name
+			    ,platform
+			    ,country_code
+			    ,is_new
+			   	,avg(answer_pv) as avg_answer_pv
+				,avg(answer_right_pv) as avg_answer_right_pv
+				,avg(answer_false_pv) as avg_answer_false_pv
+				,avg(answer_right_ratio) as avg_answer_right_ratio
+				,max(answer_pv) as score_50
+				,max(answer_right_pv) as answer_right_pv_50
+				,max(answer_false_pv) as answer_false_pv_50
+				,max(answer_right_ratio) as answer_right_ratio_50
+				,count(1) as pv 
+				,count(distinct user_id) as uv 
+			  FROM
+			    a
+			  GROUP BY  event_date,package_name,country_code,platform,is_new;
+
+
+
+------12.5 题目报告
+
+delete `gzdw2024.fbgame_01_basic.dws_quiz_question_answer_report`
+where event_date>=date_add('2025-04-08',interval -10 day)
+and event_date<=date_add('2025-04-08',interval -1 day);
+
+
+insert `gzdw2024.fbgame_01_basic.dws_quiz_question_answer_report`
+--drop table if exists  `gzdw2024.fbgame_01_basic.dws_quiz_question_answer_report`;
+--	create table  `gzdw2024.fbgame_01_basic.dws_quiz_question_answer_report`
+--	PARTITION BY event_date as 
+	
+			SELECT
+				event_date
+				,package_name
+				,platform
+				,country_code
+				,is_new
+				,type
+				,cat_id
+				,count(1) as answer_pv 
+				,sum(is_right) answer_right_pv
+				,count(1) -sum(is_right) answer_false_pv
+				,count(case when e_code is null then 1 else null end ) answer_no_pv
+				,safe_divide(sum(is_right),count(1)) as answer_right_ratio
+			FROM
+				(
+				SELECT
+					a.event_date
+					,a.user_id
+					,a.package_name
+					,platform
+					,country_code	
+					,is_right
+					,ARRAY['TOTAL',case when is_new =1 then 'new'
+						when is_new =0 then 'old' 
+						else 'old' end] as is_new
+					,cat_id
+					,type	
+					,win 
+					,e_code			
+				FROM
+					(
+					SELECT
+						 event_date
+						,user_id					
+						,package_name	
+						,ARRAY['TOTAL',country_code] as country_code
+						,array[case when operating_system ='iOS' then 'iOS'
+						when operating_system ='Android' then 'Android' 
+						else 'web' end,'TOTAL']  as platform	
+						,win 
+						,e_code
+						,ARRAY['TOTAL',cat_id] as cat_id
+						,ARRAY['TOTAL',type] as type
+						,case when win=e_code then 1 else 0 end as is_right
+						,event_timestamp
+					FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
+					WHERE event_date>=date_add('2025-04-08',interval -10 day)
+					and event_date<=date_add('2025-04-08',interval -1 day)
+					and event_name in ('fb_quiz_game_answer') 
+					)a 
+					 left	join 
+					(
+					SELECT
+						package_name
+						,event_date
+						,user_id
+						,max(is_new) as is_new
+					FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
+					WHERE event_date>=date_add('2025-04-08',interval -10 day)
+					and event_date<=date_add('2025-04-08',interval -1 day)
+					group by event_date,user_id,package_name
+				    )b 
+					on a.user_id=b.user_id
+					and a.package_name=b.package_name
+					and a.event_date=b.event_date
+					)b1
+					,UNNEST(country_code) as country_code
+					,UNNEST(platform) as platform
+					,UNNEST(is_new) as is_new
+					,UNNEST(cat_id) as cat_id
+					,UNNEST(type) as type
+					group by event_date,package_name,platform,country_code,is_new,type,cat_id
+				;
+
+
 end;
