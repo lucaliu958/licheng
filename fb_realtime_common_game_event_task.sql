@@ -395,12 +395,17 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_event_active_report`
 					      when proptype='lighting' and propsum='0'  and event_name='fb_egg_prop_click' then 'fb_egg_prop_click_lighting'
 					      when event_name in ('fb_ibb_bomb_click','fb_ibb_fire_click','fb_ibb_light_click') and (propsum='0' or bombsum='0') then concat(event_name,'_0')
 					      when event_name in ('fb_ibb_bomb_click','fb_ibb_fire_click','fb_ibb_light_click') and (propsum!='0' or bombsum!='0') then concat(event_name,'_1')
-					      else  concat(event_name,'_other')  end as event_name
+					     
+					      when event_name='fb_quiz_game_answer' and win=e_code then 'fb_quiz_game_answer_right' 
+								when event_name='fb_quiz_game_answer' and e_code is null  then 'fb_quiz_game_answer_no'
+									when event_name='fb_quiz_game_answer' and e_code is not  null and win!=e_code then 'fb_quiz_game_answer_wrong'
+								 else  concat(event_name,'_other')  
+					      end as event_name
 									,gameID
 				FROM `gzdw2024.fbgame_real_01_basic.dwd_common_game_user_event_di`  
 				WHERE event_date>=date_add(run_date,interval -history_day day)
 				and event_date<=date_add(run_date,interval -history_end_day day)
-				and event_name in ('fb_egg_prop_click','fb_ibb_bomb_click','fb_ibb_fire_click','fb_ibb_light_click')
+				and event_name in ('fb_egg_prop_click','fb_ibb_bomb_click','fb_ibb_fire_click','fb_ibb_light_click','fb_quiz_game_answer')
 				and event_date <= date_add(CURRENT_DATE('America/Los_Angeles'),interval -history_end_day day)
 				)a 
 			 left	join 
@@ -1441,8 +1446,7 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_ad_expect_show_report`
 							   ,'fb_egg_change_eggs_click','fb_egg_double_bomb_click','fb_egg_break_click','fb_egg_over_click','fb_egg_again_revive_click'
 							   ,'fb_egg_break_clickbutton','fb_egg_game_play_finish','fb_egg_game_play_fail'
 							  ,'fb_egg_game_chestdouble_click','fb_egg_sign_clickdouble','fb_egg_lucky_spin_watch_ad_click','fb_egg_lucky_spin_double_clickad'
-							   ,'fb_ibb_fail_thanks_click','fb_ibb_fail_continue_click','fb_ibb_fail_goto_ads','fb_ibb_scoregift_click'
-							 ,'fb_quiz_second_chance_cilck')
+							   ,'fb_ibb_fail_thanks_click','fb_ibb_fail_continue_click','fb_ibb_fail_goto_ads','fb_ibb_scoregift_click')
 					or (event_name in ('fb_zp_game_play_finish') and win='true')
 					or (event_name in ('fb_dog_game_play_succ_next') and type='is_ads')
 					or (event_name in ('fb_egg_bomb_click','fb_ibb_bomb_click') and bombsum='0')
