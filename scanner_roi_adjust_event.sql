@@ -40,7 +40,7 @@ FROM
 	  ,0 as total_installs
 	  ,0 as view_installs
 	  ,0 as tap_installs
-	  ,installs
+	  ,total_installs as installs
 	  ,local_spend
 	FROM `gzdw2024.campaigns.prefect_keyword_reports_Scanner-Singapore_*` 
 	WHERE 1=1 
