@@ -1,5 +1,4 @@
 
-
 CREATE OR REPLACE PROCEDURE `gzdw2024.gz_dim.fb_common_game_event_task`(run_date DATE, history_day INT64, history_retain_day INT64, history_end_day INT64)
 begin
 
@@ -3588,8 +3587,8 @@ insert `gzdw2024.fbgame_01_basic.dws_bubble_pro_level_finish_distribution_report
 
 ------12.1玩家分数与金牌统计-分布
 delete `gzdw2024.fbgame_01_basic.dws_quiz_player_resource_distribution_report`
-where event_date>=date_add('2025-04-08',interval -10 day)
-and event_date<=date_add('2025-04-08',interval -1 day);
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
 
 
 insert `gzdw2024.fbgame_01_basic.dws_quiz_player_resource_distribution_report`
@@ -3645,8 +3644,8 @@ insert `gzdw2024.fbgame_01_basic.dws_quiz_player_resource_distribution_report`
 					,safe_cast(gold as int64) as gold
 					,row_number() over(partition by user_id,event_date,package_name order by event_timestamp desc ) as rn 
 				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
-				WHERE event_date>=date_add('2025-04-08',interval -10 day)
-				and event_date<=date_add('2025-04-08',interval -1 day)
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
 				and event_name in ('fb_quiz_game_play_exit') 
 				)a 
 				 left	join 
@@ -3657,8 +3656,8 @@ insert `gzdw2024.fbgame_01_basic.dws_quiz_player_resource_distribution_report`
 					,user_id
 					,max(is_new) as is_new
 				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
-				WHERE event_date>=date_add('2025-04-08',interval -10 day)
-				and event_date<=date_add('2025-04-08',interval -1 day)
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
 				group by event_date,user_id,package_name
 			   )b 
 				on a.user_id=b.user_id
@@ -3693,8 +3692,8 @@ insert `gzdw2024.fbgame_01_basic.dws_quiz_player_resource_distribution_report`
 
 -------12.2玩家分数与金牌统计-中位数与平均
 delete `gzdw2024.fbgame_01_basic.dws_quiz_player_resource_avg_med_report`
-where event_date>=date_add('2025-04-08',interval -10 day)
-and event_date<=date_add('2025-04-08',interval -1 day);
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
 
 
 insert `gzdw2024.fbgame_01_basic.dws_quiz_player_resource_avg_med_report`
@@ -3742,8 +3741,8 @@ insert `gzdw2024.fbgame_01_basic.dws_quiz_player_resource_avg_med_report`
 					,event_timestamp
 					,row_number() over(partition by user_id,event_date,package_name order by event_timestamp desc ) as rn 
 				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
-				WHERE event_date>=date_add('2025-04-08',interval -10 day)
-				and event_date<=date_add('2025-04-08',interval -1 day)
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
 				and event_name in ('fb_quiz_game_play_exit') 
 				)a 
 				 left	join 
@@ -3754,8 +3753,8 @@ insert `gzdw2024.fbgame_01_basic.dws_quiz_player_resource_avg_med_report`
 					,user_id
 					,max(is_new) as is_new
 				FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
-				WHERE event_date>=date_add('2025-04-08',interval -10 day)
-				and event_date<=date_add('2025-04-08',interval -1 day)
+				WHERE event_date>=date_add(run_date,interval -history_day day)
+				and event_date<=date_add(run_date,interval -history_end_day day)
 				group by event_date,user_id,package_name
 			   )b 
 				on a.user_id=b.user_id
@@ -3789,8 +3788,8 @@ insert `gzdw2024.fbgame_01_basic.dws_quiz_player_resource_avg_med_report`
 
 ------12.3玩家答题数与答对数统计-分布
 delete `gzdw2024.fbgame_01_basic.dws_quiz_answer_distribution_report`
-where event_date>=date_add('2025-04-08',interval -10 day)
-and event_date<=date_add('2025-04-08',interval -1 day);
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
 
 
 insert `gzdw2024.fbgame_01_basic.dws_quiz_answer_distribution_report`
@@ -3864,8 +3863,8 @@ insert `gzdw2024.fbgame_01_basic.dws_quiz_answer_distribution_report`
 						,e_code
 						,case when win=e_code then 1 else 0 end as is_right
 					FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
-					WHERE event_date>=date_add('2025-04-08',interval -10 day)
-					and event_date<=date_add('2025-04-08',interval -1 day)
+					WHERE event_date>=date_add(run_date,interval -history_day day)
+					and event_date<=date_add(run_date,interval -history_end_day day)
 					and event_name in ('fb_quiz_game_answer') 
 					)a 
 					 left	join 
@@ -3876,8 +3875,8 @@ insert `gzdw2024.fbgame_01_basic.dws_quiz_answer_distribution_report`
 						,user_id
 						,max(is_new) as is_new
 					FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
-					WHERE event_date>=date_add('2025-04-08',interval -10 day)
-					and event_date<=date_add('2025-04-08',interval -1 day)
+					WHERE event_date>=date_add(run_date,interval -history_day day)
+					and event_date<=date_add(run_date,interval -history_end_day day)
 					group by event_date,user_id,package_name
 				   )b 
 					on a.user_id=b.user_id
@@ -3915,8 +3914,8 @@ insert `gzdw2024.fbgame_01_basic.dws_quiz_answer_distribution_report`
 
 -------12.4玩家答题统计-中位数与平均
 delete `gzdw2024.fbgame_01_basic.dws_quiz_answer_avg_med_report`
-where event_date>=date_add('2025-04-08',interval -10 day)
-and event_date<=date_add('2025-04-08',interval -1 day);
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
 
 
 insert `gzdw2024.fbgame_01_basic.dws_quiz_answer_avg_med_report`
@@ -3980,8 +3979,8 @@ insert `gzdw2024.fbgame_01_basic.dws_quiz_answer_avg_med_report`
 						,case when win=e_code then 1 else 0 end as is_right
 						,event_timestamp
 					FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
-					WHERE event_date>=date_add('2025-04-08',interval -10 day)
-					and event_date<=date_add('2025-04-08',interval -1 day)
+					WHERE event_date>=date_add(run_date,interval -history_day day)
+					and event_date<=date_add(run_date,interval -history_end_day day)
 					and event_name in ('fb_quiz_game_answer') 
 					)a 
 					 left	join 
@@ -3992,8 +3991,8 @@ insert `gzdw2024.fbgame_01_basic.dws_quiz_answer_avg_med_report`
 						,user_id
 						,max(is_new) as is_new
 					FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
-					WHERE event_date>=date_add('2025-04-08',interval -10 day)
-					and event_date<=date_add('2025-04-08',interval -1 day)
+					WHERE event_date>=date_add(run_date,interval -history_day day)
+					and event_date<=date_add(run_date,interval -history_end_day day)
 					group by event_date,user_id,package_name
 				    )b 
 					on a.user_id=b.user_id
@@ -4017,10 +4016,10 @@ insert `gzdw2024.fbgame_01_basic.dws_quiz_answer_avg_med_report`
 				,avg(answer_right_pv) as avg_answer_right_pv
 				,avg(answer_false_pv) as avg_answer_false_pv
 				,avg(answer_right_ratio) as avg_answer_right_ratio
-				,max(answer_pv) as score_50
-				,max(answer_right_pv) as answer_right_pv_50
-				,max(answer_false_pv) as answer_false_pv_50
-				,max(answer_right_ratio) as answer_right_ratio_50
+				,max(answer_pv_50) as answer_pv_50
+				,max(answer_right_pv_50) as answer_right_pv_50
+				,max(answer_false_pv_50) as answer_false_pv_50
+				,max(answer_right_ratio_50) as answer_right_ratio_50
 				,count(1) as pv 
 				,count(distinct user_id) as uv 
 			  FROM
@@ -4032,8 +4031,8 @@ insert `gzdw2024.fbgame_01_basic.dws_quiz_answer_avg_med_report`
 ------12.5 题目报告
 
 delete `gzdw2024.fbgame_01_basic.dws_quiz_question_answer_report`
-where event_date>=date_add('2025-04-08',interval -10 day)
-and event_date<=date_add('2025-04-08',interval -1 day);
+where event_date>=date_add(run_date,interval -history_day day)
+and event_date<=date_add(run_date,interval -history_end_day day);
 
 
 insert `gzdw2024.fbgame_01_basic.dws_quiz_question_answer_report`
@@ -4087,8 +4086,8 @@ insert `gzdw2024.fbgame_01_basic.dws_quiz_question_answer_report`
 						,case when win=e_code then 1 else 0 end as is_right
 						,event_timestamp
 					FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_event_di`  
-					WHERE event_date>=date_add('2025-04-08',interval -10 day)
-					and event_date<=date_add('2025-04-08',interval -1 day)
+					WHERE event_date>=date_add(run_date,interval -history_day day)
+					and event_date<=date_add(run_date,interval -history_end_day day)
 					and event_name in ('fb_quiz_game_answer') 
 					)a 
 					 left	join 
@@ -4099,8 +4098,8 @@ insert `gzdw2024.fbgame_01_basic.dws_quiz_question_answer_report`
 						,user_id
 						,max(is_new) as is_new
 					FROM `gzdw2024.fbgame_01_basic.dwd_common_game_user_active_profile_di`
-					WHERE event_date>=date_add('2025-04-08',interval -10 day)
-					and event_date<=date_add('2025-04-08',interval -1 day)
+					WHERE event_date>=date_add(run_date,interval -history_day day)
+					and event_date<=date_add(run_date,interval -history_end_day day)
 					group by event_date,user_id,package_name
 				    )b 
 					on a.user_id=b.user_id
