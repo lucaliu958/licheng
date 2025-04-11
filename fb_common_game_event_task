@@ -2921,7 +2921,7 @@ insert `gzdw2024.fbgame_01_basic.dws_common_game_ad_expect_show_report`
 							   ,'fb_egg_break_clickbutton','fb_egg_game_play_finish','fb_egg_game_play_fail'
   							   ,'fb_egg_game_chestdouble_click','fb_egg_sign_clickdouble','fb_egg_lucky_spin_watch_ad_click','fb_egg_lucky_spin_double_clickad'
 							   ,'fb_ibb_fail_thanks_click','fb_ibb_fail_continue_click','fb_ibb_fail_goto_ads','fb_ibb_scoregift_click'
-							   ,'fb_quiz_second_chance_cilck')
+							   ,'fb_quiz_second_chance_cilck','fb_quiz_game_play_finish')
 					or (event_name in ('fb_zp_game_play_finish') and win='true')
 					or (event_name in ('fb_dog_game_play_succ_next') and type='is_ads')
 					or (event_name in ('fb_egg_bomb_click','fb_ibb_bomb_click') and bombsum='0')
