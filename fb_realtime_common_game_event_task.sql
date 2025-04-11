@@ -1898,6 +1898,7 @@ insert `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_ad_revenue_daily_repor
 						when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
 						when app_name='Save The Dog' then 'fb.save.dog' 
 						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
+							when app_name='Quiz' then 'fb.quiz' 
 						else 'other' end as package_name
 					,'TOTAL' as platform
 					,'TOTAL' as country_code
@@ -1925,6 +1926,7 @@ insert `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_ad_revenue_daily_repor
 						when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
 						when app_name='Save The Dog' then 'fb.save.dog' 
 						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
+							when app_name='Quiz' then 'fb.quiz' 
 						else 'other' end as package_name
 					,case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end  as platform
 					,upper(country) as country_code
@@ -1951,6 +1953,7 @@ insert `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_ad_revenue_daily_repor
 						when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
 						when app_name='Save The Dog' then 'fb.save.dog' 
 						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
+							when app_name='Quiz' then 'fb.quiz' 
 						else 'other' end as package_name
 					,case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end  as platform
 					,'TOTAL' as country_code
@@ -1978,6 +1981,7 @@ insert `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_ad_revenue_daily_repor
 						when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
 						when app_name='Save The Dog' then 'fb.save.dog' 
 						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
+						when app_name='Quiz' then 'fb.quiz' 
 						else 'other' end as package_name
 					,'TOTAL'  as platform
 					,upper(country) as country_code
@@ -3118,7 +3122,8 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_hour_ad_expect_show_report
 						           ,'fb_dog_game_market_bomb_get','fb_dog_game_brush_get_click','fb_dog_game_skip_click','fb_dog_game_hint_click','fb_dog_game_play_finish'
 							   ,'fb_egg_change_eggs_click','fb_egg_double_bomb_click','fb_egg_break_click','fb_egg_over_click','fb_egg_again_revive_click'
 							   ,'fb_egg_break_clickbutton','fb_egg_game_play_finish','fb_egg_game_play_fail'
-							   ,'fb_ibb_fail_thanks_click','fb_ibb_fail_continue_click','fb_ibb_fail_goto_ads','fb_ibb_scoregift_click')
+							   ,'fb_ibb_fail_thanks_click','fb_ibb_fail_continue_click','fb_ibb_fail_goto_ads','fb_ibb_scoregift_click'
+								,'fb_quiz_second_chance_cilck','fb_quiz_game_play_finish')
 					or (event_name in ('fb_zp_game_play_finish') and win='true')
 					or (event_name in ('fb_dog_game_play_succ_next') and type='is_ads')
 					or (event_name in ('fb_egg_bomb_click','fb_ibb_bomb_click') and bombsum='0')
