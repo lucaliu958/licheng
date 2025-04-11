@@ -1367,6 +1367,36 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_user_fb_ad_report`
 				FROM `fb-ai-avatar-puzzle.analytics_439907691.ad_analytics_detail_day_*` 
 				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day ) as string),'-','')
 				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day ) as string),'-','')
+				union all 
+				SELECT 
+					date(start_timestamp) as stats_date
+					,case when app_name='Solitaire' then 'fb.zp' 
+					when app_name='OHO' then 'fb.ai.avatar.puzzle' 
+					when app_name='Bubble Pop Fruit' then 'fb.fruit.bubble' 
+					when app_name='AHA' then 'fb.ai.aha' 
+					when app_name='Fate Quest' then 'fb.otme.fate.quest' 
+					when app_name='Block Juggle' then 'fb.block.juggle' 
+					when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
+					when app_name='Save The Dog' then 'fb.save.dog' 
+                                        when app_name='Egg Shoot Dino' then 'fb.egg.bubble' 
+	 				when app_name='Quiz' then 'fb.quiz' 
+					else 'other' end 
+					as package_name
+					,array['TOTAL',case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end]  as platform
+					,array['TOTAL',upper(country)] as country_code
+					,array['TOTAL',case when lower(placement_name) like '%banner%' then 'banner'
+					when lower(placement_name) like '%rewarded%interstitial%' or lower(placement_name) like '%激励插屏%' then 'rewarded_interstitial'
+					when lower(placement_name) like '%interstitial%' then 'interstitial'
+					when lower(placement_name) like '%reward%video%' or lower(placement_name) like '%激励视频%' then 'rewarded_video'
+					else 'interstitial' end ] as ad_type
+					,requests
+					,filled_requests
+					,impressions
+					,revenue
+					,clicks
+				FROM `gzdw2024.facebook_source_data.ad_analytics_detail_day_*` 
+				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day ) as string),'-','')
+				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day ) as string),'-','')
 				)c 
 				,UNNEST(platform) as platform
 				,UNNEST(country_code) as country_code
@@ -1957,6 +1987,117 @@ insert `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_ad_revenue_daily_repor
 					,sum(revenue)  as revenue
 					,sum(clicks)  as clicks
 				FROM `fb-ai-avatar-puzzle.analytics_439907691.ad_analytics_detail_day_*` 
+				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
+				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
+				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
+				group by stats_date,platform,country_code,package_name
+				union all 
+				---------新BM收入
+	 			
+				SELECT 
+					parse_date('%Y%m%d',_table_suffix) as stats_date
+					,case when app_name='Solitaire' then 'fb.zp' 
+						when app_name='OHO' then 'fb.ai.avatar.puzzle' 
+						when app_name='Bubble Pop Fruit' then 'fb.fruit.bubble' 
+						when app_name='AHA' then 'fb.ai.aha' 
+						when app_name='Fate Quest' then 'fb.otme.fate.quest' 
+						when app_name='Block Juggle' then 'fb.block.juggle' 
+						when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
+						when app_name='Save The Dog' then 'fb.save.dog' 
+						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
+						when app_name='Quiz' then 'fb.quiz' 
+						else 'other' end as package_name
+					,'TOTAL' as platform
+					,'TOTAL' as country_code
+					,sum(requests)  as requests
+					,sum(filled_requests)  as filled_requests
+					,sum(impressions)  as impressions
+					,sum(revenue)  as revenue
+					,sum(clicks)  as clicks
+				FROM `gzdw2024.facebook_source_data.ad_analytics_day_*` 
+				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
+				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
+				--and app_name='Solitaire'
+					and _TABLE_SUFFIX!='20241103'
+				--and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
+				group by stats_date,package_name
+				union all 
+				SELECT 
+					parse_date('%Y%m%d',_table_suffix) as stats_date
+					,case when app_name='Solitaire' then 'fb.zp' 
+						when app_name='OHO' then 'fb.ai.avatar.puzzle' 
+						when app_name='Bubble Pop Fruit' then 'fb.fruit.bubble' 
+						when app_name='AHA' then 'fb.ai.aha' 
+						when app_name='Fate Quest' then 'fb.otme.fate.quest' 
+						when app_name='Block Juggle' then 'fb.block.juggle' 
+						when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
+						when app_name='Save The Dog' then 'fb.save.dog' 
+						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
+						when app_name='Quiz' then 'fb.quiz' 
+						else 'other' end as package_name
+					,case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end  as platform
+					,upper(country) as country_code
+					,sum(requests)  as requests
+					,sum(filled_requests)  as filled_requests
+					,sum(impressions)  as impressions
+					,sum(revenue)  as revenue
+					,sum(clicks)  as clicks
+				FROM `gzdw2024.facebook_source_data.ad_analytics_detail_day_*` 
+				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
+				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
+				--	and app_name='Solitaire'
+				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
+				group by stats_date,platform,country_code,package_name
+				union all 
+				SELECT 
+					parse_date('%Y%m%d',_table_suffix) as stats_date
+					,case when app_name='Solitaire' then 'fb.zp' 
+						when app_name='OHO' then 'fb.ai.avatar.puzzle' 
+						when app_name='Bubble Pop Fruit' then 'fb.fruit.bubble' 
+						when app_name='AHA' then 'fb.ai.aha' 
+						when app_name='Fate Quest' then 'fb.otme.fate.quest' 
+						when app_name='Block Juggle' then 'fb.block.juggle' 
+						when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
+						when app_name='Save The Dog' then 'fb.save.dog' 
+						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
+						when app_name='Quiz' then 'fb.quiz' 
+						else 'other' end as package_name
+					,case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end  as platform
+					,'TOTAL' as country_code
+					,sum(requests)  as requests
+					,sum(filled_requests)  as filled_requests
+					,sum(impressions)  as impressions
+					,sum(revenue)  as revenue
+					,sum(clicks)  as clicks
+					FROM `gzdw2024.facebook_source_data.ad_analytics_detail_day_*` 
+				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
+				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')	
+					--and app_name='Solitaire'
+					--and app_name='Solitaire'
+				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
+				group by stats_date,platform,country_code,package_name
+					union all 
+					SELECT 
+					date(start_timestamp) as stats_date
+					,case when app_name='Solitaire' then 'fb.zp' 
+						when app_name='OHO' then 'fb.ai.avatar.puzzle' 
+						when app_name='Bubble Pop Fruit' then 'fb.fruit.bubble' 
+						when app_name='AHA' then 'fb.ai.aha' 
+						when app_name='Fate Quest' then 'fb.otme.fate.quest' 
+						when app_name='Block Juggle' then 'fb.block.juggle' 
+						when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
+						when app_name='Save The Dog' then 'fb.save.dog' 
+						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
+						when app_name='Quiz' then 'fb.quiz' 
+						else 'other' end as package_name
+					,'TOTAL'  as platform
+					,upper(country) as country_code
+					,sum(requests)  as requests
+					,sum(filled_requests)  as filled_requests
+					,sum(impressions)  as impressions
+					,sum(revenue)  as revenue
+					,sum(clicks)  as clicks
+				FROM `gzdw2024.facebook_source_data.ad_analytics_detail_day_*` 
 				where _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 				and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
 				and date(start_timestamp)=parse_date('%Y%m%d',_table_suffix)
