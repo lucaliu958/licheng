@@ -1719,6 +1719,7 @@ SELECT 'event_day_real' as cat
 									when campaign_name like '%STD%' then 'fb.save.dog'
 									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 									when campaign_name like '%BKJ%' then 'fb.block.juggle'
+									when campaign_name like '%QUZ%' then 'fb.quiz'
 									ELSE 'other' end as package_name
 								,campaign_name
 								,country
@@ -1741,6 +1742,7 @@ SELECT 'event_day_real' as cat
 									when campaign_name like '%STD%' then 'fb.save.dog'
 									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 									when campaign_name like '%BKJ%' then 'fb.block.juggle'
+									when campaign_name like '%QUZ%' then 'fb.quiz'
 									ELSE 'other' end as package_name
 								,campaign_name
 								,country
@@ -1748,7 +1750,54 @@ SELECT 'event_day_real' as cat
 								,MAX(safe_cast(action_count as float64)) as install 
 							FROM `fb-ai-avatar-puzzle.analytics_439907691.fb_insights_country_day_*` 
 							WHERE action_type='mobile_app_install'
-						 AND _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
+							AND  _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
+							and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
+							and _TABLE_SUFFIX not like '%hour%'
+							group by campaign_name,country ,stats_date,package_name
+							union all 
+							SELECT 
+								date(stats_date) as stats_date
+								,case when campaign_name like '%AHA%' then 'fb.ai.aha'
+									when campaign_name like '%BBPF%' then 'fb.fruit.bubble'
+									when campaign_name like '%ESD%' then 'fb.egg.bubble'
+									when campaign_name like '%BSP%' then 'fb.bubble.shoot.pro'
+									when campaign_name like '%OHO%' then 'fb.ai.avatar.puzzle'
+									when campaign_name like '%SLT%' then 'fb.zp'
+									when campaign_name like '%STD%' then 'fb.save.dog'
+									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
+									when campaign_name like '%BKJ%' then 'fb.block.juggle'
+									when campaign_name like '%QUZ%' then 'fb.quiz'
+									ELSE 'other' end as package_name
+								,campaign_name
+								,country
+								,MAX(safe_cast(spend as float64)) as cost 
+								,0 as install
+							FROM `gzdw2024.facebook_source_data.fb_insights_country_day_*` 
+							WHERE _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
+							and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
+							and _TABLE_SUFFIX not like '%hour%'
+							group by campaign_name,country ,stats_date,package_name
+							union all 
+							SELECT 
+								date(stats_date) as stats_date
+								,case when campaign_name like '%AHA%' then 'fb.ai.aha'
+									when campaign_name like '%BBPF%' then 'fb.fruit.bubble'
+									when campaign_name like '%ESD%' then 'fb.egg.bubble'
+									when campaign_name like '%BSP%' then 'fb.bubble.shoot.pro'
+									when campaign_name like '%OHO%' then 'fb.ai.avatar.puzzle'
+									when campaign_name like '%SLT%' then 'fb.zp'
+									when campaign_name like '%STD%' then 'fb.save.dog'
+									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
+									when campaign_name like '%BKJ%' then 'fb.block.juggle'
+									when campaign_name like '%QUZ%' then 'fb.quiz'
+									ELSE 'other' end as package_name
+								,campaign_name
+								,country
+								,0 as cost
+								,MAX(safe_cast(action_count as float64)) as install 
+							FROM `gzdw2024.facebook_source_data.fb_insights_country_day_*` 
+							WHERE action_type='mobile_app_install'
+							AND  _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 							and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
 							and _TABLE_SUFFIX not like '%hour%'
 							group by campaign_name,country ,stats_date,package_name
