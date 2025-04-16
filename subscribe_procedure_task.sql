@@ -179,7 +179,7 @@ insert `gzdw2024.subscribe_data.dws_subscribe_sales_cat_report`
 			,Charged_Amount_usd
 			,renew_tag
 			,Financial_Status
-		FROM `gzdw2024.googleplay.dwd_gp_sales_event_cat_di` a
+		FROM `gzdw2024.subscribe_data.dwd_gp_sales_event_cat_di` a
 		WHERE 1=1
 		and Order_Charged_Date >='2025-01-01'
 		and a.Order_Charged_Date >= date_add(run_date,interval -history_day day)
