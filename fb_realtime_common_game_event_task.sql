@@ -1350,6 +1350,7 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_user_fb_ad_report`
 					when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
 					when app_name='Save The Dog' then 'fb.save.dog' 
                                         when app_name='Egg Shoot Dino' then 'fb.egg.bubble' 
+					when app_name='Plot Play' then 'fb.otme.fate.quest'
 					else 'other' end 
 					as package_name
 					,array['TOTAL',case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end]  as platform
@@ -1380,6 +1381,7 @@ insert `gzdw2024.fbgame_real_01_basic.dws_common_game_user_fb_ad_report`
 					when app_name='Save The Dog' then 'fb.save.dog' 
                                         when app_name='Egg Shoot Dino' then 'fb.egg.bubble' 
 	 				when app_name='Quiz' then 'fb.quiz' 
+					when app_name='Plot Play' then 'fb.otme.fate.quest'
 					else 'other' end 
 					as package_name
 					,array['TOTAL',case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end]  as platform
@@ -1720,6 +1722,7 @@ SELECT 'event_day_real' as cat
 									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 									when campaign_name like '%BKJ%' then 'fb.block.juggle'
 									when campaign_name like '%QUZ%' then 'fb.quiz'
+									when campaign_name like '%PP%' then 'fb.otme.fate.quest'
 									ELSE 'other' end as package_name
 								,campaign_name
 								,country
@@ -1743,6 +1746,7 @@ SELECT 'event_day_real' as cat
 									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 									when campaign_name like '%BKJ%' then 'fb.block.juggle'
 									when campaign_name like '%QUZ%' then 'fb.quiz'
+									when campaign_name like '%PP%' then 'fb.otme.fate.quest'
 									ELSE 'other' end as package_name
 								,campaign_name
 								,country
@@ -1767,6 +1771,7 @@ SELECT 'event_day_real' as cat
 									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 									when campaign_name like '%BKJ%' then 'fb.block.juggle'
 									when campaign_name like '%QUZ%' then 'fb.quiz'
+									when campaign_name like '%PP%' then 'fb.otme.fate.quest'
 									ELSE 'other' end as package_name
 								,campaign_name
 								,country
@@ -1790,6 +1795,7 @@ SELECT 'event_day_real' as cat
 									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 									when campaign_name like '%BKJ%' then 'fb.block.juggle'
 									when campaign_name like '%QUZ%' then 'fb.quiz'
+									when campaign_name like '%PP%' then 'fb.otme.fate.quest'
 									ELSE 'other' end as package_name
 								,campaign_name
 								,country
@@ -1906,6 +1912,7 @@ insert `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_ad_revenue_daily_repor
 						when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
 						when app_name='Save The Dog' then 'fb.save.dog' 
 	 					when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
+						when app_name='Plot Play' then 'fb.otme.fate.quest'
 						else 'other' end as package_name
 					,'TOTAL' as platform
 					,'TOTAL' as country_code
@@ -1951,6 +1958,7 @@ insert `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_ad_revenue_daily_repor
 						when app_name='Save The Dog' then 'fb.save.dog' 
 						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
 							when app_name='Quiz' then 'fb.quiz' 
+						when app_name='Plot Play' then 'fb.otme.fate.quest'
 						else 'other' end as package_name
 					,'TOTAL' as platform
 					,'TOTAL' as country_code
@@ -1979,6 +1987,7 @@ insert `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_ad_revenue_daily_repor
 						when app_name='Save The Dog' then 'fb.save.dog' 
 						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
 							when app_name='Quiz' then 'fb.quiz' 
+						when app_name='Plot Play' then 'fb.otme.fate.quest'
 						else 'other' end as package_name
 					,case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end  as platform
 					,upper(country) as country_code
@@ -2006,6 +2015,7 @@ insert `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_ad_revenue_daily_repor
 						when app_name='Save The Dog' then 'fb.save.dog' 
 						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
 							when app_name='Quiz' then 'fb.quiz' 
+						when app_name='Plot Play' then 'fb.otme.fate.quest'
 						else 'other' end as package_name
 					,case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end  as platform
 					,'TOTAL' as country_code
@@ -2034,6 +2044,7 @@ insert `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_ad_revenue_daily_repor
 						when app_name='Save The Dog' then 'fb.save.dog' 
 						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
 						when app_name='Quiz' then 'fb.quiz' 
+						when app_name='Plot Play' then 'fb.otme.fate.quest'
 						else 'other' end as package_name
 					,'TOTAL'  as platform
 					,upper(country) as country_code
@@ -2062,6 +2073,7 @@ insert `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_ad_revenue_daily_repor
 						when app_name='Save The Dog' then 'fb.save.dog' 
 						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
 						when app_name='Quiz' then 'fb.quiz' 
+						when app_name='Plot Play' then 'fb.otme.fate.quest'
 						else 'other' end as package_name
 					,'TOTAL' as platform
 					,'TOTAL' as country_code
@@ -2090,6 +2102,7 @@ insert `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_ad_revenue_daily_repor
 						when app_name='Save The Dog' then 'fb.save.dog' 
 						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
 						when app_name='Quiz' then 'fb.quiz' 
+						when app_name='Plot Play' then 'fb.otme.fate.quest'
 						else 'other' end as package_name
 					,case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end  as platform
 					,upper(country) as country_code
@@ -2117,6 +2130,7 @@ insert `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_ad_revenue_daily_repor
 						when app_name='Save The Dog' then 'fb.save.dog' 
 						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
 						when app_name='Quiz' then 'fb.quiz' 
+						when app_name='Plot Play' then 'fb.otme.fate.quest'
 						else 'other' end as package_name
 					,case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end  as platform
 					,'TOTAL' as country_code
@@ -2145,6 +2159,7 @@ insert `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_ad_revenue_daily_repor
 						when app_name='Save The Dog' then 'fb.save.dog' 
 						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
 						when app_name='Quiz' then 'fb.quiz' 
+						when app_name='Plot Play' then 'fb.otme.fate.quest'
 						else 'other' end as package_name
 					,'TOTAL'  as platform
 					,upper(country) as country_code
