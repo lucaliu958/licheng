@@ -108,7 +108,7 @@ begin
 
 
 			--------api成本数据
-	delete `gzdw2024.fbgame_03_bi.dws_fb_common_game_cost_daily_reports_api`
+			delete `gzdw2024.fbgame_03_bi.dws_fb_common_game_cost_daily_reports_api`
 			where stats_date>=date_add(run_date,interval -history_day day)
 			and  stats_date<=date_add(run_date,interval -history_end_day day)
 			and stats_date>='2024-11-19';
@@ -160,6 +160,7 @@ begin
 									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 									when campaign_name like '%BKJ%' then 'fb.block.juggle'
 									when campaign_name like '%QUZ%' then 'fb.quiz'
+									when campaign_name like '%PP%' then 'fb.otme.fate.quest'
 									ELSE 'other' end as package_name
 								,campaign_name
 								,country
@@ -183,6 +184,7 @@ begin
 									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 									when campaign_name like '%BKJ%' then 'fb.block.juggle'
 									when campaign_name like '%QUZ%' then 'fb.quiz'
+									when campaign_name like '%PP%' then 'fb.otme.fate.quest'
 									ELSE 'other' end as package_name
 								,campaign_name
 								,country
@@ -207,6 +209,7 @@ begin
 									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 									when campaign_name like '%BKJ%' then 'fb.block.juggle'
 									when campaign_name like '%QUZ%' then 'fb.quiz'
+									when campaign_name like '%PP%' then 'fb.otme.fate.quest'
 									ELSE 'other' end as package_name
 								,campaign_name
 								,country
@@ -230,6 +233,7 @@ begin
 									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 									when campaign_name like '%BKJ%' then 'fb.block.juggle'
 									when campaign_name like '%QUZ%' then 'fb.quiz'
+									when campaign_name like '%PP%' then 'fb.otme.fate.quest'
 									ELSE 'other' end as package_name
 								,campaign_name
 								,country
@@ -347,6 +351,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_common_game_ad_revenue_daily_reports`
 						when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
 						when app_name='Save The Dog' then 'fb.save.dog' 
 	 					when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
+						when app_name='Plot Play' then 'fb.otme.fate.quest'
 						else 'other' end as package_name
 					,'TOTAL' as platform
 					,'TOTAL' as country_code
@@ -394,6 +399,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_common_game_ad_revenue_daily_reports`
 						when app_name='Save The Dog' then 'fb.save.dog' 
 						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
 							when app_name='Quiz' then 'fb.quiz' 
+							when app_name='Plot Play' then 'fb.otme.fate.quest'
 						else 'other' end as package_name
 					,'TOTAL' as platform
 					,'TOTAL' as country_code
@@ -422,6 +428,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_common_game_ad_revenue_daily_reports`
 						when app_name='Save The Dog' then 'fb.save.dog' 
 						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
 							when app_name='Quiz' then 'fb.quiz' 
+							when app_name='Plot Play' then 'fb.otme.fate.quest'
 						else 'other' end as package_name
 					,case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end  as platform
 					,upper(country) as country_code
@@ -449,6 +456,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_common_game_ad_revenue_daily_reports`
 						when app_name='Save The Dog' then 'fb.save.dog' 
 						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
 							when app_name='Quiz' then 'fb.quiz' 
+							when app_name='Plot Play' then 'fb.otme.fate.quest'
 						else 'other' end as package_name
 					,case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end  as platform
 					,'TOTAL' as country_code
@@ -477,6 +485,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_common_game_ad_revenue_daily_reports`
 						when app_name='Save The Dog' then 'fb.save.dog' 
 						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
 							when app_name='Quiz' then 'fb.quiz' 
+							when app_name='Plot Play' then 'fb.otme.fate.quest'
 						else 'other' end as package_name
 					,'TOTAL'  as platform
 					,upper(country) as country_code
@@ -504,6 +513,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_common_game_ad_revenue_daily_reports`
 						when app_name='Save The Dog' then 'fb.save.dog' 
 						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
 						when app_name='Quiz' then 'fb.quiz' 
+						when app_name='Plot Play' then 'fb.otme.fate.quest'
 						else 'other' end as package_name
 					,'TOTAL' as platform
 					,'TOTAL' as country_code
@@ -532,6 +542,7 @@ insert `gzdw2024.fbgame_03_bi.dws_fb_common_game_ad_revenue_daily_reports`
 						when app_name='Save The Dog' then 'fb.save.dog' 
 						 when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
 						when app_name='Quiz' then 'fb.quiz' 
+						when app_name='Plot Play' then 'fb.otme.fate.quest'
 						else 'other' end as package_name
 					,'TOTAL'  as platform
 					,upper(country) as country_code
