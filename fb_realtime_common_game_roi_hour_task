@@ -271,7 +271,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_revenue_hour_data`
 				,impressions
 				,clicks
 			FROM a 
-			left join `gzdw2024.gz_dim.app_info_googlesheet` b
+			left join `gzdw2024.gz_dim.app_info` b
 			on a.package_name=b.package_name
 			union all 
 			SELECT
@@ -752,7 +752,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 				,cost_impressions
 				,cost_clicks
 			FROM a 
-			left join `gzdw2024.gz_dim.app_info_googlesheet` b
+			left join `gzdw2024.gz_dim.app_info` b
 			on a.package_name=b.package_name
 			union all 
 			SELECT
@@ -1161,7 +1161,7 @@ SELECT 'roi_hour_real' as cat
 					,impressions
 					,clicks
 				FROM b 
-				left join `gzdw2024.gz_dim.app_info_googlesheet` c
+				left join `gzdw2024.gz_dim.app_info` c
 				on b.package_name=c.package_name
 				union all 
 				SELECT
@@ -1386,7 +1386,7 @@ SELECT 'roi_hour_real' as cat
 							,impressions
 							,clicks
 						FROM a 
-						left join `gzdw2024.gz_dim.app_info_googlesheet` c
+						left join `gzdw2024.gz_dim.app_info` c
 						on a.package_name=c.package_name
 						union all 
 						SELECT
