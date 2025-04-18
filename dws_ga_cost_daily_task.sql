@@ -219,6 +219,7 @@ WITH
     OR LOWER(campaign_name) LIKE 'tw%'THEN "twittervideodownloader.twitter.videoindir.savegif.twdown" --twd --WHEN LOWER(campaign_name) LIKE '%shotcut%' THEN 'video.editor.videomaker.effects.fx' --shotcut --WHEN LOWER(campaign_name) LIKE '%collart%' THEN 'com.SpringTech.NewSC' --collart --WHEN LOWER(campaign_name) LIKE '%collart-gp%' THEN 'free.ai.photo.generator.collart.ai' --collart-android
       WHEN LOWER(campaign_name) LIKE '%scannner-ios%'
     OR LOWER(campaign_name) LIKE '%scanner-ios%' THEN "pdf.scanner.app"
+	 WHEN LOWER(campaign_name) in ('af-pdf-ios-search-us-trialconverted-250114','af-es-ios-search-us-trialconverted-250311','af-longtail-ios-search-us-trialconverted-250328') THEN "pdf.scanner.app" --scanner
       WHEN LOWER(campaign_name) LIKE '%scannerlens-ios%' THEN "pdf.scanner.app.plus" --scanner
       WHEN LOWER(campaign_name) LIKE '%ga-recorder pro%' THEN "vidma.screenrecorder.videorecorder.videoeditor.pro" --recorder
       WHEN LOWER(campaign_name) LIKE '%recorder lite%' THEN 'vidma.screenrecorder.videorecorder.videoeditor.lite' --recorder_lite
