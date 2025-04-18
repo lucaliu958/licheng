@@ -86,6 +86,8 @@ begin
 								when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
 								when app_name='Save The Dog' then 'fb.save.dog' 
 								when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
+								when app_name='Quiz' then 'fb.quiz' 
+								when app_name='Plot Play' then 'fb.otme.fate.quest'
 								else 'other' end as package_name
 								,case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end  as platform
 								,upper(country) as country_code
@@ -115,6 +117,7 @@ begin
 								when app_name='Save The Dog' then 'fb.save.dog' 
 								when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
 								when app_name='Quiz' then 'fb.quiz' 
+								when app_name='Plot Play' then 'fb.otme.fate.quest'
 								else 'other' end as package_name
 								,case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end  as platform
 								,upper(country) as country_code
@@ -188,6 +191,8 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_revenue_hour_data`
 					when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
 					when app_name='Save The Dog' then 'fb.save.dog' 
 						when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
+							when app_name='Quiz' then 'fb.quiz' 
+							when app_name='Plot Play' then 'fb.otme.fate.quest'
 					else 'other' end as package_name
 				,'TOTAL' as platform
 				,'TOTAL' as country_code
@@ -215,8 +220,9 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_revenue_hour_data`
 					when app_name='Block Juggle' then 'fb.block.juggle' 
 					when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
 					when app_name='Save The Dog' then 'fb.save.dog' 
-						when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
+					when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
 					when app_name='Quiz' then 'fb.quiz' 
+					when app_name='Plot Play' then 'fb.otme.fate.quest'
 					else 'other' end as package_name
 				,'TOTAL' as platform
 				,'TOTAL' as country_code
@@ -333,6 +339,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 									when campaign_name like '%BKJ%' then 'fb.block.juggle'
 									when campaign_name like '%QUZ%' then 'fb.quiz'
+									when campaign_name like '%PP%' then 'fb.otme.fate.quest'
 									ELSE 'other' end as package_name
 									,account_name
 								,campaign_name
@@ -360,6 +367,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 									when campaign_name like '%BKJ%' then 'fb.block.juggle'
 									when campaign_name like '%QUZ%' then 'fb.quiz'
+									when campaign_name like '%PP%' then 'fb.otme.fate.quest'
 									ELSE 'other' end as package_name
 									,account_name
 								,campaign_name
@@ -388,6 +396,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 									when campaign_name like '%BKJ%' then 'fb.block.juggle'
 									when campaign_name like '%QUZ%' then 'fb.quiz'
+									when campaign_name like '%PP%' then 'fb.otme.fate.quest'
 									ELSE 'other' end as package_name
 									,account_name
 								,campaign_name
@@ -415,6 +424,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 									when campaign_name like '%BKJ%' then 'fb.block.juggle'
 									when campaign_name like '%QUZ%' then 'fb.quiz'
+									when campaign_name like '%PP%' then 'fb.otme.fate.quest'
 									ELSE 'other' end as package_name
 									,account_name
 								,campaign_name
@@ -540,6 +550,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 											when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 											when campaign_name like '%BKJ%' then 'fb.block.juggle'
 											when campaign_name like '%QUZ%' then 'fb.quiz'
+											when campaign_name like '%PP%' then 'fb.otme.fate.quest'
 											ELSE 'other' end as package_name
 											,account_name
 										,campaign_name
@@ -568,6 +579,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 											when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 											when campaign_name like '%BKJ%' then 'fb.block.juggle'
 											when campaign_name like '%QUZ%' then 'fb.quiz'
+											when campaign_name like '%PP%' then 'fb.otme.fate.quest'
 											ELSE 'other' end as package_name
 											,account_name
 										,campaign_name
@@ -597,6 +609,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 											when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 											when campaign_name like '%BKJ%' then 'fb.block.juggle'
 											when campaign_name like '%QUZ%' then 'fb.quiz'
+											when campaign_name like '%PP%' then 'fb.otme.fate.quest'
 											ELSE 'other' end as package_name
 											,account_name
 										,campaign_name
@@ -625,6 +638,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 											when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 											when campaign_name like '%BKJ%' then 'fb.block.juggle'
 											when campaign_name like '%QUZ%' then 'fb.quiz'
+											when campaign_name like '%PP%' then 'fb.otme.fate.quest'
 											ELSE 'other' end as package_name
 											,account_name
 										,campaign_name
@@ -996,7 +1010,9 @@ SELECT 'roi_hour_real' as cat
 							when app_name='Block Juggle' then 'fb.block.juggle' 
 							when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
 							when app_name='Save The Dog' then 'fb.save.dog' 
-								when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
+							when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
+							when app_name='Quiz' then 'fb.quiz' 
+							when app_name='Plot Play' then 'fb.otme.fate.quest'
 							else 'other' end as package_name
 						,case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end  as platform
 						,upper(country) as country_code
@@ -1027,8 +1043,9 @@ SELECT 'roi_hour_real' as cat
 							when app_name='Block Juggle' then 'fb.block.juggle' 
 							when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
 							when app_name='Save The Dog' then 'fb.save.dog' 
-								when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
-								when app_name='Quiz' then 'fb.quiz' 
+							when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
+							when app_name='Quiz' then 'fb.quiz' 
+							when app_name='Plot Play' then 'fb.otme.fate.quest'
 							else 'other' end as package_name
 						,case when lower(platform)='ios' then 'iOS' when lower(platform)='android' then 'Android' else 'web' end  as platform
 						,upper(country) as country_code
@@ -1083,6 +1100,8 @@ SELECT 'roi_hour_real' as cat
 						when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
 						when app_name='Save The Dog' then 'fb.save.dog' 
 							when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
+							when app_name='Quiz' then 'fb.quiz' 
+							when app_name='Plot Play' then 'fb.otme.fate.quest'
 						else 'other' end as package_name
 					,'TOTAL' as platform
 					,'TOTAL' as country_code
@@ -1109,8 +1128,9 @@ SELECT 'roi_hour_real' as cat
 						when app_name='Block Juggle' then 'fb.block.juggle' 
 						when app_name='Bubble Shoot Pro' then 'fb.bubble.shoot.pro'
 						when app_name='Save The Dog' then 'fb.save.dog' 
-							when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
+						when app_name='Egg Shoot Dino' then 'fb.egg.bubble'
 						when app_name='Quiz' then 'fb.quiz' 
+						when app_name='Plot Play' then 'fb.otme.fate.quest'
 						else 'other' end as package_name
 					,'TOTAL' as platform
 					,'TOTAL' as country_code
@@ -1232,6 +1252,7 @@ SELECT 'roi_hour_real' as cat
 										when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 										when campaign_name like '%BKJ%' then 'fb.block.juggle'
 										when campaign_name like '%QUZ%' then 'fb.quiz'
+										when campaign_name like '%PP%' then 'fb.otme.fate.quest'
 										ELSE 'other' end as package_name
 									,case when lower(campaign_name) like '%ios%' then 'iOS'
 										when lower(campaign_name) like '%web%' then 'web' 
@@ -1262,6 +1283,7 @@ SELECT 'roi_hour_real' as cat
 										when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 										when campaign_name like '%BKJ%' then 'fb.block.juggle'
 										when campaign_name like '%QUZ%' then 'fb.quiz'
+										when campaign_name like '%PP%' then 'fb.otme.fate.quest'
 										ELSE 'other' end as package_name
 									,case when lower(campaign_name) like '%ios%' then 'iOS'
 										when lower(campaign_name) like '%web%' then 'web' 
@@ -1292,6 +1314,7 @@ SELECT 'roi_hour_real' as cat
 										when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 										when campaign_name like '%BKJ%' then 'fb.block.juggle'
 										when campaign_name like '%QUZ%' then 'fb.quiz'
+										when campaign_name like '%PP%' then 'fb.otme.fate.quest'
 										ELSE 'other' end as package_name
 									,case when lower(campaign_name) like '%ios%' then 'iOS'
 										when lower(campaign_name) like '%web%' then 'web' 
@@ -1322,6 +1345,7 @@ SELECT 'roi_hour_real' as cat
 										when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 										when campaign_name like '%BKJ%' then 'fb.block.juggle'
 										when campaign_name like '%QUZ%' then 'fb.quiz'
+										when campaign_name like '%PP%' then 'fb.otme.fate.quest'
 										ELSE 'other' end as package_name
 									,case when lower(campaign_name) like '%ios%' then 'iOS'
 										when lower(campaign_name) like '%web%' then 'web' 
