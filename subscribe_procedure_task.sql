@@ -168,10 +168,10 @@ insert `gzdw2024.subscribe_data.dws_subscribe_sales_cat_report`
 			,SKU_ID
 			,Product_Type
 			,case  WHEN lower(Product_Type) ='inapp' then 'one_time'
-			when REGEXP_CONTAINS(SKU_ID, r'.*(12_month|year)')  then 'yeraly'
+			when REGEXP_CONTAINS(SKU_ID, r'.*(12_month|year)')  then 'yearly'
 			when REGEXP_CONTAINS(SKU_ID, r'.*(month)') then 'monthly'
 			when REGEXP_CONTAINS(SKU_ID, r'.*(week)') then 'weekly'
-			 when REGEXP_CONTAINS(SKU_ID, r'.*(sub_us_ca)') and safe_divide(Item_Price,rate)>=20  then 'yeraly'
+			 when REGEXP_CONTAINS(SKU_ID, r'.*(sub_us_ca)') and safe_divide(Item_Price,rate)>=20  then 'yearly'
 			 when REGEXP_CONTAINS(SKU_ID, r'.*(sub_us_ca)') and safe_divide(Item_Price,rate)>=12  then 'monthly'
 			 when REGEXP_CONTAINS(SKU_ID, r'.*(sub_us_ca)') and safe_divide(Item_Price,rate)>=0.2  then 'weekly'
 			else 'other' end  as sub_type
@@ -237,7 +237,7 @@ insert `gzdw2024.subscribe_data.dws_subscribe_sales_cat_report`
 		,case when lower(product_type_identifier) not like '%iay%'  then 'one_time'
 			when REGEXP_CONTAINS(period, r'.*(1 Month)') then 'monthly'
 			when REGEXP_CONTAINS(period, r'.*(7 Days)') then 'weekly'
-			 when REGEXP_CONTAINS(period, r'.*(1 Year)')  then 'yeraly'
+			 when REGEXP_CONTAINS(period, r'.*(1 Year)')  then 'yearly'
 			else 'other' end  as sub_type
 		FROM `gzdw2024.appstoreconnect.p_sales_atlasv`  a
 	    left join `gzdw2024.gz_dim.exchange_rate_days` b on cast(a.stats_date as date) = cast(b.stats_date as date) and a.currency_of_proceeds=b.currency
