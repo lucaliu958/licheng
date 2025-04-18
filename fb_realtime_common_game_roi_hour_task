@@ -339,7 +339,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 									when campaign_name like '%BKJ%' then 'fb.block.juggle'
 									when campaign_name like '%QUZ%' then 'fb.quiz'
-									when campaign_name like '%PP%' then 'fb.otme.fate.quest'
+									when campaign_name like '%PTP%' then 'fb.otme.fate.quest'
 									ELSE 'other' end as package_name
 									,account_name
 								,campaign_name
@@ -348,7 +348,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 								,0 as install
 								,MAX(safe_cast(impressions as float64)) as impressions 
 								,MAX(safe_cast(clicks as float64)) as clicks 
-							FROM `fb-ai-avatar-puzzle.analytics_439907691.fb_insights_hourly_*` 
+							FROM `gzdw2024.facebook_source_data.fb_insights_hourly_*` 
 								where _TABLE_SUFFIX>='20250101' 
 								and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 								and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
@@ -367,7 +367,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 									when campaign_name like '%BKJ%' then 'fb.block.juggle'
 									when campaign_name like '%QUZ%' then 'fb.quiz'
-									when campaign_name like '%PP%' then 'fb.otme.fate.quest'
+									when campaign_name like '%PTP%' then 'fb.otme.fate.quest'
 									ELSE 'other' end as package_name
 									,account_name
 								,campaign_name
@@ -376,7 +376,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 								,MAX(safe_cast(action_count as float64)) as install 
 								,0 as impressions
 								,0 as clicks
-							FROM `fb-ai-avatar-puzzle.analytics_439907691.fb_insights_hourly_*` 
+							FROM `gzdw2024.facebook_source_data.fb_insights_hourly_*` 
 							WHERE action_type='mobile_app_install'
 							and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 							and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
@@ -396,7 +396,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 									when campaign_name like '%BKJ%' then 'fb.block.juggle'
 									when campaign_name like '%QUZ%' then 'fb.quiz'
-									when campaign_name like '%PP%' then 'fb.otme.fate.quest'
+									when campaign_name like '%PTP%' then 'fb.otme.fate.quest'
 									ELSE 'other' end as package_name
 									,account_name
 								,campaign_name
@@ -405,7 +405,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 								,0 as install
 								,MAX(safe_cast(impressions as float64)) as impressions 
 								,MAX(safe_cast(clicks as float64)) as clicks 
-							FROM `gzdw2024.facebook_source_data.fb_insights_hourly_*` 
+							FROM `gzdw2024.facebook_source_data.fb_insights_old_hourly_*` 
 								where _TABLE_SUFFIX>='20250101' 
 								and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 								and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
@@ -424,7 +424,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 									when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 									when campaign_name like '%BKJ%' then 'fb.block.juggle'
 									when campaign_name like '%QUZ%' then 'fb.quiz'
-									when campaign_name like '%PP%' then 'fb.otme.fate.quest'
+									when campaign_name like '%PTP%' then 'fb.otme.fate.quest'
 									ELSE 'other' end as package_name
 									,account_name
 								,campaign_name
@@ -433,7 +433,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 								,MAX(safe_cast(action_count as float64)) as install 
 								,0 as impressions
 								,0 as clicks
-							FROM `gzdw2024.facebook_source_data.fb_insights_hourly_*` 
+							FROM `gzdw2024.facebook_source_data.fb_insights_old_hourly_*` 
 							WHERE action_type='mobile_app_install'
 							and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 							and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
@@ -550,7 +550,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 											when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 											when campaign_name like '%BKJ%' then 'fb.block.juggle'
 											when campaign_name like '%QUZ%' then 'fb.quiz'
-											when campaign_name like '%PP%' then 'fb.otme.fate.quest'
+											when campaign_name like '%PTP%' then 'fb.otme.fate.quest'
 											ELSE 'other' end as package_name
 											,account_name
 										,campaign_name
@@ -560,7 +560,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 										,0 as install
 										,MAX(safe_cast(impressions as float64)) as impressions 
 										,MAX(safe_cast(clicks as float64)) as clicks 
-									FROM `fb-ai-avatar-puzzle.analytics_439907691.fb_insights_country_hour_day_append_*` 
+									FROM `gzdw2024.facebook_source_data.fb_insights_country_hour_day_append_*` 
 										where _TABLE_SUFFIX>='20250101' 
 										and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 										and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
@@ -579,7 +579,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 											when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 											when campaign_name like '%BKJ%' then 'fb.block.juggle'
 											when campaign_name like '%QUZ%' then 'fb.quiz'
-											when campaign_name like '%PP%' then 'fb.otme.fate.quest'
+											when campaign_name like '%PTP%' then 'fb.otme.fate.quest'
 											ELSE 'other' end as package_name
 											,account_name
 										,campaign_name
@@ -590,7 +590,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 										,MAX(safe_cast(action_count as float64)) as install 
 										,0 as impressions
 										,0 as clicks
-									FROM `fb-ai-avatar-puzzle.analytics_439907691.fb_insights_country_hour_day_append_*` 
+									FROM `gzdw2024.facebook_source_data.fb_insights_country_hour_day_append_*` 
 									WHERE action_type='mobile_app_install'
 									and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 									and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
@@ -609,7 +609,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 											when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 											when campaign_name like '%BKJ%' then 'fb.block.juggle'
 											when campaign_name like '%QUZ%' then 'fb.quiz'
-											when campaign_name like '%PP%' then 'fb.otme.fate.quest'
+											when campaign_name like '%PTP%' then 'fb.otme.fate.quest'
 											ELSE 'other' end as package_name
 											,account_name
 										,campaign_name
@@ -619,7 +619,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 										,0 as install
 										,MAX(safe_cast(impressions as float64)) as impressions 
 										,MAX(safe_cast(clicks as float64)) as clicks 
-									FROM `gzdw2024.facebook_source_data.fb_insights_country_hour_day_append_*` 
+									FROM `gzdw2024.facebook_source_data.fb_insights_old_country_hour_day_append_*` 
 										where _TABLE_SUFFIX>='20250101' 
 										and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 										and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
@@ -638,7 +638,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 											when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 											when campaign_name like '%BKJ%' then 'fb.block.juggle'
 											when campaign_name like '%QUZ%' then 'fb.quiz'
-											when campaign_name like '%PP%' then 'fb.otme.fate.quest'
+											when campaign_name like '%PTP%' then 'fb.otme.fate.quest'
 											ELSE 'other' end as package_name
 											,account_name
 										,campaign_name
@@ -649,7 +649,7 @@ delete `gzdw2024.fbgame_realtime_03_bi.dws_fb_common_game_cost_hour_total`
 										,MAX(safe_cast(action_count as float64)) as install 
 										,0 as impressions
 										,0 as clicks
-									FROM `gzdw2024.facebook_source_data.fb_insights_country_hour_day_append_*` 
+									FROM `gzdw2024.facebook_source_data.fb_insights_old_country_hour_day_append_*` 
 									WHERE action_type='mobile_app_install'
 									and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 									and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
@@ -1252,7 +1252,7 @@ SELECT 'roi_hour_real' as cat
 										when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 										when campaign_name like '%BKJ%' then 'fb.block.juggle'
 										when campaign_name like '%QUZ%' then 'fb.quiz'
-										when campaign_name like '%PP%' then 'fb.otme.fate.quest'
+										when campaign_name like '%PTP%' then 'fb.otme.fate.quest'
 										ELSE 'other' end as package_name
 									,case when lower(campaign_name) like '%ios%' then 'iOS'
 										when lower(campaign_name) like '%web%' then 'web' 
@@ -1264,7 +1264,7 @@ SELECT 'roi_hour_real' as cat
 									,0 as install
 									,MAX(safe_cast(impressions as float64)) as impressions 
 									,MAX(safe_cast(clicks as float64)) as clicks 
-								FROM `fb-ai-avatar-puzzle.analytics_439907691.fb_insights_country_day_*` 
+								FROM `gzdw2024.facebook_source_data.fb_insights_country_day_*` 
 									where _TABLE_SUFFIX>='20250101' 
 									and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 									and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
@@ -1283,7 +1283,7 @@ SELECT 'roi_hour_real' as cat
 										when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 										when campaign_name like '%BKJ%' then 'fb.block.juggle'
 										when campaign_name like '%QUZ%' then 'fb.quiz'
-										when campaign_name like '%PP%' then 'fb.otme.fate.quest'
+										when campaign_name like '%PTP%' then 'fb.otme.fate.quest'
 										ELSE 'other' end as package_name
 									,case when lower(campaign_name) like '%ios%' then 'iOS'
 										when lower(campaign_name) like '%web%' then 'web' 
@@ -1295,7 +1295,7 @@ SELECT 'roi_hour_real' as cat
 									,MAX(safe_cast(action_count as float64)) as install 
 									,0 as impressions
 									,0 as clicks
-								FROM `fb-ai-avatar-puzzle.analytics_439907691.fb_insights_country_day_*` 
+								FROM `gzdw2024.facebook_source_data.fb_insights_country_day_*` 
 								WHERE action_type='mobile_app_install'
 								and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 								and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
@@ -1314,7 +1314,7 @@ SELECT 'roi_hour_real' as cat
 										when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 										when campaign_name like '%BKJ%' then 'fb.block.juggle'
 										when campaign_name like '%QUZ%' then 'fb.quiz'
-										when campaign_name like '%PP%' then 'fb.otme.fate.quest'
+										when campaign_name like '%PTP%' then 'fb.otme.fate.quest'
 										ELSE 'other' end as package_name
 									,case when lower(campaign_name) like '%ios%' then 'iOS'
 										when lower(campaign_name) like '%web%' then 'web' 
@@ -1326,7 +1326,7 @@ SELECT 'roi_hour_real' as cat
 									,0 as install
 									,MAX(safe_cast(impressions as float64)) as impressions 
 									,MAX(safe_cast(clicks as float64)) as clicks 
-								FROM `gzdw2024.facebook_source_data.fb_insights_country_day_*` 
+								FROM `gzdw2024.facebook_source_data.fb_insights_old_country_day_*` 
 									where _TABLE_SUFFIX>='20250101' 
 									and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 									and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
@@ -1345,7 +1345,7 @@ SELECT 'roi_hour_real' as cat
 										when campaign_name like '%FQ%' then 'fb.otme.fate.quest'
 										when campaign_name like '%BKJ%' then 'fb.block.juggle'
 										when campaign_name like '%QUZ%' then 'fb.quiz'
-										when campaign_name like '%PP%' then 'fb.otme.fate.quest'
+										when campaign_name like '%PTP%' then 'fb.otme.fate.quest'
 										ELSE 'other' end as package_name
 									,case when lower(campaign_name) like '%ios%' then 'iOS'
 										when lower(campaign_name) like '%web%' then 'web' 
@@ -1357,7 +1357,7 @@ SELECT 'roi_hour_real' as cat
 									,MAX(safe_cast(action_count as float64)) as install 
 									,0 as impressions
 									,0 as clicks
-								FROM `gzdw2024.facebook_source_data.fb_insights_country_day_*` 
+								FROM `gzdw2024.facebook_source_data.fb_insights_old_country_day_*` 
 								WHERE action_type='mobile_app_install'
 								and _TABLE_SUFFIX >=replace(cast(date_add(run_date,interval -history_day day) as string),'-','')
 								and _TABLE_SUFFIX <=replace(cast(date_add(run_date,interval -history_end_day day) as string),'-','')
